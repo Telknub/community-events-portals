@@ -1001,6 +1001,10 @@ export type MinigameHistory = {
   prizeClaimedAt?: number;
 };
 
+export type MinigameAchievement = {
+  unlockedAt: number;
+};
+
 export type Minigame = {
   highscore: number;
   purchases?: {
@@ -1009,6 +1013,7 @@ export type Minigame = {
     purchasedAt: number;
   }[];
   history: Record<string, MinigameHistory>;
+  achievements?: Record<string, MinigameAchievement>;
 };
 
 export type TradeListing = {
@@ -1266,8 +1271,13 @@ export type AnimalBuilding = {
   animals: Record<string, Animal>;
 };
 
+export type Bank = {
+  taxFreeSFL: number;
+};
+
 export interface GameState {
   home: Home;
+  bank: Bank;
 
   rewards: Rewards;
 

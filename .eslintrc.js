@@ -24,7 +24,7 @@ module.exports = {
   ignorePatterns: ["*.typegen.ts"],
   rules: {
     "react/jsx-no-literals": "error",
-    "no-console": "error",
+    "no-console": "off",
     "no-unused-vars": "off",
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [

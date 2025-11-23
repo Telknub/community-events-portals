@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Game, AUTO } from "phaser";
+import { Game, AUTO, CANVAS } from "phaser";
 import { useActor, useSelector } from "@xstate/react";
 import NinePatchPlugin from "phaser3-rex-plugins/plugins/ninepatch-plugin.js";
 import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-plugin.js";
@@ -164,27 +164,12 @@ export const PhaserComponent: React.FC<Props> = ({
     isModerator ? setIsModerator(true) : setIsModerator(false); // I know i know this is a bit useless but useful for debugging rofl
 
     // Check if user is muted and if so, apply mute details to isMuted state
-    const userModLogs = gameService.state.context.moderation;
-
-    if (userModLogs.muted.length > 0) {
-      const latestMute = userModLogs.muted.sort(
-        (a, b) => b.mutedUntil - a.mutedUntil,
-      )[0];
-
-      if (latestMute.mutedUntil > new Date().getTime()) {
-        setIsMuted({
-          type: "mute",
-          farmId: gameService.state.context.farmId as number,
-          arg: latestMute.reason,
-          mutedUntil: latestMute.mutedUntil,
-        });
-      }
-    }
+    // Removed for now, will be added back later in a next PR
   }, []);
 
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
-      type: AUTO,
+      type: CANVAS,
       fps: {
         target: 30,
         smoothStep: true,

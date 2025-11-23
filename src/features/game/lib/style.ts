@@ -7,6 +7,11 @@ import halloweenBorderOuter from "assets/ui/halloweenBorderOuter.png";
 import halloweenTabBorderInner1 from "assets/ui/halloweenTabBorderInner1.png";
 import halloweenTabBorderInner2 from "assets/ui/halloweenTabBorderInner2.png";
 
+// Add Christmas border imports
+import christmasDarkBorder from "assets/ui/christmasDarkBorder.png";
+import christmasLightBorder from "assets/ui/christmasLightBorder.png";
+import christmasTabBorder from "assets/ui/christmasTabBorder.png";
+
 const pixelizedBorderStyle: React.CSSProperties = {
   borderStyle: "solid",
   borderWidth: `${PIXEL_SCALE * 2}px`,
@@ -145,6 +150,23 @@ export const pixelHalloweenTabBorderMiddleStyle1: React.CSSProperties = {
 
 export const pixelHalloweenTabBorderMiddleStyle2: React.CSSProperties = {
   borderImage: `url(${halloweenTabBorderInner2}) 20%`,
+  ...pixelizedBorderStyle,
+  borderRadius: `${PIXEL_SCALE * 5}px ${PIXEL_SCALE * 5}px 0 0`,
+};
+
+// Christmas
+export const pixelChristmasDarkBorderStyle: React.CSSProperties = {
+  borderImage: `url(${christmasDarkBorder}) 20%`,
+  ...pixelizedBorderStyle,
+};
+
+export const pixelChristmasLightBorderStyle: React.CSSProperties = {
+  borderImage: `url(${christmasLightBorder}) 20%`,
+  ...pixelizedBorderStyle,
+};
+
+export const pixelChrismasTabBorder: React.CSSProperties = {
+  borderImage: `url(${christmasTabBorder}) 20%`,
   ...pixelizedBorderStyle,
   borderRadius: `${PIXEL_SCALE * 5}px ${PIXEL_SCALE * 5}px 0 0`,
 };

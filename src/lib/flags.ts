@@ -57,6 +57,9 @@ const featureFlags: Record<string, FeatureFlag> = {
   BEDS: timeBasedFeatureFlag(new Date("2024-11-04T00:00:00Z")),
   BULL_RUN_PLAZA: betaTimeBasedFeatureFlag(new Date("2024-11-01T00:00:00Z")),
   BALE_AOE_END: betaTimeBasedFeatureFlag(new Date("2024-11-04T00:00:00Z")),
+  CHRISTMANS_DELIVERY_MAYHEM: betaTimeBasedFeatureFlag(
+    new Date("2024-12-20T00:00:00Z"),
+  ),
 };
 
 export type FeatureName = keyof typeof featureFlags;

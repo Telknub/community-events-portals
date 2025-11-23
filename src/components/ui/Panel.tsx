@@ -4,7 +4,8 @@ import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 
 import {
   pixelDarkBorderStyle,
-  pixelLightBorderStyle,
+  pixelChristmasDarkBorderStyle,
+  pixelChristmasLightBorderStyle,
 } from "features/game/lib/style";
 
 import usedButton from "assets/ui/used_button.png";
@@ -68,9 +69,9 @@ export const InnerPanel: React.FC<
     <div
       className={classNames(className)}
       style={{
-        ...pixelLightBorderStyle,
+        ...pixelChristmasLightBorderStyle,
         padding: `${PIXEL_SCALE * 1}px`,
-        background: isDarkMode ? "#c28669" : "#e4a672",
+        background: isDarkMode ? "#6CBDE8" : "#6CBDE8",
         ...style,
       }}
       ref={divRef}
@@ -110,10 +111,11 @@ export const OuterPanel: React.FC<PanelProps> = ({
       <div
         // Fix for dark mode
 
-        className={classNames(className, "bg-[#c28569]")}
+        className={classNames(className, "bg-[]")}
         style={{
-          ...pixelDarkBorderStyle,
+          ...pixelChristmasDarkBorderStyle,
           padding: `${PIXEL_SCALE * 1}px`,
+          background: "url(/world/snowBg.gif)",
           ...(hasTabs
             ? {
                 paddingTop:
