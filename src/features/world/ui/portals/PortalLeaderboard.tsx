@@ -20,7 +20,7 @@ export const PortalLeaderboard: React.FC<{
   name: MinigameName;
   farmId: number;
   jwt: string;
-  onBack: () => void;
+  onBack?: () => void;
   startDate?: Date;
   endDate?: Date;
   formatPoints?: (value: number) => string;
@@ -102,9 +102,13 @@ export const PortalLeaderboard: React.FC<{
         )}
       </div>
 
-      <Button className="mt-1" onClick={onBack}>
-        {t("back")}
-      </Button>
+      {onBack ? (
+        <Button className="mt-1" onClick={onBack}>
+          {t("back")}
+        </Button>
+      ) : (
+        ""
+      )}
     </>
   );
 };

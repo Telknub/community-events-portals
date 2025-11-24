@@ -264,6 +264,7 @@ export type Coupons =
   | "Colors Ticket 2025"
   | "Halloween Token 2025"
   | "Halloween Ticket 2025"
+  | "Christmas Token 2025"
   | "Cheer"
   | Keys
   | SeasonalTicket
@@ -411,6 +412,9 @@ export const COUPONS: Record<Coupons, { description: string }> = {
     description: translate("description.halloweenToken2025"),
   },
   "Halloween Ticket 2025": {
+    description: translate("description.halloweenTicket2025"),
+  },
+  "Christmas Token 2025": {
     description: translate("description.halloweenTicket2025"),
   },
 };
@@ -1307,7 +1311,8 @@ export type Currency =
   | "Love Charm"
   | "Easter Token 2025"
   | "Colors Token 2025"
-  | "Halloween Token 2025";
+  | "Halloween Token 2025"
+  | "Christmas Token 2025";
 
 export type ShopItemBase = {
   shortDescription: string;

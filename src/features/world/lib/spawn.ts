@@ -10,6 +10,12 @@ const randomXOffset = Math.random() * 60;
 const randomYOffset = Math.random() * 20;
 
 export const SPAWNS: () => SpawnLocation = () => ({
+  christmas: {
+    default: {
+      x: 240,
+      y: 180,
+    },
+  },
   love_island: {
     default: {
       x: 608,

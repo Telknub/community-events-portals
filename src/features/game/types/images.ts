@@ -820,7 +820,7 @@ import toxicTuft from "assets/sfts/toxic_tuft.webp";
 import mootant from "assets/sfts/mootant.webp";
 import tradeCake from "assets/food/trade_cake.webp";
 import chamomile from "assets/flowers/chamomile.webp";
-import jellyfish from "assets/fish/jellyfish.webp";
+import jellyfish from "assets/flowers/chamomile.webp";
 import frozenCow from "assets/sfts/frozen_mutant_cow.webp";
 import frozenSheep from "assets/sfts/frozen_mutant_sheep.webp";
 import summerChicken from "assets/sfts/summer_chicken.webp";
