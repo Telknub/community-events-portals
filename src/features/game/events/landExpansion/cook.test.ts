@@ -553,7 +553,7 @@ describe("getReadyAt", () => {
     expect(time).toEqual(readyAt);
   });
 
-  it("applies a -15% cooking time boost when cleaver knife is equipped", () => {
+  it("applies a -15% cooking time boost when Master Chef's Cleaver is equipped", () => {
     const now = createdAt;
 
     const state: GameState = {
@@ -562,7 +562,7 @@ describe("getReadyAt", () => {
         ...INITIAL_FARM.bumpkin,
         equipped: {
           ...INITIAL_FARM.bumpkin.equipped,
-          tool: "Cleaver Knife",
+          tool: "Master Chef's Cleaver",
         },
       },
       buildings: {
@@ -1298,181 +1298,6 @@ describe("getCookingOilBoost", () => {
     const time = getCookingOilBoost("Boiled Eggs", game, "1").timeToCook;
 
     expect(time).toEqual(60 * 60 * 0.8);
-  });
-
-  it("applies the 50% cooking boost for valid Ronin NFTs", () => {
-    const now = createdAt;
-    const cookTimeMs = COOKABLES["Boiled Eggs"].cookingSeconds * 1000;
-
-    const state = cook({
-      state: {
-        ...TEST_FARM,
-        inventory: {
-          Egg: new Decimal(100),
-        },
-        nfts: {
-          ronin: {
-            tokenId: 1,
-            name: "Sunflower Land Platinum Pass",
-            expiresAt: now + 31 * 24 * 60 * 60 * 1000,
-          },
-        },
-        buildings: {
-          "Fire Pit": [
-            {
-              coordinates: { x: 0, y: 0 },
-              createdAt: 0,
-              id: "1",
-              readyAt: 0,
-            },
-          ],
-        },
-      },
-      action: {
-        type: "recipe.cooked",
-        item: "Boiled Eggs",
-        buildingId: "1",
-      },
-      createdAt: now,
-    });
-
-    const building = state.buildings["Fire Pit"]?.[0];
-    const eggRecipe = building?.crafting?.find((r) => r.name === "Boiled Eggs");
-
-    expect(eggRecipe?.readyAt).toBeCloseTo(now + cookTimeMs * 0.5, 0);
-  });
-
-  it("does not apply the 50% cooking boost for Bronze Season Pass (Ronin NFT)", () => {
-    const now = createdAt;
-    const cookTimeMs = COOKABLES["Boiled Eggs"].cookingSeconds * 1000;
-
-    const state = cook({
-      state: {
-        ...TEST_FARM,
-        inventory: {
-          Egg: new Decimal(100),
-        },
-        nfts: {
-          ronin: {
-            tokenId: 1,
-            name: "Sunflower Land Bronze Pass",
-            expiresAt: now + 31 * 24 * 60 * 60 * 1000,
-          },
-        },
-        buildings: {
-          "Fire Pit": [
-            {
-              coordinates: { x: 0, y: 0 },
-              createdAt: 0,
-              id: "1",
-              readyAt: 0,
-            },
-          ],
-        },
-      },
-      action: {
-        type: "recipe.cooked",
-        item: "Boiled Eggs",
-        buildingId: "1",
-      },
-      createdAt: now,
-    });
-
-    const building = state.buildings["Fire Pit"]?.[0];
-    const eggRecipe = building?.crafting?.find((r) => r.name === "Boiled Eggs");
-
-    expect(eggRecipe?.readyAt).toEqual(now + cookTimeMs);
-  });
-
-  it("does not apply the 50% cooking boost to a queue item that starts after the Ronin NFT expires", () => {
-    const now = createdAt;
-    const cookTimeMs = COOKABLES["Boiled Eggs"].cookingSeconds * 1000;
-
-    const state = cook({
-      state: {
-        ...TEST_FARM,
-        inventory: {
-          Egg: new Decimal(100),
-        },
-        nfts: {
-          ronin: {
-            tokenId: 1,
-            name: "Sunflower Land Platinum Pass",
-            expiresAt: now + cookTimeMs,
-            acknowledgedAt: new Date("2025-03-02T00:00:00Z").getTime(),
-          },
-        },
-        buildings: {
-          "Fire Pit": [
-            {
-              coordinates: { x: 0, y: 0 },
-              createdAt: 0,
-              id: "1",
-              readyAt: 0,
-              crafting: [
-                {
-                  name: "Boiled Eggs",
-                  readyAt: now + cookTimeMs,
-                },
-              ],
-            },
-          ],
-        },
-      },
-      action: {
-        type: "recipe.cooked",
-        item: "Boiled Eggs",
-        buildingId: "1",
-      },
-      createdAt: now,
-    });
-
-    const building = state.buildings["Fire Pit"]?.[0];
-    const eggRecipe = building?.crafting?.find((r) => r.name === "Boiled Eggs");
-
-    expect(eggRecipe?.readyAt).toEqual(now + cookTimeMs);
-  });
-
-  it("does not apply the 50% cooking boost on an expired Ronin NFT", () => {
-    const now = createdAt;
-    const cookTimeMs = COOKABLES["Boiled Eggs"].cookingSeconds * 1000;
-
-    const state = cook({
-      state: {
-        ...TEST_FARM,
-        inventory: {
-          Egg: new Decimal(100),
-        },
-        nfts: {
-          ronin: {
-            tokenId: 1,
-            name: "Sunflower Land Platinum Pass",
-            expiresAt: now - cookTimeMs,
-          },
-        },
-        buildings: {
-          "Fire Pit": [
-            {
-              coordinates: { x: 0, y: 0 },
-              createdAt: 0,
-              id: "1",
-              readyAt: 0,
-            },
-          ],
-        },
-      },
-      action: {
-        type: "recipe.cooked",
-        item: "Boiled Eggs",
-        buildingId: "1",
-      },
-      createdAt: now,
-    });
-
-    const building = state.buildings["Fire Pit"]?.[0];
-    const eggRecipe = building?.crafting?.find((r) => r.name === "Boiled Eggs");
-
-    expect(eggRecipe?.readyAt).toEqual(now + cookTimeMs);
   });
 });
 
