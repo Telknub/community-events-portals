@@ -37,8 +37,6 @@ type EffectName =
   | "moderation.unmuted"
   | "blessing.offered"
   | "blessing.seeked"
-  | "roninPack.claimed"
-  | "twitter.roninPosted"
   | "nft.assigned"
   | "admin.NFTAssigned"
   | "marketplace.bulkListingsCancelled"
@@ -53,7 +51,8 @@ type EffectName =
   | "auction.claimed"
   | "auction.bidPlaced"
   | "auction.bidCancelled"
-  | "marketplace.buyBulkResources";
+  | "marketplace.buyBulkResources"
+  | "leagues.updated";
 
 type VisitEffectName = "farm.helped" | "farm.cheered" | "farm.followed";
 
@@ -98,7 +97,6 @@ export type StateMachineStateName =
   | "claimingBlockchainBox"
   | "offeringBlessing"
   | "seekingBlessing"
-  | "claimingRoninPack"
   | "marketplaceBulkListingsCancelling"
   | "marketplaceBulkOffersCancelling"
   | "linkingWallet"
@@ -111,7 +109,8 @@ export type StateMachineStateName =
   | "wakingPet"
   | "auctionBidding"
   | "auctionCancelling"
-  | "marketplaceBuyingBulkResources";
+  | "marketplaceBuyingBulkResources"
+  | "updatingLeagues";
 
 export type StateMachineVisitStateName =
   | "helpingFarm"
@@ -144,8 +143,6 @@ export const STATE_MACHINE_EFFECTS: Record<
   "telegram.joined": "joiningTelegram",
   "twitter.followed": "followingTwitter",
   "twitter.posted": "postingTwitter",
-  "roninPack.claimed": "claimingRoninPack",
-  "twitter.roninPosted": "postingTwitter",
   "gems.bought": "buyingGems",
   "vip.bought": "buyingVIP",
   "username.assigned": "assigningUsername",
@@ -168,6 +165,7 @@ export const STATE_MACHINE_EFFECTS: Record<
   "auction.bidPlaced": "auctionBidding",
   "auction.bidCancelled": "auctionCancelling",
   "marketplace.buyBulkResources": "marketplaceBuyingBulkResources",
+  "leagues.updated": "updatingLeagues",
 };
 
 export const STATE_MACHINE_VISIT_EFFECTS: Record<

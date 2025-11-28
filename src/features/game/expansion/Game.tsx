@@ -95,8 +95,8 @@ import { SystemMessageWidget } from "features/announcements/SystemMessageWidget"
 import { News } from "features/farming/mail/components/News";
 import { CloseButtonPanel } from "../components/CloseablePanel";
 import { TradesCleared } from "./components/TradesCleared";
-import { ClaimRoninPack } from "./components/onChainAirdrops/ClaimRoninPack";
 import { RevealPet } from "features/island/pets/RevealPet";
+import { LeagueResults } from "./components/LeagueResults";
 
 function camelToDotCase(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, "$1.$2").toLowerCase() as string;
@@ -211,11 +211,11 @@ const SHOW_MODAL: Record<StateValues, boolean> = {
   sellMarketResource: false,
   somethingArrived: true,
   seasonChanged: false,
-  roninAirdrop: true,
   jinAirdrop: true,
   investigating: true,
   blessing: true,
   cheers: true,
+  leagueResults: true,
 };
 
 // State change selectors
@@ -230,8 +230,6 @@ const isDeletingListing = (state: MachineState) =>
   state.matches("deleteTradeListing");
 const isListingDeleted = (state: MachineState) =>
   state.matches("tradeListingDeleted");
-const isFulfillingTradeListing = (state: MachineState) =>
-  state.matches("fulfillTradeListing");
 const isSniped = (state: MachineState) => state.matches("sniped");
 const isTradeAlreadyFulfilled = (state: MachineState) =>
   state.matches("tradeAlreadyFulfilled");
@@ -295,12 +293,13 @@ const isCompetition = (state: MachineState) => state.matches("competition");
 const isSeasonChanged = (state: MachineState) => state.matches("seasonChanged");
 const isCalendarEvent = (state: MachineState) => state.matches("calendarEvent");
 
-const isRoninAirdrop = (state: MachineState) => state.matches("roninAirdrop");
 const isJinAirdrop = (state: MachineState) => state.matches("jinAirdrop");
 const isCheers = (state: MachineState) => state.matches("cheers");
 const isNews = (state: MachineState) => state.matches("news");
 const _isVisiting = (state: MachineState) =>
   state.context.visitorId !== undefined;
+const isLeagueResultsReleased = (state: MachineState) =>
+  state.matches("leagueResults");
 
 const GameContent: React.FC = () => {
   const { gameService } = useContext(Context);
@@ -472,7 +471,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   const competition = useSelector(gameService, isCompetition);
   const seasonChanged = useSelector(gameService, isSeasonChanged);
   const calendarEvent = useSelector(gameService, isCalendarEvent);
-  const roninAirdrop = useSelector(gameService, isRoninAirdrop);
   const jinAirdrop = useSelector(gameService, isJinAirdrop);
   const showPWAInstallPrompt = useSelector(authService, _showPWAInstallPrompt);
   const investigating = useSelector(gameService, isInvestigating);
@@ -480,6 +478,10 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   const cheers = useSelector(gameService, isCheers);
   const news = useSelector(gameService, isNews);
   const tradesCleared = useSelector(gameService, isTradesCleared);
+  const leagueResultsReleased = useSelector(
+    gameService,
+    isLeagueResultsReleased,
+  );
   const { t } = useAppTranslation();
 
   useInterval(() => {
@@ -674,7 +676,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
             {hasSomethingArrived && <SomethingArrived />}
             {hasBBs && <Gems />}
             {hasCommunityCoin && <LoveCharm />}
-            {roninAirdrop && <ClaimRoninPack />}
             {jinAirdrop && <RoninJinClaim />}
             {showReferralRewards && <ClaimReferralRewards />}
             {investigating && <SoftBan />}
@@ -684,6 +685,7 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
               />
             )}
             {cheers && <Cheering />}
+            {leagueResultsReleased && <LeagueResults />}
           </Panel>
         </Modal>
 

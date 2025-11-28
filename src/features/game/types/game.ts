@@ -109,7 +109,7 @@ import { ClutterName } from "./clutter";
 import { PetName, PetResourceName, Pets } from "./pets";
 import { RockName } from "./resources";
 import { PetShopItemName } from "./petShop";
-import { RoninV2PackName } from "features/wallet/lib/ronin";
+import { League } from "features/leagues/leagues";
 
 export type Reward = {
   coins?: number;
@@ -1620,6 +1620,18 @@ export type Auctioneer = {
   minted?: Minted;
 };
 
+type RoninV2PackName =
+  | "Bronze Pack"
+  | "Silver Pack"
+  | "Gold Pack"
+  | "Platinum Pack"
+  | "Legendary Pack"
+  | "Whale Pack";
+
+export type FarmHands = {
+  bumpkins: Record<string, FarmHand>;
+};
+
 export interface GameState {
   home: Home;
   bank: Bank;
@@ -1679,10 +1691,7 @@ export interface GameState {
     games: Partial<Record<MinigameName, Minigame>>;
   };
 
-  farmHands: {
-    bumpkins: Record<string, FarmHand>;
-  };
-
+  farmHands: FarmHands;
   inventory: Inventory;
   previousInventory: Inventory;
   wardrobe: Wardrobe;
@@ -1908,6 +1917,10 @@ export interface GameState {
   aoe: AOE;
   socialFarming: SocialFarming;
   pets?: Pets;
+
+  prototypes?: {
+    leagues?: League;
+  };
 }
 
 export type AOE = Partial<

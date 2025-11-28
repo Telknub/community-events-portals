@@ -1,12 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 
 import { InnerPanel } from "components/ui/Panel";
 import { Label } from "components/ui/Label";
 import { Dropdown } from "components/ui/Dropdown";
+import { Button } from "components/ui/Button";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { EconomyReportSummary } from "../actions/getEconomyData";
 import { getKeys } from "features/game/lib/crafting";
 import { KNOWN_IDS } from "features/game/types";
+import { downloadCsv } from "../utils/downloadCsv";
 
 interface Props {
   reports: EconomyReportSummary[];
@@ -66,45 +68,79 @@ export const ResourceSection: React.FC<Props> = ({ reports, startDate }) => {
     return undefined;
   };
 
-  const history = useMemo(() => {
-    if (!normalizedResource) return [];
+  const history: ResourceHistoryRow[] = !normalizedResource
+    ? []
+    : (() => {
+        const entries = reports
+          .map((report) => ({
+            date: report.reportDate,
+            supply: parseNumericValue(
+              report.farm.collectibles.totals?.[normalizedResource],
+            ),
+            distribution: parseNumericValue(
+              report.farm.collectibles.holders?.[normalizedResource],
+            ),
+          }))
+          .filter(
+            (entry) =>
+              entry.date &&
+              (entry.supply !== undefined || entry.distribution !== undefined),
+          )
+          .sort((a, b) => (a.date! < b.date! ? -1 : 1));
 
-    const entries = reports
-      .map((report) => ({
-        date: report.reportDate,
-        supply: parseNumericValue(
-          report.farm.collectibles.totals?.[normalizedResource],
+        const withDiff: ResourceHistoryRow[] = entries.map((entry, index) => {
+          const prev = entries[index - 1];
+          return {
+            ...entry,
+            supplyDiff:
+              entry.supply !== undefined && prev?.supply !== undefined
+                ? entry.supply - prev.supply
+                : undefined,
+            distributionDiff:
+              entry.distribution !== undefined &&
+              prev?.distribution !== undefined
+                ? entry.distribution - prev.distribution
+                : undefined,
+          };
+        });
+
+        return withDiff
+          .filter((entry) => !startDate || entry.date >= startDate)
+          .sort((a, b) => (a.date! < b.date! ? 1 : -1));
+      })();
+
+  const canExportHistory = Boolean(normalizedResource && history.length > 0);
+
+  const handleExportCsv = () => {
+    if (!canExportHistory) return;
+
+    const headers = [
+      t("economyDashboard.historyDate"),
+      t("economyDashboard.supplyColumn"),
+      t("economyDashboard.diffColumn"),
+      t("economyDashboard.distributionColumn"),
+      t("economyDashboard.diffColumn"),
+    ];
+
+    const rows = history.map(
+      ({ date, supply, supplyDiff, distribution, distributionDiff }) => [
+        date || t("economyDashboard.unknownDate"),
+        formatRecordValue(supply),
+        formatDiffValue(supplyDiff),
+        formatRecordValue(distribution),
+        formatDiffValue(distributionDiff),
+      ],
+    );
+
+    downloadCsv(
+      [headers, ...rows].map((row) =>
+        row.map((value) =>
+          value === undefined || value === null ? "" : String(value),
         ),
-        distribution: parseNumericValue(
-          report.farm.collectibles.holders?.[normalizedResource],
-        ),
-      }))
-      .filter(
-        (entry) =>
-          entry.date &&
-          (entry.supply !== undefined || entry.distribution !== undefined),
-      )
-      .sort((a, b) => (a.date! < b.date! ? -1 : 1));
-
-    const withDiff: ResourceHistoryRow[] = entries.map((entry, index) => {
-      const prev = entries[index - 1];
-      return {
-        ...entry,
-        supplyDiff:
-          entry.supply !== undefined && prev?.supply !== undefined
-            ? entry.supply - prev.supply
-            : undefined,
-        distributionDiff:
-          entry.distribution !== undefined && prev?.distribution !== undefined
-            ? entry.distribution - prev.distribution
-            : undefined,
-      };
-    });
-
-    return withDiff
-      .filter((entry) => !startDate || entry.date >= startDate)
-      .sort((a, b) => (a.date! < b.date! ? 1 : -1));
-  }, [reports, normalizedResource, startDate]);
+      ),
+      `resource-${normalizedResource}-${Date.now()}.csv`,
+    );
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -122,12 +158,21 @@ export const ResourceSection: React.FC<Props> = ({ reports, startDate }) => {
         />
       </InnerPanel>
 
-      <InnerPanel className="flex flex-col">
-        <Label type="default" className="mb-1.5">
-          {t("economyDashboard.historyTitle", {
-            resource: resourceLabel,
-          })}
-        </Label>
+      <InnerPanel className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <Label type="default">
+            {t("economyDashboard.historyTitle", {
+              resource: resourceLabel,
+            })}
+          </Label>
+          <Button
+            className="w-full md:w-auto"
+            onClick={handleExportCsv}
+            disabled={!canExportHistory}
+          >
+            {t("economyDashboard.exportCsv")}
+          </Button>
+        </div>
         {!normalizedResource && (
           <p className="text-xs text-white">
             {t("economyDashboard.resourceRequired")}

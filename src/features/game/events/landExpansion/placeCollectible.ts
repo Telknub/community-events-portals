@@ -9,7 +9,6 @@ import { produce } from "immer";
 import { getCountAndType } from "features/island/hud/components/inventory/utils/inventory";
 import { MonumentName, REQUIRED_CHEERS } from "features/game/types/monuments";
 import { isPet } from "features/game/types/pets";
-import { hasFeatureAccess } from "lib/flags";
 import {
   EXPIRY_COOLDOWNS,
   TemporaryCollectibleName,
@@ -82,7 +81,7 @@ export function placeCollectible({
       };
     }
 
-    if (isPet(action.name) && hasFeatureAccess(stateCopy, "PETS")) {
+    if (isPet(action.name)) {
       if (!stateCopy.pets) {
         stateCopy.pets = {};
       }
@@ -106,8 +105,8 @@ export function placeCollectible({
     // Search for existing collectible in current location
     const collectibleItems =
       action.location === "home"
-        ? stateCopy.home.collectibles[action.name] ?? []
-        : stateCopy.collectibles[action.name] ?? [];
+        ? (stateCopy.home.collectibles[action.name] ?? [])
+        : (stateCopy.collectibles[action.name] ?? []);
 
     let existingCollectible = collectibleItems.find(
       (collectible) => !collectible.coordinates,
@@ -125,8 +124,8 @@ export function placeCollectible({
 
     const otherCollectibleItems =
       action.location === "home"
-        ? stateCopy.collectibles[action.name] ?? []
-        : stateCopy.home.collectibles[action.name] ?? [];
+        ? (stateCopy.collectibles[action.name] ?? [])
+        : (stateCopy.home.collectibles[action.name] ?? []);
 
     const existingCollectibleIndex = otherCollectibleItems.findIndex(
       (collectible) => !collectible.coordinates,
