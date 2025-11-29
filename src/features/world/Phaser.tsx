@@ -7,7 +7,6 @@ import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-p
 import { PhaserNavMeshPlugin } from "phaser-navmesh";
 
 import * as AuthProvider from "features/auth/lib/Provider";
-import { Message } from "features/pumpkinPlaza/components/ChatUI";
 
 import { Kicked } from "./ui/moderationTools/components/Kicked";
 import {
@@ -65,6 +64,7 @@ import { WorldHud } from "features/island/hud/WorldHud";
 import { PlayerModal } from "features/social/PlayerModal";
 import { MachineState as GameMachineState } from "features/game/lib/gameMachine";
 import { RewardModal } from "features/social/RewardModal";
+import { PartyModal } from "./ui/player/PartyModal";
 import { Discovery } from "features/social/Discovery";
 import { SPAWNS } from "./lib/spawn";
 
@@ -84,6 +84,15 @@ type Player = {
   moderation?: Moderation;
   experience: number;
   sceneId: SceneId;
+};
+
+export type Message = {
+  farmId: number;
+  username: string;
+  sessionId: string;
+  text: string;
+  sceneId: SceneId;
+  sentAt: number;
 };
 
 export type ModerationEvent = {
@@ -500,6 +509,7 @@ export const PhaserComponent: React.FC<Props> = ({ mmoService, route }) => {
       />
       <Discovery />
       <RewardModal />
+      <PartyModal />
       <CommunityModals />
       <InteractableModals id={loggedInFarmId} scene={scene} key={scene} />
       <Modal

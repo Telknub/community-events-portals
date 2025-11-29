@@ -16,6 +16,8 @@ import { getBumpkinHoliday } from "lib/utils/getSeasonWeek";
 import { DogContainer } from "../containers/DogContainer";
 import { PetContainer } from "../containers/PetContainer";
 import { getCurrentSeason, SeasonName } from "features/game/types/seasons";
+import { BumpkinContainer } from "../containers/BumpkinContainer";
+import { partyModalManager } from "../lib/partyModalManager";
 
 const CHAPTER_BANNERS: Record<SeasonName, string | undefined> = {
   "Solar Flare": undefined,
@@ -48,6 +50,9 @@ const CHAPTER_LAYERS: Record<SeasonName, string | undefined> = {
   "Better Together": "Better Together Decoration Base",
   "Paw Prints": "Paw Prints",
 };
+
+const GAM3_PARTY_RADIUS = 50;
+const GAM3_PARTY_MODAL_COOLDOWN = 60 * 1000;
 
 export type FactionNPC = {
   npc: NPCName;
@@ -146,6 +151,9 @@ export const PLAZA_BUMPKINS: NPCBumpkin[] = [
 export class PlazaScene extends BaseScene {
   sceneId: SceneId = "plaza";
 
+  private lastGam3PartyCheckAt = 0;
+  private lastGam3PartyModalAt = 0;
+
   placeables: {
     [sessionId: string]: PlaceableContainer;
   } = {};
@@ -230,15 +238,16 @@ export class PlazaScene extends BaseScene {
     this.load.image("luxury_key_disc", "world/luxury_key_disc.png");
 
     // Stella Megastore items
-    this.load.image("fruit_tune_box", "world/fruit_tune_box.webp");
-    this.load.image("garbage_bin_hat", "world/garbage_bin_hat.webp");
+    this.load.image("magma_stone", "world/magma_stone.webp");
+    this.load.image("pet_specialist_hat", "world/pet_specialist_hat.webp");
 
     // Auction Items
     this.load.image("pet_nft_egg", "world/pet_nft_egg.png");
     this.load.image("pet_bed", "world/pet_bed.webp");
     this.load.image("paw_prints_rug", "world/paw_prints_rug.webp");
     this.load.image("moon_fox_statue", "world/moon_fox_statue.webp");
-    this.load.image("lava_swimwear_npc", "world/lava_swimwear_npc.webp");
+    this.load.image("squirrel_onesie_npc", "world/squirrel_onesie_npc.webp");
+    this.load.image("gam3_trophies", "world/gam3_trophies.png");
 
     this.load.image("ronin_banner", "world/ronin_banner.webp");
 
@@ -463,6 +472,20 @@ export class PlazaScene extends BaseScene {
     });
 
     this.add.sprite(321.5, 230, "shop_icon");
+
+    const gam3Trophies = this.add.image(431, 316, "gam3_trophies");
+    gam3Trophies.setDepth(316);
+    this.physics.world.enable(gam3Trophies);
+    this.colliders?.add(gam3Trophies);
+    (gam3Trophies.body as Phaser.Physics.Arcade.Body)
+      .setSize(64, 52)
+      .setOffset(0, 0)
+      .setImmovable(true)
+      .setCollideWorldBounds(true);
+
+    gam3Trophies.setInteractive({ cursor: "pointer" }).on("pointerdown", () => {
+      interactableModalManager.open("gam3_trophies");
+    });
 
     const dragon = this.add
       .sprite(142, 16, "sleeping_dragon")
@@ -706,9 +729,9 @@ export class PlazaScene extends BaseScene {
         }
       });
 
-    this.add.image(250, 244, "fruit_tune_box");
+    this.add.image(248, 244, "magma_stone");
 
-    this.add.image(288.5, 247, "garbage_bin_hat");
+    this.add.image(288.5, 247, "pet_specialist_hat");
 
     if (this.textures.exists("sparkle")) {
       const sparkle = this.add.sprite(567, 191, "sparkle");
@@ -753,7 +776,7 @@ export class PlazaScene extends BaseScene {
     const nft3 = this.add.image(601, 196, "paw_prints_rug");
     nft3.setDepth(181);
 
-    const nft4 = this.add.image(612, 200, "lava_swimwear_npc");
+    const nft4 = this.add.image(612, 200, "squirrel_onesie_npc");
     nft4.setDepth(205);
 
     const nft5 = this.add.image(635, 193, "pet_bed");
@@ -895,9 +918,57 @@ export class PlazaScene extends BaseScene {
     });
   }
 
+  private monitorGam3Party() {
+    if (!this.currentPlayer || !this.gameService) return;
+
+    const now = Date.now();
+    if (now - this.lastGam3PartyCheckAt < 1000) return;
+    this.lastGam3PartyCheckAt = now;
+
+    if (this.currentPlayer.clothing?.hat !== "Gam3s Cap") return;
+
+    const openedAt =
+      this.gameService.getSnapshot().context.state.pumpkinPlaza.giftGiver
+        ?.openedAt ?? 0;
+
+    const hasOpenedToday =
+      !!openedAt &&
+      new Date(openedAt).toISOString().substring(0, 10) ===
+        new Date().toISOString().substring(0, 10);
+
+    if (hasOpenedToday) return;
+
+    const nearbyCelebrators = Object.values(this.playerEntities).filter(
+      (entity) => {
+        if (entity.clothing?.hat !== "Gam3s Cap") return false;
+
+        const distance = Phaser.Math.Distance.BetweenPoints(
+          entity,
+          this.currentPlayer as BumpkinContainer,
+        );
+
+        return distance <= GAM3_PARTY_RADIUS;
+      },
+    );
+
+    const amountNeeded = 10;
+
+    const hasParty = nearbyCelebrators.length >= amountNeeded;
+
+    if (
+      hasParty &&
+      !partyModalManager.isOpen &&
+      now - this.lastGam3PartyModalAt > GAM3_PARTY_MODAL_COOLDOWN
+    ) {
+      partyModalManager.open();
+      this.lastGam3PartyModalAt = now;
+    }
+  }
+
   public update() {
     super.update();
     this.syncPlaceables();
+    this.monitorGam3Party();
 
     if (this.movementAngle && this.arrows) {
       this.arrows.setVisible(false);

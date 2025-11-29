@@ -21,6 +21,7 @@ import { ListViewImage } from "./ListViewImage";
 import petNFTEggMarketplace from "assets/pets/pet-nft-egg-marketplace.webp";
 import { getPetLevel } from "features/game/types/pets";
 import { Label } from "components/ui/Label";
+import { useNow } from "lib/utils/hooks/useNow";
 
 type Props = {
   details: TradeableDisplay;
@@ -43,8 +44,9 @@ export const ListViewCard: React.FC<Props> = ({
   const { gameService } = useContext(Context);
   const usd = gameService.getSnapshot().context.prices.sfl?.usd ?? 0.0;
 
-  const { type, name, image, buffs, experience } = details;
+  const { type, name, image, buffs, experience, translatedName } = details;
   const { t } = useAppTranslation();
+  const now = useNow();
 
   const state = useSelector(gameService, _state);
 
@@ -152,7 +154,7 @@ export const ListViewCard: React.FC<Props> = ({
 
           <div className="flex justify-between items-center gap-1">
             <p className="text-xs mb-1 py-0.5 truncate text-[#181425]">
-              {name}
+              {translatedName ?? name}
             </p>
 
             {type === "pets" && (
@@ -183,7 +185,7 @@ export const ListViewCard: React.FC<Props> = ({
               <img src={SUNNYSIDE.icons.stopwatch} className="h-4 mr-1" />
               <p className="text-xs truncate pb-0.5">
                 {" "}
-                {`${secondsToString((expiresAt - Date.now()) / 1000, {
+                {`${secondsToString((expiresAt - now) / 1000, {
                   length: "short",
                 })} left`}
               </p>
