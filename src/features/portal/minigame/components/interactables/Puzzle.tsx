@@ -1,0 +1,49 @@
+import React, { useContext } from "react";
+import { EventBus } from "../../lib/EventBus";
+import { PortalContext } from "../../lib/PortalProvider";
+
+// import { useAppTranslation } from "lib/i18n/useAppTranslations";
+import { SudokuPuzzle } from "./SudokuPuzzle";
+import { SlidingPuzzle } from "./SlidingPuzzle";
+import { JigsawPuzzle } from "./JigsawPuzzle";
+import { PipePuzzle } from "./PipePuzzle";
+import { NonogramPuzzle } from "./NonogramPuzzle";
+
+interface Props {
+  onClose: () => void;
+  data?: any;
+}
+
+export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
+  //   const { t } = useAppTranslation();
+  const { portalService } = useContext(PortalContext);
+  const [puzzleType] = React.useState(data.puzzleType);
+
+  const getPoint = () => {
+    setTimeout(() => {
+      EventBus.emit("close-puzzle", data.id);
+      portalService.send("GAIN_POINTS");
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <>
+      {puzzleType === "sudoku" && (
+        <SudokuPuzzle onClose={onClose} onAction={getPoint} />
+      )}
+      {puzzleType === "sliding" && (
+        <SlidingPuzzle onClose={onClose} onAction={getPoint} />
+      )}
+      {puzzleType === "jigsaw" && (
+        <JigsawPuzzle onClose={onClose} onAction={getPoint} />
+      )}
+      {puzzleType === "pipe" && (
+        <PipePuzzle onClose={onClose} onAction={getPoint} />
+      )}
+      {puzzleType === "nonogram" && (
+        <NonogramPuzzle onClose={onClose} onAction={getPoint} />
+      )}
+    </>
+  );
+};

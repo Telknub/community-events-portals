@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "components/ui/Modal";
+import { PuzzleName } from "../../Constants";
+import { SudokuPuzzle } from "./SudokuPuzzle";
+import { Puzzle } from "./Puzzle";
 
-type InteractableName = "";
+type InteractableName = PuzzleName;
 
 class InteractableModalManager {
   private listener?: (
@@ -43,7 +46,9 @@ export const InteractableModals = () => {
   return (
     <>
       <Modal show={!!interactable} onHide={closeModal}>
-        {/* {interactable === "weekly_faction_prize" && <FactionWeeklyPrize onClose={closeModal} data={data} />} */}
+        {interactable === "puzzle" && (
+          <Puzzle onClose={closeModal} data={data} />
+        )}
       </Modal>
     </>
   );

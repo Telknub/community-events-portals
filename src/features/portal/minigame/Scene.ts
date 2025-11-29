@@ -5,21 +5,30 @@ import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME, WALKING_SPEED } from "./Constants";
+import {
+  PORTAL_NAME,
+  PUZZLE_POINTS_CONFIG,
+  PUZZLE_TYPES,
+  PuzzleName,
+  WALKING_SPEED,
+} from "./Constants";
 import { EventBus } from "./lib/EventBus";
+import { NPCBumpkin } from "features/world/scenes/BaseScene";
+import { PuzzlePoint } from "./containers/PuzzlePoint";
 
-// export const NPCS: NPCBumpkin[] = [
-//   {
-//     x: 380,
-//     y: 400,
-//     // View NPCModals.tsx for implementation of pop up modal
-//     npc: "portaller",
-//   },
-// ];
+export const NPCS: NPCBumpkin[] = [
+  {
+    x: 280,
+    y: 180,
+    // View NPCModals.tsx for implementation of pop up modal
+    npc: "portaller",
+  },
+];
 
 export class Scene extends BaseScene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
 
+  puzzleTypes!: PuzzleName[];
   sceneId: SceneId = PORTAL_NAME;
 
   constructor() {
@@ -54,6 +63,10 @@ export class Scene extends BaseScene {
       "backgroundMusic",
       "/world/portal/music/background-music.mp3",
     );
+
+    // Points
+    this.load.image("point", "/world/portal/images/point.png");
+    this.load.image("checkpoint", "/world/portal/images/checkpoint.png");
   }
 
   async create() {
@@ -81,6 +94,9 @@ export class Scene extends BaseScene {
       volume: 0.1,
     });
     this.backgroundMusic.play();
+
+    // Create minigame
+    this.createPuzzlePoints();
   }
 
   update() {
@@ -97,6 +113,7 @@ export class Scene extends BaseScene {
 
   private initialiseProperties() {
     this.velocity = 0;
+    this.puzzleTypes = structuredClone(PUZZLE_TYPES);
   }
 
   private initializeControls() {
@@ -150,5 +167,17 @@ export class Scene extends BaseScene {
     const animation = this.isMoving ? "walk" : "idle";
 
     this.currentPlayer[animation]?.();
+  }
+
+  private createPuzzlePoints() {
+    PUZZLE_POINTS_CONFIG.forEach((config, i) => {
+      new PuzzlePoint({
+        x: config.x,
+        y: config.y,
+        scene: this,
+        id: i + 1,
+        player: this.currentPlayer,
+      });
+    });
   }
 }

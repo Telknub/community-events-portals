@@ -2,6 +2,7 @@ import { NPCName, acknowledgeNPC } from "lib/npcs";
 import React, { useEffect, useState } from "react";
 import { Modal } from "components/ui/Modal";
 import { NPCS_WITH_ALERTS } from "../../Core/BumpkinContainer";
+import { NPC } from "./NPC";
 
 class NpcModalManager {
   private listener?: (npc: NPCName, isOpen: boolean, data: any) => void;
@@ -42,7 +43,7 @@ export const NPCModals = () => {
   return (
     <>
       <Modal show={!!npc && !isSeparateModal} onHide={closeModal}>
-        {/* {npc === "luna" && <HalloweenNPC onClose={closeModal} data={data} />} */}
+        {npc === "portaller" && <NPC onClose={closeModal} data={data} />}
       </Modal>
     </>
   );

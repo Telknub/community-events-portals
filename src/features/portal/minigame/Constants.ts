@@ -2,6 +2,9 @@ import { Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import { ITEM_DETAILS } from "features/game/types/images";
+import { SQUARE_WIDTH } from "features/game/lib/constants";
+
+import slidingPuzzle1 from "public/world/portal/images/slidingPuzzle1.webp";
 
 export const PORTAL_NAME = "christmas";
 export const PORTAL_TOKEN = "Christmas Token 2025";
@@ -32,6 +35,30 @@ export const RESTOCK_ATTEMPTS = [
 //   9239, 36214, 55626, 3249, 128122,
 // ];
 export const BETA_TESTERS: number[] = [];
+
+// Puzzle
+export const PUZZLE_POINTS_CONFIG = [
+  { x: 11 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+  { x: 13 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+  { x: 15 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+  { x: 17 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+  { x: 19 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+];
+export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram"];
+export type PuzzleName = (typeof PUZZLE_TYPES)[number];
+
+// Puzzle config
+export const VICTORY_TEXT = {
+  Sudoku: "You've uncovered the Owl's secret!",
+  SlidingPuzzle: "The Owl watches, puzzle complete!",
+};
+
+// Sudoku puzzle
+export const SUDOKU_COMPLEXITY = 4;
+
+// Sliding Puzzle
+export const SLIDING_PUZZLE_MOVESTOSOLVE = 4;
+export const SLIDING_PUZZLE_IMG = slidingPuzzle1;
 
 // Guide
 export const INSTRUCTIONS: {
