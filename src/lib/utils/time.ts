@@ -216,8 +216,12 @@ export const millisecondsToString = (
  * @param totalTimeInSeconds The total time in seconds needed for the operation to complete.
  * @returns The time left in seconds.
  */
-export const getTimeLeft = (createdAt: number, totalTimeInSeconds: number) => {
-  const millisecondsElapsed = Date.now() - createdAt;
+export const getTimeLeft = (
+  createdAt: number,
+  totalTimeInSeconds: number,
+  now: number,
+) => {
+  const millisecondsElapsed = now - createdAt;
 
   if (millisecondsElapsed > totalTimeInSeconds * 1000) return 0;
 
@@ -249,10 +253,10 @@ export const formatDateTime = (isoString: string) => {
  */
 export function getRelativeTime(
   timestamp: number,
+  now: number,
   length: "short" | "medium" | "long" = "short",
 ): string {
-  const now = new Date();
-  const diffInSeconds = Math.round((timestamp - now.getTime()) / 1000);
+  const diffInSeconds = Math.round((timestamp - now) / 1000);
   const isInFuture = diffInSeconds > 0;
   const secondsAbs = Math.abs(diffInSeconds);
 

@@ -23,7 +23,6 @@ import { BumpkinItem, Equipped as BumpkinParts } from "./bumpkin";
 import { ConsumableName, CookableName } from "./consumables";
 import { BumpkinSkillName, BumpkinRevampSkillName } from "./bumpkinSkills";
 import { AchievementName } from "./achievements";
-import { BumpkinActivityName } from "./bumpkinActivity";
 import { DecorationName } from "./decorations";
 import { BeanName, ExoticCropName, GiantFruit, MutantCropName } from "./beans";
 import {
@@ -449,7 +448,7 @@ export type Bumpkin = {
   experience: number;
   skills: Skills;
   achievements?: Partial<Record<AchievementName, number>>;
-  activity: Partial<Record<BumpkinActivityName, number>>;
+  activity?: Partial<Record<FarmActivityName, number>>;
   previousFreeSkillResetAt?: number;
   previousPowerUseAt?: Partial<Record<BumpkinRevampSkillName, number>>;
   paidSkillResets?: number;
@@ -1124,7 +1123,7 @@ export type NPCData = {
 };
 
 export type ChoreV2 = {
-  activity: BumpkinActivityName;
+  activity: FarmActivityName;
   description: string;
   createdAt: number;
   completedAt?: number;
@@ -1142,7 +1141,7 @@ export type KingdomChores = {
 };
 
 export type KingdomChore = {
-  activity: BumpkinActivityName;
+  activity: FarmActivityName;
   description: string;
   image: InventoryItemName;
   requirement: number;

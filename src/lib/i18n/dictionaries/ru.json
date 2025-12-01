@@ -7223,5 +7223,8 @@
   "node.lavaPit": "Lava Pit",
   "node.fruitPatch": "Fruit Patch",
   "node.flowerBed": "Flower Bed",
-  "node.tree": "Tree"
+  "node.tree": "Tree",
+  "version.updateReady": "A new version is ready.",
+  "version.updateCta": "Update",
+  "referral.referred": "Referred"
 }

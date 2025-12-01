@@ -130,9 +130,7 @@ const PowerSkillsContent: React.FC<{
               skillName === "Sprout Surge" ? "Sprout Mix" : "Rapid Root",
           });
 
-          if (
-            state.context.state.bumpkin?.activity?.["Crop Fertilised"] === 1
-          ) {
+          if (state.context.state.farmActivity?.["Crop Fertilised"] === 1) {
             gameAnalytics.trackMilestone({
               event: "Tutorial:Fertilised:Completed",
             });
@@ -274,7 +272,7 @@ const PowerSkillsContent: React.FC<{
                   className="mb-2"
                 >
                   {t("powerSkills.nextUse", {
-                    time: getRelativeTime(nextSkillUse, "medium"),
+                    time: getRelativeTime(nextSkillUse, now, "medium"),
                   })}
                 </Label>
               ) : (
@@ -296,7 +294,7 @@ const PowerSkillsContent: React.FC<{
                       {t("powerSkills.ready")}
                     </Label>
                   )}
-                  {boostedCooldown && (
+                  {!!boostedCooldown && (
                     // If power skill has a cooldown, show the cooldown
                     <Label
                       type="info"

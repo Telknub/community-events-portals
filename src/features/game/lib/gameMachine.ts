@@ -45,7 +45,6 @@ import {
   LandscapingPlaceableType,
   SaveEvent,
 } from "../expansion/placeable/landscapingMachine";
-import { Context } from "../GameProvider";
 import { isSwarming } from "../events/detectBot";
 import { generateTestLand } from "../expansion/actions/generateLand";
 
@@ -127,6 +126,11 @@ const getError = () => {
 };
 
 const shouldShowLeagueResults = (context: Context) => {
+  // Don't show league results for visitors
+  if (context.visitorId !== undefined) {
+    return false;
+  }
+
   const hasLeaguesAccess = hasFeatureAccess(context.state, "LEAGUES");
   const currentLeagueStartDate =
     context.state.prototypes?.leagues?.currentLeagueStartDate;

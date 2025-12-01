@@ -32,6 +32,7 @@ import { isFaceVerified } from "features/retreat/components/personhood/lib/faceR
 import { setPrecision } from "lib/utils/formatNumber";
 import { Transition } from "@headlessui/react";
 import lightning from "assets/icons/lightning.png";
+import { useNow } from "lib/utils/hooks/useNow";
 
 const HITS = 3;
 const tool = "Axe";
@@ -54,7 +55,7 @@ const selectIsland = (state: MachineState) => state.context.state.island;
 const selectSeason = (state: MachineState) => state.context.state.season.season;
 const selectInventory = (state: MachineState) => state.context.state.inventory;
 const selectTreesChopped = (state: MachineState) =>
-  state.context.state.bumpkin?.activity?.["Tree Chopped"] ?? 0;
+  state.context.state.farmActivity["Tree Chopped"] ?? 0;
 const selectGame = (state: MachineState) => state.context.state;
 
 const compareResource = (prev: TreeType, next: TreeType) => {
@@ -129,7 +130,13 @@ export const Tree: React.FC<Props> = ({ id }) => {
   const island = useSelector(gameService, selectIsland);
   const season = useSelector(gameService, selectSeason);
   const hasTool = HasTool(inventory, game, id);
-  const timeLeft = getTimeLeft(resource.wood.choppedAt, TREE_RECOVERY_TIME);
+  const readyAt = resource.wood.choppedAt + TREE_RECOVERY_TIME * 1000;
+  const now = useNow({ live: true, autoEndAt: readyAt });
+  const timeLeft = getTimeLeft(
+    resource.wood.choppedAt,
+    TREE_RECOVERY_TIME,
+    now,
+  );
   const chopped = !canChop(resource);
 
   const [isAnimationRunning, setIsAnimationRunning] = useState(false);
@@ -238,7 +245,7 @@ export const Tree: React.FC<Props> = ({ id }) => {
       }
     }
 
-    if (newState.context.state.bumpkin?.activity?.["Tree Chopped"] === 1) {
+    if (newState.context.state.farmActivity["Tree Chopped"] === 1) {
       gameAnalytics.trackMilestone({ event: "Tutorial:TreeChopped:Completed" });
     }
   };

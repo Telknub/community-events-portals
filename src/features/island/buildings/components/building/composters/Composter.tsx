@@ -70,7 +70,7 @@ export const Composter: React.FC<Props> = ({ name }) => {
 
     if (
       name === "Compost Bin" &&
-      state.context.state.bumpkin?.activity?.["Compost Bin Collected"] === 1
+      state.context.state.farmActivity["Compost Bin Collected"] === 1
     ) {
       gameAnalytics.trackMilestone({
         event: "Tutorial:Composting:Completed",
@@ -91,7 +91,7 @@ export const Composter: React.FC<Props> = ({ name }) => {
     <>
       <BuildingImageWrapper name={name} onClick={handleClick} ready={ready}>
         <div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none bg-black"
           style={{
             width: `${PIXEL_SCALE * width}px`,
             bottom: `${PIXEL_SCALE * 0}px`,
@@ -122,6 +122,9 @@ export const Composter: React.FC<Props> = ({ name }) => {
                 type="progress"
                 formatLength="short"
                 seconds={secondsLeft}
+                style={{
+                  width: `${PIXEL_SCALE * 14}px`,
+                }}
               />
             </div>
           )}
