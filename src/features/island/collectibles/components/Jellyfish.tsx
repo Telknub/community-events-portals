@@ -1,6 +1,6 @@
 import React from "react";
 
-import jellyfish from "assets/fish/jellyfish.webp";
+import jellyfish from "assets/flowers/chamomile.webp";
 import shadow from "assets/npcs/shadow.png";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { SFTDetailPopover } from "components/ui/SFTDetailPopover";
