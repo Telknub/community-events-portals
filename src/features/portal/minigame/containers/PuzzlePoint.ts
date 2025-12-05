@@ -77,7 +77,7 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
       //     this.scene.puzzleTypes[
       //       Math.floor(Math.random() * this.scene.puzzleTypes.length)
       //     ];
-      const puzzleType = "sliding";
+      const puzzleType = "nonogram";
       console.log(puzzleType);
       interactableModalManager.open("puzzle", { puzzleType, id: this.id });
     }
