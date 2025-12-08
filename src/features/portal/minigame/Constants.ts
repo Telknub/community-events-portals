@@ -3,6 +3,7 @@ import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
+import confetti from "canvas-confetti";
 
 import slidingPuzzle1 from "public/world/portal/images/slidingPuzzle1.webp";
 
@@ -116,3 +117,129 @@ export const ENEMIES_TABLE: {
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
+
+// Snow effect
+export const SNOW = () => {
+  confetti()
+  const duration = 15 * 1000;
+  const animationEnd = Date.now() + duration;
+  let skew = 1;
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (min - max) + min;
+  }
+
+  (function frame() {
+    const timeLeft = animationEnd - Date.now();
+    const ticks = Math.max(200, 500 * (timeLeft / duration));
+    skew = Math.max(0.8, skew - 0.001);
+
+    confetti({
+      particleCount: 1,
+      startVelocity: 0,
+      ticks,
+      origin: {
+        x: Math.random(),
+        y: Math.random() * skew - 0.2,
+      },
+      colors: ["#ffffff"],
+      shapes: ["circle"],
+      gravity: randomInRange(0.4, 0.6),
+      scalar: randomInRange(0.8, 2),
+      drift: randomInRange(-0.4, 0.4),
+    });
+
+    if(timeLeft > 0) {
+      requestAnimationFrame(frame)
+    }
+  })();
+}
+
+// Nonogram Patterns 6x6
+export type Cell = 0 | 1;
+type pattern = Cell[][];
+
+const NONOGRAM_PATTERNS: Record<string, pattern> = {
+  christmas_tree: [
+    [0,0,1,1,0,0],
+    [0,1,1,1,1,0],
+    [1,1,1,1,1,1],
+    [1,1,1,1,1,1],
+    [0,0,1,1,0,0],
+    [0,1,1,1,1,0],
+  ],
+  flower: [
+    [0,0,1,1,0,0],
+    [0,1,0,0,1,0],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [0,1,0,0,1,0],
+    [0,0,1,1,0,0],
+  ],
+  heart: [
+    [0,0,1,1,0,0],
+    [1,1,1,1,1,1],
+    [1,1,1,1,1,1],
+    [0,1,1,1,1,0],
+    [0,0,1,1,0,0],
+    [1,0,0,0,0,1],
+  ],
+  smiley: [
+    [0,1,0,0,1,0],
+    [0,1,0,0,1,0],
+    [0,0,0,0,0,0],
+    [1,0,0,0,0,1],
+    [0,1,1,1,1,0],
+    [0,0,0,0,0,0],
+  ],
+  diamond: [
+    [0,0,1,1,0,0],
+    [0,1,1,1,1,0],
+    [1,1,1,1,1,1],
+    [1,1,1,1,1,1],
+    [0,1,1,1,1,0],
+    [0,0,1,1,0,0],
+  ],
+  star: [
+    [0,1,0,0,1,0],
+    [0,0,1,1,0,0],
+    [1,1,1,1,1,1],
+    [0,1,1,1,1,0],
+    [0,0,1,1,0,0],
+    [0,1,0,0,1,0],
+  ],
+  arrow_up: [
+    [0,0,1,1,0,0],
+    [0,1,1,1,1,0],
+    [1,1,1,1,1,1],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+  ],
+  x_shape: [
+    [1,0,0,0,0,1],
+    [0,1,0,0,1,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,1,0,0,1,0],
+    [1,0,0,0,0,1],
+  ],
+  moon: [
+    [0,0,1,1,1,0],
+    [0,1,1,0,0,1],
+    [1,1,0,0,0,0],
+    [1,1,0,0,0,0],
+    [0,1,1,0,0,1],
+    [0,0,1,1,1,0],
+  ],
+  circle: [
+    [0,1,1,1,1,0],
+    [1,1,0,0,1,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,1,0,0,1,1],
+    [0,1,1,1,1,0],
+  ],
+}
+const keys = Object.keys(NONOGRAM_PATTERNS);
+export const PATTERNS = NONOGRAM_PATTERNS[keys[Math.floor(Math.random() * keys.length)]];
