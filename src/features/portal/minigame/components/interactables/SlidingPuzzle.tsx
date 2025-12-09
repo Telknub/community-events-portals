@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { pixelGrayBorderStyle } from "features/game/lib/style";
-import { PIXEL_SCALE } from "features/game/lib/constants";
 import {
   SLIDING_PUZZLE_IMG,
   SLIDING_PUZZLE_MOVESTOSOLVE,
-  VICTORY_TEXT,
+  SNOW,
 } from "../../Constants";
-import classNames from "classnames";
+import { Timer } from "../hud/Timer";
+import { Lives } from "../hud/Lives";
+import giantBalls from "public/world/portal/images/GiantRedChristmasOrnament.webp"
 
 const SIZE_X = 3; // Columns
 const SIZE_Y = 3; // Rows
@@ -30,7 +30,8 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
       const isSolved = checkIfSolved(tiles);
       setIsSolved(isSolved);
       if (isSolved) {
-        onAction();
+        onAction(),
+          SNOW()
       }
     }
   }, [tiles]);
@@ -47,7 +48,7 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
 
     let lastEmptyIndex = emptyIndex;
 
-    for (let moves = 0; moves < moveCount; ) {
+    for (let moves = 0; moves < moveCount;) {
       const neighbors = getAdjacentIndices(emptyIndex).filter(
         (n) => n !== lastEmptyIndex,
       ); // avoid undoing
@@ -118,39 +119,54 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-screen bg-black/20 backdrop-blur-md flex items-center justify-center flex-col gap-4">
-      <div>
-        <div
-          style={{
-            width: "min(500px, 90vw)",
-            height: "min(500px, 90vw)",
-            gridTemplateColumns: `repeat(${SIZE_X}, 1fr)`,
-            aspectRatio: "1 / 1", // Ensures it stays square
-          }}
-          className="grid gap-1"
-        >
-          {tiles.map((tile, index) => (
-            <div
-              key={index}
-              onClick={() => handleTileClick(index)}
-              style={
-                tile !== null
-                  ? {
-                      backgroundImage: `url(${SLIDING_PUZZLE_IMG})`,
-                      backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
-                      backgroundPosition: getBackgroundPosition(tile),
+    <>
+      <div className="fixed top-0 left-0 w-full h-screen bg-black/100 backdrop-blur-md flex items-center justify-center flex-col gap-4">
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row w-full flex-wrap items-center justify-center">
+            <div className="flex flex-row w-full justify-between pt-6 px-6 bg-[#265c42] rounded-t-[3rem]">
+              <div className="flex flex-col gap-4">
+                <Timer />
+                <Lives />
+              </div>
+              <img className="w-[2rem] md:w-[3rem] h-full" src={giantBalls} />
+            </div>
+          </div>
+          <div className="p-3 border-[1rem] border-[#265c42]"
+            style={{
+              backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
+            }}
+          >
+            <div className="border-[1.5rem] border-[#a22633] border-double w:p-0 md:p-6 bg-white">
+              <div
+                className="grid gap-1 w-[250px] h-[250px] md:w-[500px] md:h-[500px] "
+                style={{
+                  gridTemplateColumns: `repeat(${SIZE_X}, 1fr)`,
+                  aspectRatio: "1 / 1", // Ensures it stays square
+                }}
+              >
+                {tiles.map((tile, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleTileClick(index)}
+                    style={
+                      tile !== null
+                        ? {
+                          backgroundImage: `url(${SLIDING_PUZZLE_IMG})`,
+                          backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
+                          backgroundPosition: getBackgroundPosition(tile),
+                        }
+                        : {}
                     }
-                  : {}
-              }
-              className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${
-                tile === null ? "bg-black opacity-50" : "bg-cover bg-center"
-              }`}
-            />
-          ))}
+                    className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${tile === null ? "bg-white" : "bg-cover bg-center"
+                      }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {isSolved && (
+        {/* {isSolved && (
         <div
           className="absolute bg-blue text-black-400 text-xxl font-bold bg-blue"
           style={{
@@ -161,7 +177,8 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
         >
           {VICTORY_TEXT.SlidingPuzzle}
         </div>
-      )}
-    </div>
+      )} */}
+      </div>
+    </>
   );
 };

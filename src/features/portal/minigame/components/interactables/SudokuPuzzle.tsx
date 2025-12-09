@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { pixelGrayBorderStyle } from "features/game/lib/style";
-import { SUDOKU_COMPLEXITY, VICTORY_TEXT } from "../../Constants";
-import { PIXEL_SCALE } from "features/game/lib/constants";
-import classNames from "classnames";
+import { SUDOKU_COMPLEXITY, SNOW } from "../../Constants";
 
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
 import snowman from "public/world/portal/images/SudokuSnowman.webp";
 import tree from "public/world/portal/images/SudokuTree.webp";
+import blue_border from "public/world/portal/images/border_green2.webp";
+import blue_button from "public/world/portal/images/roundbutton_green3.webp";
+import { Timer } from "../hud/Timer";
+import { Lives } from "../hud/Lives";
+import giantBalls from "public/world/portal/images/GiantRedChristmasOrnament.webp";
 
 const shovel = SUNNYSIDE.tools.rusty_shovel;
 
@@ -133,7 +135,7 @@ export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
       );
 
       setPuzzle(newPuzzle);
-      setSelectedCell(null);
+      // setSelectedCell(null);
 
       // Check if all user-input cells are filled
       const allFilled = originalEmptyCells.every((row, rowIndex) =>
@@ -146,6 +148,7 @@ export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
       if (isPuzzleSolved(newPuzzle, solution)) {
         setIsSolved(true);
         onAction();
+        SNOW();
       }
     }
   };
@@ -163,98 +166,117 @@ export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
 
   return (
     <>
-      <div className="fixed inset-0 flex flex-row justify-center items-center z-5 w-full h-full bg-black/50 backdrop-blur-md">
-        <div className="absolute">
-          <div className="grid grid-cols-4 gap-2">
-            {puzzle.map((row, rowIndex) =>
-              row.map((item, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`
-          relative flex justify-center items-center
-          ${selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? "ring-0 ring-blue-500" : ""}
-          ${!isCellChangeable(rowIndex, colIndex) ? "opacity-70" : "cursor-pointer hover:img-highlight"}
-          w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
-        `}
-                  onClick={() => {
-                    if (!isSolved && isCellChangeable(rowIndex, colIndex)) {
-                      setSelectedCell({ row: rowIndex, col: colIndex });
-                    }
-                  }}
-                >
-                  <img
-                    src={SUNNYSIDE.ui.grayBorder}
-                    alt="border"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                  />
-                  {item && (
+      <div className="fixed top-0 left-0 w-full h-screen bg-black/100 backdrop-blur-md flex items-center justify-center">
+        <div
+          className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
+          }}
+        >
+          <div className="flex flex-row w-full flex-wrap items-center justify-center">
+            <div className="flex flex-row w-full justify-between pt-6 px-6 bg-[#265c42] rounded-t-[3rem] pb-4">
+              <div className="flex flex-col gap-4">
+                <Timer />
+                <Lives />
+              </div>
+              <img className="w-[2rem] md:w-[3rem] h-full" src={giantBalls} />
+            </div>
+          </div>
+          <div className="bg-[#a22633] py-6 px-4 md:p-6">
+            {selectedCell && !isSolved && (
+              <div className="flex justify-center shadow-lg pb-6">
+                {ItemIDs.map((id) => (
+                  <div
+                    key={id}
+                    className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight"
+                  >
                     <img
-                      src={ITEM_IMAGES[item]}
-                      alt={item}
-                      className="w-10 h-10 sm:w-12 sm:h-12 object-contain z-10"
+                      className="w-full h-full object-contain"
+                      src={blue_button}
+                      alt="empty-bar"
                     />
+                    <img
+                      src={ITEM_IMAGES[id]}
+                      alt={`select-${id}`}
+                      className="absolute w-1/2 h-full cursor-pointer object-contain transition hover:scale-110 top-0"
+                      onClick={() => handleItemSelect(id)}
+                    />
+                  </div>
+                ))}
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight">
+                  <img
+                    className="w-full h-full object-contain"
+                    src={blue_button}
+                    alt="empty-bar"
+                  />
+                  <img
+                    src={shovel}
+                    alt="shovel"
+                    className="absolute w-1/2 h-full cursor-pointer object-contain rotate-180 hover:scale-110 transition hover:img-highlight"
+                    onClick={() => {
+                      if (selectedCell) {
+                        const { row, col } = selectedCell;
+                        if (isCellChangeable(row, col)) {
+                          const newPuzzle = [...puzzle];
+                          newPuzzle[row][col] = null;
+                          setPuzzle(newPuzzle);
+                          // setSelectedCell(null);
+                          setIsSolved(false); // In case user undoes correct solution
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Sudoku grid */}
+            <div className="flex flex-row justify-center items-center w-full h-full">
+              <div className="">
+                <div className="grid grid-cols-4 gap-0 md:gap-2">
+                  {puzzle.map((row, rowIndex) =>
+                    row.map((item, colIndex) => (
+                      <div
+                        key={`${rowIndex}-${colIndex}`}
+                        className={`
+                    relative flex justify-center items-center
+                    ${selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? "ring-2 ring-[#265c42] ring-offset-2" : ""}
+                    ${!isCellChangeable(rowIndex, colIndex) ? "opacity-90" : "cursor-pointer hover:img-highlight"}
+                    w-20 h-20 md:w-24 md:h-24
+                  `}
+                        onClick={() => {
+                          if (
+                            !isSolved &&
+                            isCellChangeable(rowIndex, colIndex)
+                          ) {
+                            setSelectedCell({ row: rowIndex, col: colIndex });
+                          }
+                        }}
+                      >
+                        <img
+                          src={blue_border}
+                          alt="border"
+                          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                        />
+                        {item && (
+                          <img
+                            src={ITEM_IMAGES[item]}
+                            alt={item}
+                            className="w-8 h-8 sm:w-12 sm:h-12 object-contain z-10"
+                          />
+                        )}
+                      </div>
+                    )),
                   )}
                 </div>
-              )),
-            )}
+              </div>
+            </div>
           </div>
-          {/* <img src={item_box} className="relevant w-[27rem] z-11" alt="box"/> */}
-
-          {/* VERTICAL Divider */}
-          {/* <div className="absolute top-1/3 bottom-0 h-1/3 left-1/2 w-1 border-black-300 bg-black z-10" /> */}
-
-          {/* HORIZONTAL Divider */}
-          {/* <div className="absolute left-1/3 right-0 w-1/3 top-1/2 h-1 border-black-300 bg-black z-10" /> */}
         </div>
       </div>
 
-      {selectedCell && !isSolved && (
-        <div className="fixed top-[10rem] md:top-[9rem] left-1/2 z-50 sm:px-6 md:px-10 transform -translate-x-1/2 -translate-y-[0rem] flex shadow-lg">
-          {ItemIDs.map((id) => (
-            <div
-              key={id}
-              className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight"
-            >
-              <img
-                className="w-full h-full object-contain"
-                src={SUNNYSIDE.ui.round_button}
-                alt="empty-bar"
-              />
-              <img
-                src={ITEM_IMAGES[id]}
-                alt={`select-${id}`}
-                className="absolute w-1/2 h-full cursor-pointer object-contain transition hover:scale-110 top-0"
-                onClick={() => handleItemSelect(id)}
-              />
-            </div>
-          ))}
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight">
-            <img
-              className="w-full h-full object-contain"
-              src={SUNNYSIDE.ui.round_button}
-              alt="empty-bar"
-            />
-            <img
-              src={shovel}
-              alt="shovel"
-              className="absolute w-1/2 h-full cursor-pointer object-contain rotate-180 hover:scale-110 transition hover:img-highlight"
-              onClick={() => {
-                if (selectedCell) {
-                  const { row, col } = selectedCell;
-                  if (isCellChangeable(row, col)) {
-                    const newPuzzle = [...puzzle];
-                    newPuzzle[row][col] = null;
-                    setPuzzle(newPuzzle);
-                    setSelectedCell(null);
-                    setIsSolved(false); // In case user undoes correct solution
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-      )}
-      {isSolved && (
+      {/* {isSolved && (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-70">
           <div
             className="flex flex-row justify-center items-center w-[15rem] text-white shadow-xl text-2xxl font-bold"
@@ -267,7 +289,7 @@ export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
             <div className="pr-3">{VICTORY_TEXT.Sudoku}</div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
