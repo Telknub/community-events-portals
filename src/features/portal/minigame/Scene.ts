@@ -176,6 +176,7 @@ export class Scene extends BaseScene {
         y: config.y,
         scene: this,
         id: i + 1,
+        difficulty: config.difficulty,
         player: this.currentPlayer,
       });
     });

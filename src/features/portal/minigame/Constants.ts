@@ -39,11 +39,11 @@ export const BETA_TESTERS: number[] = [];
 
 // Puzzle
 export const PUZZLE_POINTS_CONFIG = [
-  { x: 11 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
-  { x: 13 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
-  { x: 15 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
-  { x: 17 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
-  { x: 19 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH },
+  { x: 11 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "easy" },
+  { x: 13 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "easy" },
+  { x: 15 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
+  { x: 17 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
+  { x: 19 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
 ];
 export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram"];
 export type PuzzleName = (typeof PUZZLE_TYPES)[number];

@@ -18,6 +18,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   //   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
   const [puzzleType] = React.useState(data.puzzleType);
+  const [difficulty] = React.useState(data.difficulty);
 
   const getPoint = () => {
     setTimeout(() => {
@@ -36,7 +37,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
         <SlidingPuzzle onClose={onClose} onAction={getPoint} />
       )}
       {puzzleType === "jigsaw" && (
-        <JigsawPuzzle onClose={onClose} onAction={getPoint} />
+        <JigsawPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "pipe" && (
         <PipePuzzle onClose={onClose} onAction={getPoint} />

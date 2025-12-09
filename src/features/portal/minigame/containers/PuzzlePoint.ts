@@ -9,6 +9,7 @@ interface Props {
   y: number;
   scene: Scene;
   id: number;
+  difficulty: string;
   player?: BumpkinContainer;
 }
 
@@ -18,14 +19,16 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
   private sprite: Phaser.GameObjects.Sprite;
   private openedPuzzle = false;
   private id: number;
+  private difficulty: string;
 
   scene: Scene;
 
-  constructor({ x, y, scene, id, player }: Props) {
+  constructor({ x, y, scene, id, difficulty, player }: Props) {
     super(scene, x, y);
     this.scene = scene;
     this.player = player;
     this.id = id;
+    this.difficulty = difficulty;
 
     // Sprite
     this.spriteName = "point";
@@ -77,9 +80,9 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
       //     this.scene.puzzleTypes[
       //       Math.floor(Math.random() * this.scene.puzzleTypes.length)
       //     ];
-      const puzzleType = "nonogram";
+      const puzzleType = "jigsaw";
       console.log(puzzleType);
-      interactableModalManager.open("puzzle", { puzzleType, id: this.id });
+      interactableModalManager.open("puzzle", { puzzleType, id: this.id, difficulty: this.difficulty });
     }
   }
 }
