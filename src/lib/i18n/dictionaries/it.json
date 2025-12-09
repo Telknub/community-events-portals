@@ -7229,5 +7229,21 @@
   "raffle.description": "Ogni mese, hai la possibilità di vincere premi. I vincitori della Goblin Raffle saranno annunciati negli stream di Twitch del venerdì il primo o il secondo venerdì del mese successivo. Ad esempio. I vincitori di maggio saranno annunciati il primo o il secondo venerdì di giugno. I risultati sono inoltre disponibili in Discord su #farmers -chat",
   "description.fslWechatDeprecation": "Su {{date}} stiamo rimuovendo il supporto per l'accesso {{title}}. D'ora in avanti i giocatori {{title}} dovranno accedere con un portafoglio web3.",
   "description.fslWechatDeprecationLinkWallet": "Collega un portafoglio per continuare a prepararti alla modifica.",
-  "description.fslWechatDeprecationThankYou": "Grazie per aver collegato il tuo portafoglio. Ora puoi continuare a giocare."
+  "description.fslWechatDeprecationThankYou": "Grazie per aver collegato il tuo portafoglio. Ora puoi continuare a giocare.",
+  "dailyReward.title": "Ricompensa giornaliera",
+  "dailyReward.megaRewardCountdown": "Gioca per {{days}} altri giorni per richiedere il tuo Mega Reward.",
+  "dailyReward.today": "Oggi",
+  "dailyReward.day": "Giorno {{day}}",
+  "dailyReward.returnTomorrow": "Torna domani per richiedere la tua prossima ricompensa.",
+  "dailyReward.timeLeft": "{{time}} Sinistra",
+  "dailyReward.claim": "Reclamo",
+  "description.basicFarmerBox": "Una scatola di forniture agricole di base",
+  "description.basicFoodBox": "Una scatola di generi alimentari di base",
+  "description.weeklyBox": "Una scatola di ricompense speciali",
+  "description.basicLoveBox": "Una scatola di deliziose ricompense",
+  "description.rarecrows.title": "Rarecrows - Minigioco di Telegram",
+  "description.rarecrows": "Coltiva e colleziona corvi rari nel nostro minigioco casual di Telegram!",
+  "description.rarecrows.2": "Unisciti a più di 15.000 giocatori e scopri i Rarecrow prima che finiscano",
+  "description.rarecrows.3": "Gioca ora",
+  "dailyReward.claimed": "Reclamato"
 }
