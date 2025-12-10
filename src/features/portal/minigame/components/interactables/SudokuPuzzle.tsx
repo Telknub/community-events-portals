@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { pixelGrayBorderStyle } from "features/game/lib/style";
-import { SUDOKU_COMPLEXITY, VICTORY_TEXT } from "../../Constants";
-import { PIXEL_SCALE } from "features/game/lib/constants";
-import classNames from "classnames";
+import { SUDOKU_DIFFICULTY, SNOW } from "../../Constants";
 
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
 import snowman from "public/world/portal/images/SudokuSnowman.webp";
 import tree from "public/world/portal/images/SudokuTree.webp";
+import green_border from "public/world/portal/images/border_green2.webp";
+import green_btn from "public/world/portal/images/roundbutton_green3.webp";
+import { StatusBar } from "../hud/StatusBar";
 
 const shovel = SUNNYSIDE.tools.rusty_shovel;
 
 type ItemID = "ball" | "present" | "snowman" | "tree";
-type PuzzleRow = (ItemID | null)[];
-type PuzzleGrid = PuzzleRow[];
+type SolutionGrid = ItemID[][];
+type PuzzleGrid = (ItemID | null)[][];
 
 const ITEM: ItemID[] = ["ball", "present", "snowman", "tree"];
 
@@ -25,11 +25,12 @@ const ITEM_IMAGES: Record<ItemID, string> = {
   tree,
 };
 
-// Helper function
+// Helper: shuffle
 function shuffle<T>(array: T[]): T[] {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
+// Validate placement
 function isValid(
   grid: PuzzleGrid,
   row: number,
@@ -52,7 +53,8 @@ function isValid(
   return true;
 }
 
-function generateSolutionGrid(): ItemID[][] {
+// Generate full solution (no nulls)
+function generateSolutionGrid(): SolutionGrid {
   const grid: PuzzleGrid = Array.from({ length: 4 }, () => Array(4).fill(null));
 
   function solve(row = 0, col = 0): boolean {
@@ -72,45 +74,56 @@ function generateSolutionGrid(): ItemID[][] {
     return false;
   }
 
-  if (!solve()) throw new Error("Failed to generate a valid Sudoku solution");
+  if (!solve()) throw new Error("Failed to generate a Sudoku solution");
 
-  return grid as ItemID[][];
+  return grid as SolutionGrid;
 }
 
-function removeItems(grid: ItemID[][], totalToRemove = 0): PuzzleGrid {
+// Remove items according to difficulty
+function removeItems(
+  solution: SolutionGrid,
+  totalToRemove: number,
+): PuzzleGrid {
+  const size = solution.length; // Always 4
+  const puzzle: PuzzleGrid = solution.map((row) => [...row]);
+
   const flatIndices = shuffle(
-    Array.from({ length: 16 }, (_, i) => i), // 4x4 = 16 cells
+    Array.from({ length: size * size }, (_, i) => i),
   ).slice(0, totalToRemove);
 
-  const puzzle: PuzzleGrid = grid.map((row) => row.map((cell) => cell));
-
   for (const index of flatIndices) {
-    const row = Math.floor(index / SUDOKU_COMPLEXITY);
-    const col = index % 4;
+    const row = Math.floor(index / size);
+    const col = index % size;
     puzzle[row][col] = null;
   }
 
   return puzzle;
 }
 
-function generateSudokuPuzzle() {
+function generateSudokuPuzzle(difficulty: "easy" | "hard") {
   const solution = generateSolutionGrid();
-  const puzzle = removeItems(solution, 4);
+  const removeCount = SUDOKU_DIFFICULTY[difficulty];
+  const puzzle = removeItems(solution, removeCount);
   return { puzzle, solution };
 }
 
 interface Props {
   onClose: () => void;
   onAction: () => void;
+  difficulty: "easy" | "hard";
 }
 
-export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
+export const SudokuPuzzle: React.FC<Props> = ({
+  onClose,
+  onAction,
+  difficulty,
+}) => {
   const { puzzle: initialPuzzle, solution } = React.useMemo(
-    () => generateSudokuPuzzle(),
-    [],
+    () => generateSudokuPuzzle(difficulty),
+    [difficulty], // <-- FIXED
   );
 
-  const [puzzle, setPuzzle] = useState<(ItemID | null)[][]>(initialPuzzle);
+  const [puzzle, setPuzzle] = useState<PuzzleGrid>(initialPuzzle);
   const [originalEmptyCells] = useState(
     initialPuzzle.map((row) => row.map((cell) => cell === null)),
   );
@@ -118,156 +131,143 @@ export const SudokuPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
     row: number;
     col: number;
   } | null>(null);
-  const [isSolved, setIsSolved] = useState(false);
 
-  const ItemIDs: ItemID[] = ITEM;
+  const [isSolved, setIsSolved] = useState(false);
 
   const handleItemSelect = (item: ItemID) => {
     if (selectedCell) {
-      const newPuzzle = puzzle.map((row, rowIndex) =>
-        row.map((cell, colIndex) =>
-          rowIndex === selectedCell.row && colIndex === selectedCell.col
-            ? item
-            : cell,
+      const newPuzzle: PuzzleGrid = puzzle.map((row, r) =>
+        row.map((cell, c) =>
+          r === selectedCell.row && c === selectedCell.col ? item : cell,
         ),
       );
 
       setPuzzle(newPuzzle);
-      setSelectedCell(null);
 
-      // Check if all user-input cells are filled
-      const allFilled = originalEmptyCells.every((row, rowIndex) =>
-        row.every((isEditable, colIndex) => {
-          return !isEditable || newPuzzle[rowIndex][colIndex] !== null;
-        }),
-      );
-
-      // Check for solution immediately after move
       if (isPuzzleSolved(newPuzzle, solution)) {
         setIsSolved(true);
         onAction();
+        SNOW();
       }
     }
   };
 
-  function isPuzzleSolved(puzzle: PuzzleGrid, solution: PuzzleGrid): boolean {
-    const result = puzzle.every((row, rowIndex) =>
-      row.every((cell, colIndex) => cell === solution[rowIndex][colIndex]),
+  function isPuzzleSolved(puzzle: PuzzleGrid, solution: SolutionGrid): boolean {
+    return puzzle.every((row, r) =>
+      row.every((cell, c) => cell === solution[r][c]),
     );
-    return result;
   }
 
-  const isCellChangeable = (rowIndex: number, colIndex: number) => {
-    return originalEmptyCells[rowIndex][colIndex];
-  };
+  const isCellChangeable = (row: number, col: number) =>
+    originalEmptyCells[row][col];
 
   return (
     <>
-      <div className="fixed inset-0 flex flex-row justify-center items-center z-5 w-full h-full bg-black/50 backdrop-blur-md">
-        <div className="absolute">
-          <div className="grid grid-cols-4 gap-2">
-            {puzzle.map((row, rowIndex) =>
-              row.map((item, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`
-          relative flex justify-center items-center
-          ${selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? "ring-0 ring-blue-500" : ""}
-          ${!isCellChangeable(rowIndex, colIndex) ? "opacity-70" : "cursor-pointer hover:img-highlight"}
-          w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
-        `}
-                  onClick={() => {
-                    if (!isSolved && isCellChangeable(rowIndex, colIndex)) {
-                      setSelectedCell({ row: rowIndex, col: colIndex });
-                    }
-                  }}
-                >
-                  <img
-                    src={SUNNYSIDE.ui.grayBorder}
-                    alt="border"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                  />
-                  {item && (
+      <div className="fixed top-0 left-0 w-full h-screen bg-black/100 backdrop-blur-md flex items-center justify-center">
+        <div
+          className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
+          }}
+        >
+          <StatusBar />
+          <div className="bg-[#a22633] py-6 px-4 md:p-6">
+            {selectedCell && !isSolved && (
+              <div className="flex justify-center shadow-lg pb-6">
+                {ITEM.map((id) => (
+                  <div
+                    key={id}
+                    className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight"
+                  >
                     <img
-                      src={ITEM_IMAGES[item]}
-                      alt={item}
-                      className="w-10 h-10 sm:w-12 sm:h-12 object-contain z-10"
+                      className="w-full h-full object-contain"
+                      src={green_btn}
+                      alt="btn"
                     />
+                    <img
+                      src={ITEM_IMAGES[id]}
+                      className="absolute w-1/2 h-full cursor-pointer object-contain transition hover:scale-110 top-0"
+                      onClick={() => handleItemSelect(id)}
+                    />
+                  </div>
+                ))}
+
+                {/* shovel */}
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight">
+                  <img
+                    className="w-full h-full object-contain"
+                    src={green_btn}
+                  />
+                  <img
+                    src={shovel}
+                    className="absolute w-1/2 h-full cursor-pointer object-contain rotate-180 hover:scale-110 transition"
+                    onClick={() => {
+                      if (selectedCell) {
+                        const { row, col } = selectedCell;
+                        if (isCellChangeable(row, col)) {
+                          const newPuzzle = puzzle.map((r, ri) =>
+                            r.map((c, ci) =>
+                              ri === row && ci === col ? null : c,
+                            ),
+                          );
+                          setPuzzle(newPuzzle);
+                          setIsSolved(false);
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Sudoku Grid */}
+            <div className="flex flex-row justify-center items-center w-full h-full">
+              <div>
+                <div className="grid grid-cols-4 gap-0 md:gap-2">
+                  {puzzle.map((row, r) =>
+                    row.map((cell, c) => (
+                      <div
+                        key={`${r}-${c}`}
+                        className={`
+                          relative flex justify-center items-center
+                          ${
+                            selectedCell?.row === r && selectedCell?.col === c
+                              ? "ring-2 ring-[#265c42] ring-offset-2"
+                              : ""
+                          }
+                          ${
+                            !isCellChangeable(r, c)
+                              ? "opacity-90"
+                              : "cursor-pointer hover:img-highlight"
+                          }
+                          w-20 h-20 md:w-24 md:h-24
+                        `}
+                        onClick={() =>
+                          !isSolved &&
+                          isCellChangeable(r, c) &&
+                          setSelectedCell({ row: r, col: c })
+                        }
+                      >
+                        <img
+                          src={green_border}
+                          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                        />
+                        {cell && (
+                          <img
+                            src={ITEM_IMAGES[cell]}
+                            className="w-8 h-8 sm:w-12 sm:h-12 object-contain z-10"
+                          />
+                        )}
+                      </div>
+                    )),
                   )}
                 </div>
-              )),
-            )}
+              </div>
+            </div>
           </div>
-          {/* <img src={item_box} className="relevant w-[27rem] z-11" alt="box"/> */}
-
-          {/* VERTICAL Divider */}
-          {/* <div className="absolute top-1/3 bottom-0 h-1/3 left-1/2 w-1 border-black-300 bg-black z-10" /> */}
-
-          {/* HORIZONTAL Divider */}
-          {/* <div className="absolute left-1/3 right-0 w-1/3 top-1/2 h-1 border-black-300 bg-black z-10" /> */}
         </div>
       </div>
-
-      {selectedCell && !isSolved && (
-        <div className="fixed top-[10rem] md:top-[9rem] left-1/2 z-50 sm:px-6 md:px-10 transform -translate-x-1/2 -translate-y-[0rem] flex shadow-lg">
-          {ItemIDs.map((id) => (
-            <div
-              key={id}
-              className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight"
-            >
-              <img
-                className="w-full h-full object-contain"
-                src={SUNNYSIDE.ui.round_button}
-                alt="empty-bar"
-              />
-              <img
-                src={ITEM_IMAGES[id]}
-                alt={`select-${id}`}
-                className="absolute w-1/2 h-full cursor-pointer object-contain transition hover:scale-110 top-0"
-                onClick={() => handleItemSelect(id)}
-              />
-            </div>
-          ))}
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center hover:img-highlight">
-            <img
-              className="w-full h-full object-contain"
-              src={SUNNYSIDE.ui.round_button}
-              alt="empty-bar"
-            />
-            <img
-              src={shovel}
-              alt="shovel"
-              className="absolute w-1/2 h-full cursor-pointer object-contain rotate-180 hover:scale-110 transition hover:img-highlight"
-              onClick={() => {
-                if (selectedCell) {
-                  const { row, col } = selectedCell;
-                  if (isCellChangeable(row, col)) {
-                    const newPuzzle = [...puzzle];
-                    newPuzzle[row][col] = null;
-                    setPuzzle(newPuzzle);
-                    setSelectedCell(null);
-                    setIsSolved(false); // In case user undoes correct solution
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-      )}
-      {isSolved && (
-        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-70">
-          <div
-            className="flex flex-row justify-center items-center w-[15rem] text-white shadow-xl text-2xxl font-bold"
-            style={{
-              ...pixelGrayBorderStyle,
-              padding: `${PIXEL_SCALE * 8}px`,
-              background: "#546395",
-            }}
-          >
-            <div className="pr-3">{VICTORY_TEXT.Sudoku}</div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

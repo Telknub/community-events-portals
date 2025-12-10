@@ -55,7 +55,10 @@ export const VICTORY_TEXT = {
 };
 
 // Sudoku puzzle
-export const SUDOKU_COMPLEXITY = 4;
+export const SUDOKU_DIFFICULTY = {
+  easy: 4,   
+  hard: 6,  
+};
 
 // Sliding Puzzle
 export const SLIDING_PUZZLE_MOVESTOSOLVE = 4;

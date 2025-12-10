@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { StatusBar } from "../hud/StatusBar";
 
 // --- Constants and Types ---
 
@@ -207,10 +208,16 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
         flexDirection: "column",
         alignItems: "center",
         gap: "20px",
-        fontFamily: "sans-serif",
       }}
     >
-      <div
+      <div className="border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
+        <StatusBar />
+        <div className="md:p-[1rem] p-[.7rem]"
+           style={{
+             backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
+        }}
+      >
+        <div
         style={{
           display: "flex",
           flexDirection: "column",
@@ -328,9 +335,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
             />
           ))}
         </div>
-      </div>
-
-      {isComplete && (
+        </div>
+        {isComplete && (
         <div
           style={{
             padding: "20px",
@@ -346,7 +352,11 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
         >
           🎉Happy Holidays!🎉
         </div>
-      )}
+        )}
+        </div>
+      </div>
+
     </div>
+
   );
 };

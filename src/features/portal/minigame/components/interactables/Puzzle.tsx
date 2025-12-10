@@ -31,7 +31,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   return (
     <>
       {puzzleType === "sudoku" && (
-        <SudokuPuzzle onClose={onClose} onAction={getPoint} />
+        <SudokuPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "sliding" && (
         <SlidingPuzzle onClose={onClose} onAction={getPoint} />
