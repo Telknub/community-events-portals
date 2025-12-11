@@ -22,6 +22,7 @@ interface Props {
 type DragSource = { type: "board"; index: number } | { type: "pool"; index: number };
 
 export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty }) => {
+
   // State
   // The board can have empty slots (null)
   const [board, setBoard] = useState<(Tile | null)[]>([]);
@@ -31,6 +32,10 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   const [isComplete, setIsComplete] = useState<boolean>(false);
   
   const [draggedItem, setDraggedItem] = useState<DragSource | null>(null);
+
+  // 📱 MOBILE >>> dynamic tile size
+  const [tileSize, setTileSize] = useState<number>(TILE_SIZE);
+  // <<< MOBILE
 
   // --- Initialization Logic ---
 
@@ -79,6 +84,21 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
     initializeGame(staticPieces[difficulty]);
   }, [difficulty]);
 
+  // 📱 MOBILE >>> auto-resize tiles when screen is small
+  useEffect(() => {
+    const updateSize = () => {
+      const maxBoardWidth = Math.min(window.innerWidth * 0.9, 500);
+      const newSize = maxBoardWidth / GRID_SIZE;
+      setTileSize(newSize);
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+  // <<< MOBILE
+
+
   // --- Drag and Drop Handlers ---
 
   const handleDragStart = (
@@ -97,6 +117,15 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
     setDraggedItem(source);
     e.dataTransfer.effectAllowed = "move";
   };
+
+  // 📱 MOBILE >>> touch support
+  const handleDragStartTouch = (
+    e: React.TouchEvent<HTMLDivElement>,
+    source: DragSource
+  ) => {
+    setDraggedItem(source);
+  };
+  // <<< MOBILE
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
@@ -193,8 +222,10 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
 
     return {
       backgroundImage: `url(${IMAGE_URL})`,
-      backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
-      backgroundSize: `${GRID_SIZE * TILE_SIZE}px ${GRID_SIZE * TILE_SIZE}px`,
+      // 📱 MOBILE >>> use dynamic tileSize instead of TILE_SIZE
+      backgroundPosition: `-${col * tileSize}px -${row * tileSize}px`,
+      backgroundSize: `${GRID_SIZE * tileSize}px ${GRID_SIZE * tileSize}px`,
+      // <<< MOBILE
       backgroundRepeat: "no-repeat",
     };
   };
@@ -234,8 +265,9 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(${GRID_SIZE}, ${TILE_SIZE}px)`,
-            width: `${GRID_SIZE * TILE_SIZE}px`,
+            // 📱 MOBILE
+            gridTemplateColumns: `repeat(${GRID_SIZE}, ${tileSize}px)`,
+            width: `${GRID_SIZE * tileSize}px`,
             backgroundColor: "#000", // Black background for empty slots
             boxShadow: "inset 0 0 20px rgba(0,0,0,0.8)", // Depth for the board
           }}
@@ -246,8 +278,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
               onDragOver={handleDragOver}
               onDrop={(e) => handleDropOnBoard(e, index)}
               style={{
-                width: TILE_SIZE,
-                height: TILE_SIZE,
+                width: tileSize, // 📱 MOBILE
+                height: tileSize,
                 border: "1px solid #222",
                 boxSizing: "border-box",
                 position: "relative",
@@ -257,6 +289,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
                 <div
                   draggable={!tile.isFixed && !isComplete}
                   onDragStart={(e) => handleDragStart(e, { type: "board", index })}
+                  // 📱 MOBILE
+                  onTouchStart={(e) => handleDragStartTouch(e, { type: "board", index })}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -296,9 +330,9 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
           onDrop={handleDropOnPool}
           style={{
             // Dynamic width matching the grid or wider but contained
-            width: `${GRID_SIZE * TILE_SIZE}px`,
+            width: `${GRID_SIZE * tileSize}px`,
             maxWidth: "100%",
-            minHeight: `${TILE_SIZE + 20}px`,
+            minHeight: `${tileSize + 20}px`,
             border: "2px dashed #aaa",
             borderRadius: "5px",
             padding: "10px",
@@ -322,11 +356,13 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
               key={`pool-${tile.id}`}
               draggable={!isComplete}
               onDragStart={(e) => handleDragStart(e, { type: "pool", index })}
+              // 📱 MOBILE
+              onTouchStart={(e) => handleDragStartTouch(e, { type: "pool", index })}
               style={{
                 // Prevent shrinking
-                flex: `0 0 ${TILE_SIZE}px`,
-                width: TILE_SIZE,
-                height: TILE_SIZE,
+                flex: `0 0 ${tileSize}px`,
+                width: tileSize,
+                height: tileSize,
                 ...getBackgroundStyle(tile.id),
                 cursor: "grab",
                 boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
