@@ -8,6 +8,7 @@ import { SlidingPuzzle } from "./SlidingPuzzle";
 import { JigsawPuzzle } from "./JigsawPuzzle";
 import { PipePuzzle } from "./PipePuzzle";
 import { NonogramPuzzle } from "./NonogramPuzzle";
+import { MAX_PUZZLES } from "../../Constants";
 
 interface Props {
   onClose: () => void;
@@ -25,6 +26,10 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       EventBus.emit("close-puzzle", data.id);
       portalService.send("GAIN_POINTS");
       onClose();
+
+      if (portalService.state.context.score >= MAX_PUZZLES) {
+        portalService.send("GAME_OVER");
+      }
     }, 1000);
   };
 
@@ -40,7 +45,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
         <JigsawPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "pipe" && (
-        <PipePuzzle onClose={onClose} onAction={getPoint} />
+        <PipePuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "nonogram" && (
         <NonogramPuzzle onClose={onClose} onAction={getPoint} />

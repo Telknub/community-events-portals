@@ -37,6 +37,11 @@ export abstract class Preloader extends Phaser.Scene {
       this.load.audio("drill", SOUNDS.desert.drill);
       this.load.audio("reveal", SOUNDS.desert.reveal);
 
+      this.load.image(
+        "christmas-tileset",
+        "world/portal/images/christmas_map.png",
+      );
+
       // Phaser assets must be served from an URL
       this.load.image(
         "tileset",

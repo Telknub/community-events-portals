@@ -1,0 +1,15 @@
+[
+  {
+    "columns": 37,
+    "firstgid": 1,
+    "image":"minigame_map.png",
+    "imageheight": 375,
+    "imagewidth": 606,
+    "margin": 0,
+    "name": "Sunnyside V3",
+    "spacing": 0,
+    "tilecount": 851,
+    "tileheight": 16,
+    "tilewidth": 16
+  }
+]

@@ -39,14 +39,28 @@ export const BETA_TESTERS: number[] = [];
 
 // Puzzle
 export const PUZZLE_POINTS_CONFIG = [
-  { x: 11 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "easy" },
-  { x: 13 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "easy" },
-  { x: 15 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
-  { x: 17 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
-  { x: 19 * SQUARE_WIDTH, y: 9 * SQUARE_WIDTH, difficulty: "hard" },
+  { x: 313, y: 466, difficulty: "easy" },
+  { x: 380, y: 466, difficulty: "easy" },
+  { x: 457, y: 450, difficulty: "hard" },
+  { x: 432, y: 368, difficulty: "hard" },
+  { x: 345, y: 367, difficulty: "hard" },
 ];
+export const PATH_PUZZLE_POINTS = [
+  [{ x: PUZZLE_POINTS_CONFIG[0].x, y: PUZZLE_POINTS_CONFIG[0].y }],
+  [{ x: PUZZLE_POINTS_CONFIG[1].x, y: PUZZLE_POINTS_CONFIG[1].y - 3 }],
+  [
+    { x: 416, y: 452 },
+    { x: PUZZLE_POINTS_CONFIG[2].x, y: PUZZLE_POINTS_CONFIG[2].y - 3 },
+  ],
+  [
+    { x: 452, y: 377 },
+    { x: PUZZLE_POINTS_CONFIG[3].x, y: PUZZLE_POINTS_CONFIG[3].y - 3 }
+  ],
+  [{ x: PUZZLE_POINTS_CONFIG[4].x, y: PUZZLE_POINTS_CONFIG[4].y - 3 }],
+]
 export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram"];
 export type PuzzleName = (typeof PUZZLE_TYPES)[number];
+export const MAX_PUZZLES = 5;
 
 // Puzzle config
 export const VICTORY_TEXT = {
@@ -123,7 +137,7 @@ export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
 
 // Snow effect
 export const SNOW = () => {
-  confetti()
+  confetti();
   const duration = 15 * 1000;
   const animationEnd = Date.now() + duration;
   let skew = 1;
@@ -152,11 +166,11 @@ export const SNOW = () => {
       drift: randomInRange(-0.4, 0.4),
     });
 
-    if(timeLeft > 0) {
-      requestAnimationFrame(frame)
+    if (timeLeft > 0) {
+      requestAnimationFrame(frame);
     }
   })();
-}
+};
 
 // Nonogram Patterns 6x6
 export type Cell = 0 | 1;
@@ -164,85 +178,86 @@ type pattern = Cell[][];
 
 const NONOGRAM_PATTERNS: Record<string, pattern> = {
   christmas_tree: [
-    [0,0,1,1,0,0],
-    [0,1,1,1,1,0],
-    [1,1,1,1,1,1],
-    [1,1,1,1,1,1],
-    [0,0,1,1,0,0],
-    [0,1,1,1,1,0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 0],
   ],
   flower: [
-    [0,0,1,1,0,0],
-    [0,1,0,0,1,0],
-    [1,0,0,0,0,1],
-    [1,0,0,0,0,1],
-    [0,1,0,0,1,0],
-    [0,0,1,1,0,0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0],
   ],
   heart: [
-    [0,0,1,1,0,0],
-    [1,1,1,1,1,1],
-    [1,1,1,1,1,1],
-    [0,1,1,1,1,0],
-    [0,0,1,1,0,0],
-    [1,0,0,0,0,1],
+    [0, 0, 1, 1, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [1, 0, 0, 0, 0, 1],
   ],
   smiley: [
-    [0,1,0,0,1,0],
-    [0,1,0,0,1,0],
-    [0,0,0,0,0,0],
-    [1,0,0,0,0,1],
-    [0,1,1,1,1,0],
-    [0,0,0,0,0,0],
+    [0, 1, 0, 0, 1, 0],
+    [0, 1, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
   ],
   diamond: [
-    [0,0,1,1,0,0],
-    [0,1,1,1,1,0],
-    [1,1,1,1,1,1],
-    [1,1,1,1,1,1],
-    [0,1,1,1,1,0],
-    [0,0,1,1,0,0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 0, 0],
   ],
   star: [
-    [0,1,0,0,1,0],
-    [0,0,1,1,0,0],
-    [1,1,1,1,1,1],
-    [0,1,1,1,1,0],
-    [0,0,1,1,0,0],
-    [0,1,0,0,1,0],
+    [0, 1, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0],
   ],
   arrow_up: [
-    [0,0,1,1,0,0],
-    [0,1,1,1,1,0],
-    [1,1,1,1,1,1],
-    [0,0,1,1,0,0],
-    [0,0,1,1,0,0],
-    [0,0,1,1,0,0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
   ],
   x_shape: [
-    [1,0,0,0,0,1],
-    [0,1,0,0,1,0],
-    [0,0,1,1,0,0],
-    [0,0,1,1,0,0],
-    [0,1,0,0,1,0],
-    [1,0,0,0,0,1],
+    [1, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1],
   ],
   moon: [
-    [0,0,1,1,1,0],
-    [0,1,1,0,0,1],
-    [1,1,0,0,0,0],
-    [1,1,0,0,0,0],
-    [0,1,1,0,0,1],
-    [0,0,1,1,1,0],
+    [0, 0, 1, 1, 1, 0],
+    [0, 1, 1, 0, 0, 1],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+    [0, 1, 1, 0, 0, 1],
+    [0, 0, 1, 1, 1, 0],
   ],
   circle: [
-    [0,1,1,1,1,0],
-    [1,1,0,0,1,1],
-    [1,0,0,0,0,1],
-    [1,0,0,0,0,1],
-    [1,1,0,0,1,1],
-    [0,1,1,1,1,0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
   ],
-}
+};
 const keys = Object.keys(NONOGRAM_PATTERNS);
-export const PATTERNS = NONOGRAM_PATTERNS[keys[Math.floor(Math.random() * keys.length)]];
+export const PATTERNS =
+  NONOGRAM_PATTERNS[keys[Math.floor(Math.random() * keys.length)]];

@@ -62,7 +62,7 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-white-200 z-0 bg-black">
+      <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
         <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
           <div
             className="md:p-[1rem] p-[.7rem] rounded-t-[3rem]"

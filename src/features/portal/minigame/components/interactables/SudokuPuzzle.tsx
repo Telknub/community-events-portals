@@ -163,7 +163,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full h-screen bg-black/100 backdrop-blur-md flex items-center justify-center">
+      <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center">
         <div
           className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"
           style={{

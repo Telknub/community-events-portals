@@ -73,15 +73,14 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
   }
 
   private openPuzzle() {
-    if (!this.openedPuzzle) {
+    if (!this.openedPuzzle && this.scene.portalService?.state.matches("playing")) {
       this.scene.velocity = 0;
       this.openedPuzzle = true;
       //   const puzzleType =
       //     this.scene.puzzleTypes[
       //       Math.floor(Math.random() * this.scene.puzzleTypes.length)
       //     ];
-      const puzzleType = "jigsaw";
-      console.log(puzzleType);
+      const puzzleType = "pipe";
       interactableModalManager.open("puzzle", { puzzleType, id: this.id, difficulty: this.difficulty });
     }
   }

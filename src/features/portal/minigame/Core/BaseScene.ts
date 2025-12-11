@@ -473,8 +473,8 @@ export abstract class BaseScene extends Phaser.Scene {
       imageKey,
       16,
       16,
-      1,
-      2,
+      0,
+      0,
     ) as Phaser.Tilemaps.Tileset;
 
     // Set up collider layers
@@ -702,15 +702,15 @@ export abstract class BaseScene extends Phaser.Scene {
   public initialiseControls() {
     if (isTouchDevice()) {
       // Initialise joystick
-      const { centerX, centerY, height } = this.cameras.main;
-      this.joystick = new VirtualJoystick(this, {
-        x: centerX,
-        y: centerY - 35 + height / this.zoom / 2,
-        radius: 15,
-        base: this.add.circle(0, 0, 15, 0x000000, 0.2).setDepth(1000000000),
-        thumb: this.add.circle(0, 0, 7, 0xffffff, 0.2).setDepth(1000000000),
-        forceMin: 2,
-      });
+      // const { centerX, centerY, height } = this.cameras.main;
+      // this.joystick = new VirtualJoystick(this, {
+      //   x: centerX,
+      //   y: centerY - 35 + height / this.zoom / 2,
+      //   radius: 15,
+      //   base: this.add.circle(0, 0, 15, 0x000000, 0.2).setDepth(1000000000),
+      //   thumb: this.add.circle(0, 0, 7, 0xffffff, 0.2).setDepth(1000000000),
+      //   forceMin: 2,
+      // });
     }
 
     // Initialise Keyboard
@@ -1035,7 +1035,7 @@ export abstract class BaseScene extends Phaser.Scene {
       const down =
         (this.cursorKeys?.down.isDown || this.cursorKeys?.s?.isDown) ?? false;
 
-      this.movementAngle = this.keysToAngle(left, right, up, down);
+      // this.movementAngle = this.keysToAngle(left, right, up, down);
     }
 
     // change player direction if angle is changed from left to right or vise versa

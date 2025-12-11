@@ -45,7 +45,7 @@ export const InteractableModals = () => {
 
   return (
     <>
-      <Modal show={!!interactable} onHide={closeModal}>
+      <Modal show={!!interactable}>
         {interactable === "puzzle" && (
           <Puzzle onClose={closeModal} data={data} />
         )}

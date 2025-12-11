@@ -117,7 +117,7 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full h-screen bg-black/100 backdrop-blur-md flex items-center justify-center flex-col gap-4">
+      <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center flex-col gap-4">
         <div className="flex flex-col items-center">
           <StatusBar />
           <div
