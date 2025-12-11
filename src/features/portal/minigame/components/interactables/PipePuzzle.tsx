@@ -75,6 +75,10 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
   const [gridSize, setGridSize] = useState<number>(GRID_SIZES[difficulty]);
   const [isComplete, setIsComplete] = useState<boolean>(false);
 
+  const MAX_CELL_SIZE = 60;
+  const [cellSize, setCellSize] = useState<number>(MAX_CELL_SIZE);
+
+
   // Initialize Game
   const initGame = useCallback(() => {
     const size = GRID_SIZES[difficulty];
@@ -280,6 +284,22 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
     initGame();
   }, [initGame]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      // Calculate available width
+      // Container padding (20px*2) + Safety margin
+      const padding = difficulty === "easy" ? 200 : 60;
+      const safeWidth = window.innerWidth - padding;
+      const calculatedCellSize = Math.floor(Math.min(safeWidth / gridSize, MAX_CELL_SIZE));
+      setCellSize(Math.max(calculatedCellSize, 20)); // Min 20px
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Initial calculation
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [gridSize]);
+
   const handleRotate = (r: number, c: number) => {
     if (isComplete) return;
     const tile = grid[r][c];
@@ -304,13 +324,12 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
   };
 
   // --- Render Assets (SVG Patterns) ---
-  const CELL_SIZE = 60;  // Pixels
+  // --- Render Assets (SVG Patterns) ---
 
   return (
     <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
         <div
-          className="min-w-[490px]"
           style={{
             width: "fit-content",
             justifySelf: "center",
@@ -318,6 +337,8 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
             flexDirection: "column",
             alignItems: "center",
             padding: "20px",
+            paddingRight: difficulty === "easy" ? "70px" : "20px",
+            paddingLeft: difficulty === "easy" ? "70px" : "20px",
             paddingTop: difficulty === "easy" ? "40px" : "20px",
             background: "#87cfee",
             boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
@@ -327,7 +348,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: `repeat(${gridSize}, ${CELL_SIZE}px)`,
+              gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
               gap: "0px",
               borderRadius: "4px",
               backgroundColor: "#87cfee",
@@ -361,8 +382,8 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
                   key={`${r}-${c}`}
                   onClick={() => handleRotate(r, c)}
                   style={{
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
+                    width: cellSize,
+                    height: cellSize,
                     boxSizing: "border-box",
                     cursor: tile.isFixed ? "default" : "pointer",
                     position: "relative",

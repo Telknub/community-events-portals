@@ -4,7 +4,7 @@ import { StatusBar } from "../hud/StatusBar";
 // --- Constants and Types ---
 
 const GRID_SIZE = 5; // 5x5 = 25 pieces
-const TILE_SIZE = 100; // Pixels per piece
+const MAX_TILE_SIZE = 100; // Pixels per piece
 const IMAGE_URL = "public/world/portal/images/slidingPuzzle1.webp";
 
 // Interface to define the structure of a piece
@@ -27,9 +27,10 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   const [board, setBoard] = useState<(Tile | null)[]>([]);
   // Available pieces outside the board
   const [pool, setPool] = useState<Tile[]>([]);
-  
+  const [tileSize, setTileSize] = useState<number>(MAX_TILE_SIZE);
+
   const [isComplete, setIsComplete] = useState<boolean>(false);
-  
+
   const [draggedItem, setDraggedItem] = useState<DragSource | null>(null);
 
   // --- Initialization Logic ---
@@ -77,6 +78,20 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
       hard: 4,
     };
     initializeGame(staticPieces[difficulty]);
+
+    const handleResize = () => {
+      // Calculate available width accounting for borders/padding
+      // Frame border (15px*2) + Padding (1rem*2) + Outer border (1.5rem*2) + Gap + Safety
+      // Approx 120-140px reduction from window width
+      const safeWidth = window.innerWidth - 140;
+      const calculatedTileSize = Math.floor(Math.min(safeWidth, MAX_TILE_SIZE * GRID_SIZE) / GRID_SIZE);
+      setTileSize(Math.max(calculatedTileSize, 20)); // Min 20px
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Initial calculation
+
+    return () => window.removeEventListener("resize", handleResize);
   }, [difficulty]);
 
   // --- Drag and Drop Handlers ---
@@ -93,7 +108,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
         return;
       }
     }
-    
+
     setDraggedItem(source);
     e.dataTransfer.effectAllowed = "move";
   };
@@ -123,7 +138,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
     if (draggedItem.type === "board") {
       // If dropped in the same place, do nothing
       if (draggedItem.index === targetIndex) return;
-      
+
       sourceTile = newBoard[draggedItem.index] as Tile;
       newBoard[draggedItem.index] = null;
     } else {
@@ -171,7 +186,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
     if (tile && !tile.isFixed) {
       newBoard[draggedItem.index] = null;
       newPool.push(tile); // Add to pool
-      
+
       setBoard(newBoard);
       setPool(newPool);
       checkWinCondition(newBoard);
@@ -193,8 +208,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
 
     return {
       backgroundImage: `url(${IMAGE_URL})`,
-      backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
-      backgroundSize: `${GRID_SIZE * TILE_SIZE}px ${GRID_SIZE * TILE_SIZE}px`,
+      backgroundPosition: `-${col * tileSize}px -${row * tileSize}px`,
+      backgroundSize: `${GRID_SIZE * tileSize}px ${GRID_SIZE * tileSize}px`,
       backgroundRepeat: "no-repeat",
     };
   };
@@ -202,161 +217,165 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   // --- Render ---
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "20px",
-      }}
-    >
-      <div className="border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
-        <StatusBar />
-        <div className="md:p-[1rem] p-[.7rem]"
-           style={{
-             backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
-        }}
-      >
-        <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          alignItems: "center",
-          // Christmas Frame Border
-          border: "15px solid transparent",
-          backgroundColor: "#fdf5e6", // Old lace / warm background
-          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-          maxWidth: "95vw",
-        }}
-      >
-        {/* BoardGrid */}
+    <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
+      <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${GRID_SIZE}, ${TILE_SIZE}px)`,
-            width: `${GRID_SIZE * TILE_SIZE}px`,
-            backgroundColor: "#000", // Black background for empty slots
-            boxShadow: "inset 0 0 20px rgba(0,0,0,0.8)", // Depth for the board
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px",
           }}
         >
-          {board.map((tile, index) => (
-            <div
-              key={`slot-${index}`}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDropOnBoard(e, index)}
+          <div className="border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
+            <StatusBar />
+            <div className="md:p-[1rem] p-[.7rem]"
               style={{
-                width: TILE_SIZE,
-                height: TILE_SIZE,
-                border: "1px solid #222",
-                boxSizing: "border-box",
-                position: "relative",
+                backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
               }}
             >
-              {tile && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "20px",
+                  alignItems: "center",
+                  // Christmas Frame Border
+                  border: "15px solid transparent",
+                  backgroundColor: "#fdf5e6", // Old lace / warm background
+                  maxWidth: "95vw",
+                }}
+              >
+                {/* BoardGrid */}
                 <div
-                  draggable={!tile.isFixed && !isComplete}
-                  onDragStart={(e) => handleDragStart(e, { type: "board", index })}
                   style={{
-                    width: "100%",
-                    height: "100%",
-                    ...getBackgroundStyle(tile.id),
-                    cursor: tile.isFixed ? "default" : "grab",
-                    opacity: tile.isFixed ? 1 : 0.9,
-                    filter: tile.isFixed ? "brightness(100%)" : "none",
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${GRID_SIZE}, ${tileSize}px)`,
+                    width: `${GRID_SIZE * tileSize}px`,
+                    backgroundColor: "#000", // Black background for empty slots
+                    boxShadow: "inset 0 0 20px rgba(0,0,0,0.8)", // Depth for the board
                   }}
                 >
-                  {tile.isFixed && (
+                  {board.map((tile, index) => (
                     <div
+                      key={`slot-${index}`}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDropOnBoard(e, index)}
                       style={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        width: 8,
-                        height: 8,
-                        background: "#4CAF50",
-                        borderRadius: "50%",
-                        border: "1px solid white",
+                        width: tileSize,
+                        height: tileSize,
+                        border: "1px solid #222",
+                        boxSizing: "border-box",
+                        position: "relative",
+                      }}
+                    >
+                      {tile && (
+                        <div
+                          draggable={!tile.isFixed && !isComplete}
+                          onDragStart={(e) => handleDragStart(e, { type: "board", index })}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            ...getBackgroundStyle(tile.id),
+                            cursor: tile.isFixed ? "default" : "grab",
+                            opacity: tile.isFixed ? 1 : 0.9,
+                            filter: tile.isFixed ? "brightness(100%)" : "none",
+                          }}
+                        >
+                          {tile.isFixed && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: 2,
+                                right: 2,
+                                width: 8,
+                                height: 8,
+                                background: "#4CAF50",
+                                borderRadius: "50%",
+                                border: "1px solid white",
+                              }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Separator / Decoration */}
+                <div style={{ width: "100%", height: "2px", background: "#aaa" }} />
+
+                {/* Piece Pool - Horizontal */}
+                <div
+                  className="scrollable"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDropOnPool}
+                  style={{
+                    // Dynamic width matching the grid or wider but contained
+                    // Dynamic width matching the grid or wider but contained
+                    width: `${GRID_SIZE * tileSize}px`,
+                    maxWidth: "100%",
+                    minHeight: `${tileSize + 20}px`,
+                    border: "2px dashed #aaa",
+                    borderRadius: "5px",
+                    padding: "10px",
+                    display: "flex",
+                    flexDirection: "row", // Horizontal
+                    overflowX: "auto", // Scrollable if many pieces
+                    flexWrap: "nowrap",
+                    alignItems: "center",
+                    gap: "10px",
+                    backgroundColor: "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  {pool.length === 0 && !isComplete && (
+                    <p style={{ width: "100%", textAlign: "center", color: "#666" }}>
+                      Arrastra piezas aquí o completa el puzzle.
+                    </p>
+                  )}
+
+                  {pool.map((tile, index) => (
+                    <div
+                      key={`pool-${tile.id}`}
+                      draggable={!isComplete}
+                      onDragStart={(e) => handleDragStart(e, { type: "pool", index })}
+                      style={{
+                        // Prevent shrinking
+                        // Prevent shrinking
+                        flex: `0 0 ${tileSize}px`,
+                        width: tileSize,
+                        height: tileSize,
+                        ...getBackgroundStyle(tile.id),
+                        cursor: "grab",
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                        borderRadius: "5px",
                       }}
                     />
-                  )}
+                  ))}
+                </div>
+              </div>
+              {isComplete && (
+                <div
+                  style={{
+                    padding: "20px",
+                    background: "#d4edda",
+                    color: "#155724",
+                    borderRadius: "5px",
+                    position: "absolute",
+                    top: "39%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "341px",
+                  }}
+                >
+                  🎉Happy Holidays!🎉
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Separator / Decoration */}
-        <div style={{ width: "100%", height: "2px", background: "#aaa" }} />
-
-        {/* Piece Pool - Horizontal */}
-        <div
-          className="scrollable"
-          onDragOver={handleDragOver}
-          onDrop={handleDropOnPool}
-          style={{
-            // Dynamic width matching the grid or wider but contained
-            width: `${GRID_SIZE * TILE_SIZE}px`,
-            maxWidth: "100%",
-            minHeight: `${TILE_SIZE + 20}px`,
-            border: "2px dashed #aaa",
-            borderRadius: "5px",
-            padding: "10px",
-            display: "flex",
-            flexDirection: "row", // Horizontal
-            overflowX: "auto", // Scrollable if many pieces
-            flexWrap: "nowrap",
-            alignItems: "center",
-            gap: "10px",
-            backgroundColor: "rgba(255,255,255,0.5)",
-          }}
-        >
-          {pool.length === 0 && !isComplete && (
-            <p style={{ width: "100%", textAlign: "center", color: "#666" }}>
-              Arrastra piezas aquí o completa el puzzle.
-            </p>
-          )}
-
-          {pool.map((tile, index) => (
-            <div
-              key={`pool-${tile.id}`}
-              draggable={!isComplete}
-              onDragStart={(e) => handleDragStart(e, { type: "pool", index })}
-              style={{
-                // Prevent shrinking
-                flex: `0 0 ${TILE_SIZE}px`,
-                width: TILE_SIZE,
-                height: TILE_SIZE,
-                ...getBackgroundStyle(tile.id),
-                cursor: "grab",
-                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                borderRadius: "5px",
-              }}
-            />
-          ))}
-        </div>
-        </div>
-        {isComplete && (
-        <div
-          style={{
-            padding: "20px",
-            background: "#d4edda",
-            color: "#155724",
-            borderRadius: "5px",
-            position: "absolute",
-            top: "39%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "341px",
-          }}
-        >
-          🎉Happy Holidays!🎉
-        </div>
-        )}
         </div>
       </div>
-
     </div>
-
   );
 };
