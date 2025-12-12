@@ -2,7 +2,6 @@ import React from "react";
 import { Timer } from "../hud/Timer";
 import { Lives } from "../hud/Lives";
 import { Label } from "components/ui/Label";
-import giantBalls from "public/world/portal/images/GiantRedChristmasOrnament.webp";
 import { SUNNYSIDE } from "assets/sunnyside";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
 import { Button } from "components/ui/Button";

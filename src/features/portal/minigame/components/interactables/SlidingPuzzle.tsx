@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   SLIDING_PUZZLE_IMG,
-  SLIDING_PUZZLE_MOVESTOSOLVE,
+  SLIDING_PUZZLE_DIFFICULTY,
   SNOW,
 } from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
+import redRibbon from "public/world/portal/images/bow.webp";
 
 const SIZE_X = 3; // Columns
 const SIZE_Y = 3; // Rows
@@ -13,15 +14,20 @@ const TOTAL_TILES = SIZE_X * SIZE_Y;
 interface Props {
   onClose: () => void;
   onAction: () => void;
+  difficulty: "easy" | "hard";
 }
 
-export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
+export const SlidingPuzzle: React.FC<Props> = ({
+  onClose,
+  onAction,
+  difficulty,
+}) => {
   const [tiles, setTiles] = useState<(number | null)[]>([]);
   const [isSolved, setIsSolved] = useState(false);
 
   useEffect(() => {
-    generatePuzzleAtLeast4MovesAway();
-  }, []);
+    generatPuzzle();
+  }, [difficulty]);
 
   useEffect(() => {
     if (tiles.length === TOTAL_TILES) {
@@ -33,10 +39,10 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
     }
   }, [tiles]);
 
-  const generatePuzzleAtLeast4MovesAway = () => {
+  const generatPuzzle = () => {
     const solved: (number | null)[] = [0, 1, 2, 3, 4, 5, 6, 7, null];
-    const moveCount =
-      Math.floor(Math.random() * 3) + SLIDING_PUZZLE_MOVESTOSOLVE;
+    const moveCount = SLIDING_PUZZLE_DIFFICULTY[difficulty];
+
     let current = [...solved];
     let emptyIndex = current.indexOf(null);
 
@@ -118,6 +124,9 @@ export const SlidingPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
   return (
     <>
       <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center flex-col gap-4">
+        <div className="relative w-full top-16 md:top-20 flex justify-center z-20">
+          <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
+        </div>
         <div className="flex flex-col items-center">
           <StatusBar />
           <div

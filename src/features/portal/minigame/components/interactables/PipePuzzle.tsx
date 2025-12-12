@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "../hud/StatusBar";
 import { SNOW } from "../../Constants";
+import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants & Types ---
 
@@ -332,12 +333,16 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
   return (
     <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
-        <div
+        <div>
+            <div className="relative w-full top-16 flex justify-center z-20">
+              <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
+            </div>
+          <div
             className="p-3 border-[1rem] border-[#a22633] rounded-t-[2.5rem]"
             style={{
               backgroundImage:
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
-            }}
+              }}
         >
             <StatusBar />
         <div
@@ -495,6 +500,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
             </div>
           </div>
         </div>
+          </div>
         </div>
       </div>
     </div>

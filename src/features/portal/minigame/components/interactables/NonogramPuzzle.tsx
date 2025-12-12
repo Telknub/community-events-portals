@@ -1,12 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { PATTERNS, Cell, SNOW } from "../../Constants";
+import {
+  NONOGRAM_PATTERNS_EASY,
+  NONOGRAM_PATTERNS_HARD,
+  Cell,
+  SNOW,
+} from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
+import redRibbon from "public/world/portal/images/bow.webp";
 
 interface Props {
   onClose: () => void;
   onAction: () => void;
+  difficulty: "easy" | "hard";
 }
 
+//  Choose pattern by difficulty
+function choosePattern(difficulty: "easy" | "hard") {
+  const pool =
+    difficulty === "easy" ? NONOGRAM_PATTERNS_EASY : NONOGRAM_PATTERNS_HARD;
+
+  const keys = Object.keys(pool);
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  return pool[randomKey];
+}
+
+//  Get row/column clues
 const getClues = (lines: Cell[][]): number[][] => {
   return lines.map((row) => {
     const clues: number[] = [];
@@ -23,40 +41,54 @@ const getClues = (lines: Cell[][]): number[][] => {
   });
 };
 
-const rowClues = getClues(PATTERNS);
-const colClues = getClues(
-  PATTERNS[0].map((_, c) => PATTERNS.map((row) => row[c])),
-);
+export const NonogramPuzzle: React.FC<Props> = ({
+  onClose,
+  onAction,
+  difficulty,
+}) => {
+  /* Load random pattern whenever difficulty changes */
+  const PATTERN = React.useMemo(() => choosePattern(difficulty), [difficulty]);
 
-const isSolved = (board: boolean[][]): boolean =>
-  board.every((row, r) =>
-    row.every((cell, c) => cell === (PATTERNS[r][c] === 1)),
+  /* Clues are derived from pattern */
+  const rowClues = React.useMemo(() => getClues(PATTERN), [PATTERN]);
+  const colClues = React.useMemo(
+    () => getClues(PATTERN[0].map((_, c) => PATTERN.map((row) => row[c]))),
+    [PATTERN],
   );
 
-export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
+  /* Player board state */
   const [board, setBoard] = useState<boolean[][]>(
     Array.from({ length: 6 }, () => Array(6).fill(false)),
   );
   const [solved, markSolved] = useState(false);
 
+  /* Toggle cell */
   const toggleCell = (r: number, c: number) => {
     if (solved) return;
+
     setBoard((prev) => {
-      const newBoard = prev.map((row) => [...row]);
-      newBoard[r][c] = !newBoard[r][c];
-      return newBoard;
+      const next = prev.map((row) => [...row]);
+      next[r][c] = !next[r][c];
+      return next;
     });
   };
 
+  /* Check solved state */
+  const checkSolved = (board: boolean[][]): boolean =>
+    board.every((row, r) =>
+      row.every((cell, c) => cell === (PATTERN[r][c] === 1)),
+    );
+
   useEffect(() => {
-    if (isSolved(board)) {
+    if (checkSolved(board)) {
       markSolved(true);
     }
-  }, [board, markSolved]);
+  }, [board, PATTERN]);
 
   useEffect(() => {
     if (solved) {
-      (SNOW(), onAction());
+      SNOW();
+      onAction();
     }
   }, [solved]);
 
@@ -64,6 +96,9 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
     <>
       <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
         <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
+          <div className="relative w-full top-12 md:top-16 flex justify-center z-20">
+            <img className="w-[6rem] md:w-[8rem]" src={redRibbon} />
+          </div>
           <div
             className="md:p-[1rem] p-[.7rem] rounded-t-[3rem]"
             style={{
@@ -72,15 +107,16 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
             }}
           >
             <StatusBar />
+
             <div className="bg-white p-0 md:p-6 border-[1rem] border-[#265c42] border-double">
               {/* Column Clues */}
               <div className="flex ml-[55px] sm:ml-[40px] md:ml-[80px]">
                 {colClues.map((clue, i) => (
                   <div
                     key={i}
-                    className="flex flex-col items-center 
-              w-[40px] sm:w-[50px] md:w-[70px] 
-              text-sm sm:text-xl md:text-[3rem] font-bold"
+                    className="flex flex-col items-center
+                      w-[40px] sm:w-[50px] md:w-[70px]
+                      text-sm sm:text-xl md:text-[3rem] font-bold"
                   >
                     {clue.map((num, j) => (
                       <div className="my-2" key={j}>
@@ -90,18 +126,19 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
                   </div>
                 ))}
               </div>
+
               {/* Rows */}
               <div className="flex flex-col items-center">
-                {PATTERNS.map((_, r) => (
+                {PATTERN.map((_, r) => (
                   <div key={r} className="flex items-center justify-center">
                     {/* Row Clues */}
                     <div
                       className="
-              w-[60px] sm:w-[40px] md:w-[80px]
-              pr-1 sm:pr-2 
-              text-sm sm:text-xl md:text-[3rem] 
-              text-right font-bold
-            "
+                        w-[60px] sm:w-[40px] md:w-[80px]
+                        pr-1 sm:pr-2
+                        text-sm sm:text-xl md:text-[3rem]
+                        text-right font-bold
+                      "
                     >
                       {rowClues[r].map((num, i) => (
                         <span key={i} className="mx-1">
@@ -112,20 +149,20 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
 
                     {/* Grid */}
                     <div className="grid grid-cols-6">
-                      {PATTERNS[r].map((_, c) => {
+                      {PATTERN[r].map((_, c) => {
                         const isFilled = board[r][c];
                         return (
                           <div
                             key={c}
                             onClick={() => toggleCell(r, c)}
                             className={`
-                      border-2 sm:border-3 md:border-4 border-[#3e8948]
-                      cursor-pointer transition
-                      ${isFilled ? "bg-[#265c42] " : "bg-[#265c42]-500"}
-                      w-[40px] h-[40px]
-                      sm:w-[50px] sm:h-[50px]
-                      md:w-[70px] md:h-[70px]
-                    `}
+                              border-2 sm:border-3 md:border-4 border-[#3e8948]
+                              cursor-pointer transition
+                              ${isFilled ? "bg-[#265c42]" : "bg-[#265c42]-500"}
+                              w-[40px] h-[40px]
+                              sm:w-[50px] sm:h-[50px]
+                              md:w-[70px] md:h-[70px]
+                            `}
                           />
                         );
                       })}
@@ -136,20 +173,7 @@ export const NonogramPuzzle: React.FC<Props> = ({ onClose, onAction }) => {
             </div>
           </div>
 
-          {/* Solved Message */}
-          {/* <div className="flex justify-center">
-      {solved && (
-        <div className="
-          w-full mt-6 ml-6 p-4 sm:p-5
-          bg-green-100 border-4 border-green-500 
-          text-green-700 text-xl sm:text-2xl 
-          font-bold text-center rounded-xl
-        ">
-          🎉Happy Holidays!🎉
-        </div>
-        )
-      }
-      </div> */}
+          {/* Optional solved UI */}
         </div>
       </div>
     </>

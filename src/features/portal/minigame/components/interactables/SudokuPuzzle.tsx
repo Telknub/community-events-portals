@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { SUDOKU_DIFFICULTY, SNOW } from "../../Constants";
-
+import redRibbon from "public/world/portal/images/bow.webp";
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
 import snowman from "public/world/portal/images/SudokuSnowman.webp";
@@ -163,7 +163,10 @@ export const SudokuPuzzle: React.FC<Props> = ({
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center">
+      <div className="fixed flex-col top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center">
+        <div className="relative w-full top-12 md:top-16 flex justify-center z-20">
+            <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
+        </div>
         <div
           className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"
           style={{
