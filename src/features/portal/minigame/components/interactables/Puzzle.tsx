@@ -39,7 +39,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
         <SudokuPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "sliding" && (
-        <SlidingPuzzle onClose={onClose} onAction={getPoint} />
+        <SlidingPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "jigsaw" && (
         <JigsawPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
@@ -48,7 +48,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
         <PipePuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
       {puzzleType === "nonogram" && (
-        <NonogramPuzzle onClose={onClose} onAction={getPoint} />
+        <NonogramPuzzle onClose={onClose} onAction={getPoint} difficulty={difficulty} />
       )}
     </>
   );

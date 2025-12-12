@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
 import { SNOW } from "../../Constants";
+import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants and Types ---
 
@@ -224,6 +225,9 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   return (
     <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
+          <div className="relative w-full top-16 flex justify-center z-20">
+              <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
+          </div>
         <div
           style={{
             display: "flex",
@@ -232,7 +236,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
             gap: "20px",
           }}
         >
-          <div className="border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
+          <div className="border-[1rem] md:border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
             <StatusBar />
             <div className="md:p-[1rem] p-[.7rem]"
               style={{

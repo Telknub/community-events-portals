@@ -75,7 +75,7 @@ export const SUDOKU_DIFFICULTY = {
 };
 
 // Sliding Puzzle
-export const SLIDING_PUZZLE_MOVESTOSOLVE = 4;
+export const SLIDING_PUZZLE_DIFFICULTY = { easy: 4, hard: 8 };
 export const SLIDING_PUZZLE_IMG = slidingPuzzle1;
 
 // Guide
@@ -176,7 +176,7 @@ export const SNOW = () => {
 export type Cell = 0 | 1;
 type pattern = Cell[][];
 
-const NONOGRAM_PATTERNS: Record<string, pattern> = {
+export const NONOGRAM_PATTERNS_EASY: Record<string, pattern> = {
   christmas_tree: [
     [0, 0, 1, 1, 0, 0],
     [0, 1, 1, 1, 1, 0],
@@ -185,12 +185,12 @@ const NONOGRAM_PATTERNS: Record<string, pattern> = {
     [0, 0, 1, 1, 0, 0],
     [0, 1, 1, 1, 1, 0],
   ],
-  flower: [
+  arrow_up: [
     [0, 0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 1],
-    [0, 1, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
     [0, 0, 1, 1, 0, 0],
   ],
   heart: [
@@ -225,12 +225,15 @@ const NONOGRAM_PATTERNS: Record<string, pattern> = {
     [0, 0, 1, 1, 0, 0],
     [0, 1, 0, 0, 1, 0],
   ],
-  arrow_up: [
+};
+
+export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
+  flower: [
     [0, 0, 1, 1, 0, 0],
-    [0, 1, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1, 1],
-    [0, 0, 1, 1, 0, 0],
-    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 1, 0],
     [0, 0, 1, 1, 0, 0],
   ],
   x_shape: [
@@ -257,7 +260,4 @@ const NONOGRAM_PATTERNS: Record<string, pattern> = {
     [1, 1, 0, 0, 1, 1],
     [0, 1, 1, 1, 1, 0],
   ],
-};
-const keys = Object.keys(NONOGRAM_PATTERNS);
-export const PATTERNS =
-  NONOGRAM_PATTERNS[keys[Math.floor(Math.random() * keys.length)]];
+}
