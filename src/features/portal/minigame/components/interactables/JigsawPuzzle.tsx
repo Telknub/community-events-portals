@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
+import { SNOW } from "../../Constants";
 
 // --- Constants and Types ---
 
@@ -197,7 +198,11 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   const checkWinCondition = (currentBoard: (Tile | null)[]): void => {
     // We win if there are no empty slots and each ID matches the index
     const isWin = currentBoard.every((tile, index) => tile !== null && tile.id === index);
-    if (isWin) setIsComplete(true);
+    if (isWin) {
+      setIsComplete(true);
+      onAction();
+      SNOW();
+    };
   };
 
   // --- Styles ---
