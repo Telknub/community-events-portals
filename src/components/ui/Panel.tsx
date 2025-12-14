@@ -5,6 +5,9 @@ import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import {
   pixelDarkBorderStyle,
   pixelLightBorderStyle,
+  pixelGreenBorderStyle,
+  pixelBlueBorderStyle,
+  pixelHalloweenInnerBorderStyle,
 } from "features/game/lib/style";
 
 import usedButton from "assets/ui/used_button.png";
@@ -72,9 +75,9 @@ export const InnerPanel: React.FC<
     <div
       className={classNames(className)}
       style={{
-        ...pixelLightBorderStyle,
+        ...pixelHalloweenInnerBorderStyle,
         padding: `${PIXEL_SCALE * 1}px`,
-        background: isDarkMode ? "#c28669" : "#e4a672",
+        background: isDarkMode ? "#c0cbdc" : "#c0cbdc",
         ...style,
       }}
       ref={divRef}
@@ -114,9 +117,9 @@ export const OuterPanel: React.FC<React.PropsWithChildren<PanelProps>> = ({
       <div
         // Fix for dark mode
 
-        className={classNames(className, "bg-[#c28569]")}
+        className={classNames(className, "bg-[#0099db]")}
         style={{
-          ...pixelDarkBorderStyle,
+          ...pixelBlueBorderStyle,
           padding: `${PIXEL_SCALE * 1}px`,
           ...(hasTabs
             ? {

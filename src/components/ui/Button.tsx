@@ -5,6 +5,7 @@ import { useSound } from "lib/utils/hooks/useSound";
 import { SUNNYSIDE } from "assets/sunnyside";
 
 import secondaryButton from "assets/ui/secondary_button.png";
+import borderbutton from "public/world/portal/images/christmas_button_white.webp";
 
 import { useLongPress } from "lib/utils/hooks/useLongPress";
 import { PIXEL_SCALE } from "features/game/lib/constants";
@@ -59,9 +60,9 @@ export const Button: React.FC<React.PropsWithChildren<Props>> = ({
     : { onClick: !disabled ? onClickWithSound : undefined };
 
   const buttonImage =
-    variant === "primary" ? SUNNYSIDE.ui.primaryButton : secondaryButton;
+    variant === "primary" ? borderbutton : secondaryButton;
   const buttonPressedImage =
-    variant === "primary" ? SUNNYSIDE.ui.primaryButtonPressed : secondaryButton;
+    variant === "primary" ? borderbutton : secondaryButton;
 
   const buttonVariables = {
     "--button-image": `url(${buttonImage})`,
