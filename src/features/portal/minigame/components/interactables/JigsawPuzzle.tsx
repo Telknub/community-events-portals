@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { SNOW } from "../../Constants";
+import { JIGSAW_PUZZLE_DIFFICULTY, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants and Types ---
 
-const GRID_SIZE = 5; // 5x5 = 25 pieces
+const GRID_SIZE = 4; // 4x4 = 16 pieces
 const MAX_TILE_SIZE = 100; // Pixels per piece
 const IMAGE_URL = "public/world/portal/images/slidingPuzzle1.webp";
 
@@ -17,13 +17,15 @@ interface Tile {
 
 interface Props {
   onClose: () => void;
-  onAction: () => void;
+  onComplete: () => void;
   difficulty: "hard" | "easy";
+  seconds: number;
+  onReset: () => void;
 }
 
 type DragSource = { type: "board"; index: number } | { type: "pool"; index: number };
 
-export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty }) => {
+export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty, seconds, onReset }) => {
   // State
   // The board can have empty slots (null)
   const [board, setBoard] = useState<(Tile | null)[]>([]);
@@ -75,11 +77,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   };
 
   useEffect(() => {
-    const staticPieces = {
-      easy: 12,
-      hard: 4,
-    };
-    initializeGame(staticPieces[difficulty]);
+    initializeGame(JIGSAW_PUZZLE_DIFFICULTY[difficulty]);
 
     const handleResize = () => {
       // Calculate available width accounting for borders/padding
@@ -201,7 +199,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
     const isWin = currentBoard.every((tile, index) => tile !== null && tile.id === index);
     if (isWin) {
       setIsComplete(true);
-      onAction();
+      onComplete();
       SNOW();
     };
   };
@@ -225,9 +223,9 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
   return (
     <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
-          <div className="relative w-full top-16 flex justify-center z-20">
-              <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
-          </div>
+        <div className="relative w-full top-16 flex justify-center z-20">
+          <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
+        </div>
         <div
           style={{
             display: "flex",
@@ -237,7 +235,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onAction, difficulty })
           }}
         >
           <div className="border-[1rem] md:border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
-            <StatusBar />
+            <StatusBar seconds={seconds} onReset={onReset} />
             <div className="md:p-[1rem] p-[.7rem]"
               style={{
                 backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",

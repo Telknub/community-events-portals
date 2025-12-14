@@ -109,14 +109,18 @@ function generateSudokuPuzzle(difficulty: "easy" | "hard") {
 
 interface Props {
   onClose: () => void;
-  onAction: () => void;
+  onComplete: () => void;
   difficulty: "easy" | "hard";
+  seconds: number;
+  onReset: () => void;
 }
 
 export const SudokuPuzzle: React.FC<Props> = ({
   onClose,
-  onAction,
+  onComplete,
   difficulty,
+  seconds,
+  onReset
 }) => {
   const { puzzle: initialPuzzle, solution } = React.useMemo(
     () => generateSudokuPuzzle(difficulty),
@@ -146,7 +150,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
 
       if (isPuzzleSolved(newPuzzle, solution)) {
         setIsSolved(true);
-        onAction();
+        onComplete();
         SNOW();
       }
     }
@@ -165,7 +169,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
     <>
       <div className="fixed flex-col top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center">
         <div className="relative w-full top-12 md:top-16 flex justify-center z-20">
-            <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
+          <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div
           className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"
@@ -174,7 +178,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
               "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
           }}
         >
-          <StatusBar />
+          <StatusBar seconds={seconds} onReset={onReset} />
           <div className="bg-[#a22633] py-6 px-4 md:p-6">
             {selectedCell && !isSolved && (
               <div className="flex justify-center shadow-lg pb-6">
@@ -234,15 +238,13 @@ export const SudokuPuzzle: React.FC<Props> = ({
                         key={`${r}-${c}`}
                         className={`
                           relative flex justify-center items-center
-                          ${
-                            selectedCell?.row === r && selectedCell?.col === c
-                              ? "ring-2 ring-[#265c42] ring-offset-2"
-                              : ""
+                          ${selectedCell?.row === r && selectedCell?.col === c
+                            ? "ring-2 ring-[#265c42] ring-offset-2"
+                            : ""
                           }
-                          ${
-                            !isCellChangeable(r, c)
-                              ? "opacity-90"
-                              : "cursor-pointer hover:img-highlight"
+                          ${!isCellChangeable(r, c)
+                            ? "opacity-90"
+                            : "cursor-pointer hover:img-highlight"
                           }
                           w-20 h-20 md:w-24 md:h-24
                         `}

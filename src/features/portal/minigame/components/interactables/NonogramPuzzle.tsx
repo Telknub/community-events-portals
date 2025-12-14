@@ -10,8 +10,10 @@ import redRibbon from "public/world/portal/images/bow.webp";
 
 interface Props {
   onClose: () => void;
-  onAction: () => void;
+  onComplete: () => void;
   difficulty: "easy" | "hard";
+  seconds: number;
+  onReset: () => void;
 }
 
 //  Choose pattern by difficulty
@@ -43,8 +45,10 @@ const getClues = (lines: Cell[][]): number[][] => {
 
 export const NonogramPuzzle: React.FC<Props> = ({
   onClose,
-  onAction,
+  onComplete,
   difficulty,
+  seconds,
+  onReset,
 }) => {
   /* Load random pattern whenever difficulty changes */
   const PATTERN = React.useMemo(() => choosePattern(difficulty), [difficulty]);
@@ -88,7 +92,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
   useEffect(() => {
     if (solved) {
       SNOW();
-      onAction();
+      onComplete();
     }
   }, [solved]);
 
@@ -106,7 +110,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
             }}
           >
-            <StatusBar />
+            <StatusBar seconds={seconds} onReset={onReset} />
 
             <div className="bg-white p-0 md:p-6 border-[1rem] border-[#265c42] border-double">
               {/* Column Clues */}

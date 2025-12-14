@@ -8,6 +8,7 @@ import {
   GAME_SECONDS,
   GAME_LIVES,
   PORTAL_NAME,
+  RESET_ATTEMPTS,
 } from "../Constants";
 import { GameState } from "features/game/types/game";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
@@ -34,6 +35,8 @@ export interface Context {
   lives: number;
   validations: Record<string, boolean>;
   isTraining: boolean;
+
+  resetAttempts: number;
 }
 
 // type UnlockAchievementsEvent = {
@@ -65,6 +68,15 @@ type SetValidationsEvent = {
   validation: string;
 };
 
+type UseResetEvent = {
+  type: "USE_RESET";
+};
+
+type UsePowerEvent = {
+  type: "USE_POWER";
+  power: string;
+};
+
 export type PortalEvent =
   | SetJoystickActiveEvent
   | { type: "START" }
@@ -79,7 +91,9 @@ export type PortalEvent =
   | { type: "GAME_OVER" }
   | GainPointsEvent
   | LoseLifeEvent
-  | SetValidationsEvent;
+  | SetValidationsEvent
+  | UseResetEvent
+  | UsePowerEvent;
 
 export type PortalState = {
   value:
@@ -118,6 +132,7 @@ const resetGameTransition = {
       lives: () => GAME_LIVES,
       endAt: () => 0,
       validations: () => structuredClone(VALIDATIONS),
+      resetAttempts: () => RESET_ATTEMPTS,
     }) as any,
   },
 };
@@ -142,6 +157,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     validations: structuredClone(VALIDATIONS),
 
     // Portal minigame
+    resetAttempts: RESET_ATTEMPTS,
   },
   on: {
     SET_JOYSTICK_ACTIVE: {
@@ -303,6 +319,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             score: 0,
             lives: GAME_LIVES,
             validations: structuredClone(VALIDATIONS),
+            resetAttempts: () => RESET_ATTEMPTS,
             state: (context: Context) => {
               if (context.isTraining) return context.state;
               startAttempt();
@@ -348,6 +365,27 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
                 [event.validation]: true,
               };
             },
+          }),
+        },
+        USE_RESET: {
+          actions: assign({
+            resetAttempts: (context: Context) => {
+              return context.resetAttempts - 1;
+            },
+          }),
+        },
+        USE_POWER: {
+          actions: assign((context: Context, event: UsePowerEvent) => {
+            if (event.power === "reset") {
+              return {
+                resetAttempts: (context.resetAttempts + 1),
+              };
+            } else if (event.power === "life") {
+              return {
+                lives: (context.lives + 1),
+              };
+            }
+            return context;
           }),
         },
         END_GAME_EARLY: {

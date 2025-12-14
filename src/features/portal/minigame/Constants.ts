@@ -61,17 +61,44 @@ export const PATH_PUZZLE_POINTS = [
 export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram"];
 export type PuzzleName = (typeof PUZZLE_TYPES)[number];
 export const MAX_PUZZLES = 5;
+export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
+  sudoku: {
+    easy: 45,
+    hard: 60,
+  },
+  sliding: {
+    easy: 45,
+    hard: 60,
+  },
+  jigsaw: {
+    easy: 45,
+    hard: 60,
+  },
+  pipe: {
+    easy: 45,
+    hard: 60,
+  },
+  nonogram: {
+    easy: 45,
+    hard: 60,
+  },
+};
 
 // Puzzle config
+export const POWER_DISPLAY_SCORE = 2;
+export const RESET_ATTEMPTS = 3;
 export const VICTORY_TEXT = {
   Sudoku: "You've uncovered the Owl's secret!",
   SlidingPuzzle: "The Owl watches, puzzle complete!",
 };
 
+// Jigsaw puzzle
+export const JIGSAW_PUZZLE_DIFFICULTY = { easy: 8, hard: 4 };
+
 // Sudoku puzzle
 export const SUDOKU_DIFFICULTY = {
-  easy: 4,   
-  hard: 6,  
+  easy: 4,
+  hard: 6,
 };
 
 // Sliding Puzzle
@@ -84,53 +111,53 @@ export const INSTRUCTIONS: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource1`),
-  },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource2`),
-  },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource3`),
-  },
-];
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource1`),
+    },
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource2`),
+    },
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource3`),
+    },
+  ];
 
 export const RESOURCES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource1`),
-  },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource2`),
-  },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource3`),
-  },
-];
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource1`),
+    },
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource2`),
+    },
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.resource3`),
+    },
+  ];
 
 export const ENEMIES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.enemy1`),
-  },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.enemy2`),
-  },
-];
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.enemy1`),
+    },
+    {
+      image: ITEM_DETAILS["Abandoned Bear"].image,
+      description: t(`${PORTAL_NAME}.enemy2`),
+    },
+  ];
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];

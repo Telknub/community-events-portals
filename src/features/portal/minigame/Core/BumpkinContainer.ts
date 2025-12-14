@@ -18,6 +18,8 @@ import { CONFIG } from "lib/config";
 import { formatNumber } from "lib/utils/formatNumber";
 import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
+import { onAnimationComplete } from "../lib/Utils";
+import { MachineInterpreter } from "../lib/Machine";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {
   "pumpkin' pete": "pete",
@@ -78,6 +80,9 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   private frontAuraAnimationKey: string | undefined;
   private backAuraAnimationKey: string | undefined;
   private direction: "left" | "right" = "right";
+
+  // Chritmas
+  private hurtAnimationKey: string | undefined;
 
   constructor({
     scene,
@@ -225,6 +230,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.walkingAnimationKey = `${this.spriteKey}-bumpkin-walking`;
     this.digAnimationKey = `${this.spriteKey}-bumpkin-dig`;
     this.drillAnimationKey = `${this.spriteKey}-bumpkin-drilling`;
+    this.hurtAnimationKey = `${this.spriteKey}-bumpkin-hurt`;
 
     await buildNPCSheets({
       parts: this.clothing,
@@ -258,6 +264,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         "walking",
         "dig",
         "drilling",
+        "hurt",
       ]);
       const idleLoader = scene.load.spritesheet(this.spriteKey, url, {
         frameWidth: 96,
@@ -289,6 +296,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         this.createWalkingAnimation(9, 16);
         this.createDigAnimation(17, 29);
         this.createDrillAnimation(30, 38);
+        this.createHurtAnimation(39, 46);
         this.sprite.play(this.idleAnimationKey as string, true);
 
         this.ready = true;
@@ -387,6 +395,20 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         end,
       }),
       repeat: -1,
+      frameRate: 10,
+    });
+  }
+
+  private createHurtAnimation(start: number, end: number) {
+    if (!this.scene || !this.scene.anims) return;
+
+    this.scene.anims.create({
+      key: this.hurtAnimationKey,
+      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
+        start,
+        end,
+      }),
+      repeat: 0,
       frameRate: 10,
     });
   }
@@ -949,6 +971,26 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     }
   }
 
+  public hurt() {
+    if (
+      this.sprite?.anims &&
+      this.scene?.anims.exists(this.hurtAnimationKey as string) &&
+      this.sprite?.anims.getName() !== this.hurtAnimationKey
+    ) {
+      try {
+        this.sprite.anims.play(this.hurtAnimationKey as string, true);
+        this.animateRemovalHeart("-1");
+        this.portalService?.send("LOSE_LIFE");
+        onAnimationComplete(this.sprite, this.hurtAnimationKey as string, () => {
+          this.idle();
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log("Bumpkin Container: Error playing hurt animation: ", e);
+      }
+    }
+  }
+
   public hitPlayer() {
     this.invincible = true;
 
@@ -1063,5 +1105,49 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         }
       },
     );
+  }
+
+  // Christmas
+  private get portalService() {
+    return this.scene.registry.get("portalService") as
+      | MachineInterpreter
+      | undefined;
+  }
+
+  private animateRemovalHeart(value: string) {
+    const container = this.scene.add.container(0, 0);
+    const heart = this.scene.add
+      .sprite(0, 0, "heart")
+      .setOrigin(0.5)
+      .setScale(0.6);
+
+    const label = this.scene.add.text(-11, -4, value, {
+      fontSize: "3.5px",
+      fontFamily: "Teeny",
+      color: "#FFFFFF",
+      resolution: 10,
+      padding: { x: 2, y: 2 },
+    });
+
+    label.setShadow(4, 4, "#161424", 0, true, true);
+    container.add([heart, label]);
+    this.add(container);
+
+    this.scene.tweens.add({
+      targets: [container],
+      props: {
+        x: {
+          value: Math.random() <= 0.5 ? `+=-15` : `+=15`,
+          duration: 1000,
+          ease: "Power2",
+        },
+        y: {
+          value: `+=5`,
+          duration: 500,
+          ease: "Bounce.easeOut",
+        },
+      },
+      onComplete: () => container.destroy(),
+    });
   }
 }
