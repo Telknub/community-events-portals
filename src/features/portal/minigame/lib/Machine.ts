@@ -37,6 +37,7 @@ export interface Context {
   isTraining: boolean;
 
   resetAttempts: number;
+  hasPower: boolean;
 }
 
 // type UnlockAchievementsEvent = {
@@ -77,6 +78,11 @@ type UsePowerEvent = {
   power: string;
 };
 
+type SetPowerEvent = {
+  type: "SET_POWER";
+  hasPower: boolean;
+};
+
 export type PortalEvent =
   | SetJoystickActiveEvent
   | { type: "START" }
@@ -93,23 +99,24 @@ export type PortalEvent =
   | LoseLifeEvent
   | SetValidationsEvent
   | UseResetEvent
-  | UsePowerEvent;
+  | UsePowerEvent
+  | SetPowerEvent;
 
 export type PortalState = {
   value:
-    | "initialising"
-    | "error"
-    | "ready"
-    | "unauthorised"
-    | "loading"
-    | "introduction"
-    | "playing"
-    | "gameOver"
-    | "winner"
-    | "loser"
-    | "complete"
-    | "starting"
-    | "noAttempts";
+  | "initialising"
+  | "error"
+  | "ready"
+  | "unauthorised"
+  | "loading"
+  | "introduction"
+  | "playing"
+  | "gameOver"
+  | "winner"
+  | "loser"
+  | "complete"
+  | "starting"
+  | "noAttempts";
   context: Context;
 };
 
@@ -133,6 +140,7 @@ const resetGameTransition = {
       endAt: () => 0,
       validations: () => structuredClone(VALIDATIONS),
       resetAttempts: () => RESET_ATTEMPTS,
+      hasPower: () => false,
     }) as any,
   },
 };
@@ -158,6 +166,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
 
     // Portal minigame
     resetAttempts: RESET_ATTEMPTS,
+    hasPower: false,
   },
   on: {
     SET_JOYSTICK_ACTIVE: {
@@ -320,6 +329,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             lives: GAME_LIVES,
             validations: structuredClone(VALIDATIONS),
             resetAttempts: () => RESET_ATTEMPTS,
+            hasPower: () => false,
             state: (context: Context) => {
               if (context.isTraining) return context.state;
               startAttempt();
@@ -386,6 +396,13 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               };
             }
             return context;
+          }),
+        },
+        SET_POWER: {
+          actions: assign({
+            hasPower: (context: Context, event: SetPowerEvent) => {
+              return event.hasPower;
+            },
           }),
         },
         END_GAME_EARLY: {

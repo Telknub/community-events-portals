@@ -28,6 +28,7 @@ interface Props {
 }
 
 const _score = (state: PortalMachineState) => state.context.score;
+const _hasPower = (state: PortalMachineState) => state.context.hasPower;
 
 export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const { t } = useAppTranslation();
@@ -37,9 +38,9 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const [seconds, setSeconds] = React.useState(PUZZLE_TIMES[puzzleType][difficulty]);
   const [isCompleted, setIsCompleted] = React.useState(false);
   const [availablePuzzles, setAvailablePuzzles] = React.useState(structuredClone(PUZZLE_TYPES).filter((puzzle) => puzzle !== puzzleType));
-  const [hasPower, setHasPower] = React.useState(false);
 
   const score = useSelector(portalService, _score);
+  const hasPower = useSelector(portalService, _hasPower);
 
   const button = useSound("tab");
 
@@ -74,7 +75,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     } else {
       portalService.send("USE_POWER", { power });
     }
-    setHasPower(true);
+    portalService.send("SET_POWER", { hasPower: true });
   };
 
   const onFinish = () => {
