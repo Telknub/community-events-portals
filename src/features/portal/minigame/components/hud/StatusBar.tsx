@@ -1,12 +1,26 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Timer } from "../hud/Timer";
 import { Lives } from "../hud/Lives";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
 import { Button } from "components/ui/Button";
+import { PortalMachineState } from "../../lib/Machine";
+import { useSelector } from "@xstate/react";
+import { PortalContext } from "../../lib/PortalProvider";
 
-export const StatusBar: React.FC = () => {
+interface Props {
+  onReset: () => void;
+  seconds: number;
+}
+
+const _resetAttempts = (state: PortalMachineState) => state.context.resetAttempts;
+
+export const StatusBar: React.FC<Props> = ({ onReset, seconds }) => {
+  const { portalService } = useContext(PortalContext);
+
+  const resetAttempts = useSelector(portalService, _resetAttempts);
+
   return (
     <>
       <div className="flex flex-row w-full flex-wrap items-center justify-center">
@@ -18,9 +32,9 @@ export const StatusBar: React.FC = () => {
           <div className="flex flex-row gap-1 md:gap-3">
             <Label icon={SUNNYSIDE.icons.timer} type="vibrant">
               {/* Static - puzzle time */}
-              <span className="text-xs md:text-[2.5rem]">10</span>
+              <span className="text-xs md:text-[2.5rem]">{seconds.toString().padStart(2, '0')}</span>
             </Label>
-            <Button>
+            <Button disabled={resetAttempts === 0} onClick={onReset}>
               <div className="flex items-center justify-center">
                 <img
                   className="w-[2rem] md:w-[2.5rem] pt-[5px]"
@@ -28,7 +42,7 @@ export const StatusBar: React.FC = () => {
                   alt="reset button"
                 />
                 {/* Static - reset counter */}
-                <span className="text-xs md:text-[2.5rem] pl-2">3</span>
+                <span className="text-xs md:text-[2.5rem] pl-2">{resetAttempts}</span>
               </div>
             </Button>
           </div>

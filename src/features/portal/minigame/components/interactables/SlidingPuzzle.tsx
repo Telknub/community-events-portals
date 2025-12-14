@@ -13,14 +13,18 @@ const TOTAL_TILES = SIZE_X * SIZE_Y;
 
 interface Props {
   onClose: () => void;
-  onAction: () => void;
+  onComplete: () => void;
   difficulty: "easy" | "hard";
+  seconds: number;
+  onReset: () => void;
 }
 
 export const SlidingPuzzle: React.FC<Props> = ({
   onClose,
-  onAction,
+  onComplete,
   difficulty,
+  seconds,
+  onReset
 }) => {
   const [tiles, setTiles] = useState<(number | null)[]>([]);
   const [isSolved, setIsSolved] = useState(false);
@@ -34,7 +38,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
       const isSolved = checkIfSolved(tiles);
       setIsSolved(isSolved);
       if (isSolved) {
-        (onAction(), SNOW());
+        (onComplete(), SNOW());
       }
     }
   }, [tiles]);
@@ -51,7 +55,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
 
     let lastEmptyIndex = emptyIndex;
 
-    for (let moves = 0; moves < moveCount; ) {
+    for (let moves = 0; moves < moveCount;) {
       const neighbors = getAdjacentIndices(emptyIndex).filter(
         (n) => n !== lastEmptyIndex,
       ); // avoid undoing
@@ -124,11 +128,11 @@ export const SlidingPuzzle: React.FC<Props> = ({
   return (
     <>
       <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center flex-col gap-4">
-        <div className="relative w-full top-16 md:top-20 flex justify-center z-20">
+        <div className="relative w-full top-0 md:top-20 flex justify-center z-20">
           <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div className="flex flex-col items-center">
-          <StatusBar />
+          <StatusBar seconds={seconds} onReset={onReset} />
           <div
             className="p-3 border-[1rem] border-[#265c42]"
             style={{
@@ -151,15 +155,14 @@ export const SlidingPuzzle: React.FC<Props> = ({
                     style={
                       tile !== null
                         ? {
-                            backgroundImage: `url(${SLIDING_PUZZLE_IMG})`,
-                            backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
-                            backgroundPosition: getBackgroundPosition(tile),
-                          }
+                          backgroundImage: `url(${SLIDING_PUZZLE_IMG})`,
+                          backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
+                          backgroundPosition: getBackgroundPosition(tile),
+                        }
                         : {}
                     }
-                    className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${
-                      tile === null ? "bg-white" : "bg-cover bg-center"
-                    }`}
+                    className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${tile === null ? "bg-white" : "bg-cover bg-center"
+                      }`}
                   />
                 ))}
               </div>

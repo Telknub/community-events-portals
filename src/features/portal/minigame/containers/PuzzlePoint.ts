@@ -20,6 +20,7 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
   private openedPuzzle = false;
   private id: number;
   private difficulty: string;
+  private puzzleType: string = "";
 
   scene: Scene;
 
@@ -65,9 +66,17 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
         this.sprite.setTexture("checkpoint");
       }
     });
-    EventBus.on("retry-puzzle", (id: number) => {
+    EventBus.on("hurt-player", (id: number) => {
       if (id === this.id) {
-        this.openedPuzzle = false;
+        this.player?.hurt();
+        const lives = this.scene.portalService?.state.context.lives || 0;
+        if (lives <= 0) {
+          this.scene.portalService?.send("GAME_OVER");
+        } else {
+          setTimeout(() => {
+            interactableModalManager.open("puzzle", { puzzleType: this.puzzleType, id: this.id, difficulty: this.difficulty });
+          }, 2000);
+        }
       }
     });
   }
@@ -76,12 +85,15 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
     if (!this.openedPuzzle && this.scene.portalService?.state.matches("playing")) {
       this.scene.velocity = 0;
       this.openedPuzzle = true;
-      //   const puzzleType =
-      //     this.scene.puzzleTypes[
-      //       Math.floor(Math.random() * this.scene.puzzleTypes.length)
-      //     ];
-      const puzzleType = "pipe";
-      interactableModalManager.open("puzzle", { puzzleType, id: this.id, difficulty: this.difficulty });
+      this.puzzleType =
+        this.scene.puzzleTypes[
+        Math.floor(Math.random() * this.scene.puzzleTypes.length)
+        ];
+      this.scene.puzzleTypes = this.scene.puzzleTypes.filter(
+        (puzzle) => puzzle !== this.puzzleType,
+      );
+      // this.puzzleType = "sudoku";
+      interactableModalManager.open("puzzle", { puzzleType: this.puzzleType, id: this.id, difficulty: this.difficulty });
     }
   }
 }

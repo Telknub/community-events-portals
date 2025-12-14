@@ -70,6 +70,9 @@ export class Scene extends BaseScene {
     // Points
     this.load.image("point", "/world/portal/images/point.png");
     this.load.image("checkpoint", "/world/portal/images/checkpoint.png");
+
+    // Heart
+    this.load.image("heart", "/world/portal/images/heart.png");
   }
 
   async create() {

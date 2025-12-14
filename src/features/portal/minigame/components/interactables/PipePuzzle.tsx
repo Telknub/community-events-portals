@@ -37,8 +37,10 @@ interface PipeTile {
 
 interface Props {
   onClose: () => void;
-  onAction: () => void;
+  onComplete: () => void;
   difficulty?: Difficulty;
+  seconds: number;
+  onReset: () => void;
 }
 
 // Helper: Get connections for a pipe based on its type and rotation
@@ -73,7 +75,7 @@ const getConnections = (type: PipeType, rotation: number): boolean[] => {
   return connected;
 };
 
-export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "easy" }) => {
+export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = "easy", seconds, onReset }) => {
   const [grid, setGrid] = useState<PipeTile[][]>([]);
   const [gridSize, setGridSize] = useState<number>(GRID_SIZES[difficulty]);
   const [isComplete, setIsComplete] = useState<boolean>(false);
@@ -322,7 +324,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
 
     if (result.success && !isComplete) {
       setIsComplete(true);
-      onAction(); // Trigger win action
+      onComplete(); // Trigger win action
       SNOW();
     }
   };
@@ -334,172 +336,171 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onAction, difficulty = "e
     <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
         <div>
-            <div className="relative w-full top-16 flex justify-center z-20">
-              <img className="w-[6rem] md:w-[8rem] " src={redRibbon}/>
-            </div>
+          <div className="relative w-full top-16 flex justify-center z-20">
+            <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
+          </div>
           <div
             className="p-3 border-[1rem] border-[#a22633] rounded-t-[2.5rem]"
             style={{
               backgroundImage:
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
-              }}
-        >
-            <StatusBar />
-        <div
-          style={{
-            width: "fit-content",
-            justifySelf: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "20px",
-            paddingRight: difficulty === "easy" ? "70px" : "20px",
-            paddingLeft: difficulty === "easy" ? "70px" : "20px",
-            paddingTop: difficulty === "easy" ? "40px" : "20px",
-            background: "#87cfee",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            fontFamily: "Arial, sans-serif",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
-              gap: "0px",
-              borderRadius: "4px",
-              backgroundColor: "#87cfee",
-              position: "relative",
-              userSelect: "none",
             }}
           >
-            {isComplete && (
-              <div style={{
-                position: "absolute",
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: "rgba(0,0,0,0.6)",
+            <StatusBar seconds={seconds} onReset={onReset} />
+            <div
+              style={{
+                width: "fit-content",
+                justifySelf: "center",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#FFF",
-                fontSize: "35px",
-                fontWeight: "bold",
-                zIndex: 10,
-                textShadow: "0 2px 4px black",
                 flexDirection: "column",
-                fontFamily: "Basic",
-              }}>
-                <span>🎉Happy Holidays!🎉</span>
-              </div>
-            )}
+                alignItems: "center",
+                padding: "20px",
+                paddingRight: difficulty === "easy" ? "70px" : "20px",
+                paddingLeft: difficulty === "easy" ? "70px" : "20px",
+                paddingTop: difficulty === "easy" ? "40px" : "20px",
+                background: "#87cfee",
+                fontFamily: "Arial, sans-serif",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
+                  gap: "0px",
+                  borderRadius: "4px",
+                  backgroundColor: "#87cfee",
+                  position: "relative",
+                  userSelect: "none",
+                }}
+              >
+                {isComplete && (
+                  <div style={{
+                    position: "absolute",
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: "rgba(0,0,0,0.6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#FFF",
+                    fontSize: "35px",
+                    fontWeight: "bold",
+                    zIndex: 10,
+                    textShadow: "0 2px 4px black",
+                    flexDirection: "column",
+                    fontFamily: "Basic",
+                  }}>
+                    <span>🎉Happy Holidays!🎉</span>
+                  </div>
+                )}
 
-            {grid.map((row, r) =>
-              row.map((tile, c) => (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => handleRotate(r, c)}
-                  style={{
-                    width: cellSize,
-                    height: cellSize,
-                    boxSizing: "border-box",
-                    cursor: tile.isFixed ? "default" : "pointer",
-                    position: "relative",
-                  }}
-                >
-                  {/* Dirt Path Image */}
+                {grid.map((row, r) =>
+                  row.map((tile, c) => (
+                    <div
+                      key={`${r}-${c}`}
+                      onClick={() => handleRotate(r, c)}
+                      style={{
+                        width: cellSize,
+                        height: cellSize,
+                        boxSizing: "border-box",
+                        cursor: tile.isFixed ? "default" : "pointer",
+                        position: "relative",
+                      }}
+                    >
+                      {/* Dirt Path Image */}
+                      <img
+                        src={tile.type === "straight" ? DIRT_PATH : DIRT_PATH_CURVE}
+                        alt="path"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          transform: `rotate(${tile.rotation * 90}deg)`,
+                          transition: "transform 0.3s ease",
+                          opacity: tile.isFixed ? 0.9 : 1,
+                          filter: tile.isFilled ? "brightness(1.2)" : "none",
+                          pointerEvents: "none",
+                        }}
+                      />
+
+                      {/* Start Marker */}
+                      {tile.isStart && (
+                        <img
+                          src={START_SLEDGE}
+                          alt="Start"
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            zIndex: 2,
+                            pointerEvents: "none",
+                          }}
+                        />
+                      )}
+                      {/* End Marker */}
+                      {tile.isEnd && (
+                        <img
+                          src={END_LIGHTHOUSE}
+                          alt="End"
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "80%",
+                            height: "80%",
+                            objectFit: "contain",
+                            zIndex: 2,
+                            pointerEvents: "none",
+                          }}
+                        />
+                      )}
+                      {/* Fixed Pin */}
+                      {tile.isFixed && !tile.isStart && !tile.isEnd && (
+                        <div style={{
+                          position: "absolute", top: 4, left: 4,
+                          width: 8, height: 8,
+                          background: "#95a5a6", borderRadius: "50%",
+                          opacity: 0.8,
+                          zIndex: 2,
+                          pointerEvents: "none",
+                        }} />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Legend */}
+              <div style={{ marginTop: "10px", display: "flex", gap: "10px", color: "#34577c", fontSize: "30px", fontFamily: "Basic" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                   <img
-                    src={tile.type === "straight" ? DIRT_PATH : DIRT_PATH_CURVE}
-                    alt="path"
+                    src={START_SLEDGE}
+                    alt="Start"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      transform: `rotate(${tile.rotation * 90}deg)`,
-                      transition: "transform 0.3s ease",
-                      opacity: tile.isFixed ? 0.9 : 1,
-                      filter: tile.isFilled ? "brightness(1.2)" : "none",
-                      pointerEvents: "none",
+                      width: "50px",
+                      height: "50px",
+                      objectFit: "contain",
                     }}
                   />
-
-                  {/* Start Marker */}
-                  {tile.isStart && (
-                    <img
-                      src={START_SLEDGE}
-                      alt="Start"
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        zIndex: 2,
-                        pointerEvents: "none",
-                      }}
-                    />
-                  )}
-                  {/* End Marker */}
-                  {tile.isEnd && (
-                    <img
-                      src={END_LIGHTHOUSE}
-                      alt="End"
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: "80%",
-                        height: "80%",
-                        objectFit: "contain",
-                        zIndex: 2,
-                        pointerEvents: "none",
-                      }}
-                    />
-                  )}
-                  {/* Fixed Pin */}
-                  {tile.isFixed && !tile.isStart && !tile.isEnd && (
-                    <div style={{
-                      position: "absolute", top: 4, left: 4,
-                      width: 8, height: 8,
-                      background: "#95a5a6", borderRadius: "50%",
-                      opacity: 0.8,
-                      zIndex: 2,
-                      pointerEvents: "none",
-                    }} />
-                  )}
+                  Start
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Legend */}
-          <div style={{ marginTop: "10px", display: "flex", gap: "10px", color: "#34577c", fontSize: "30px", fontFamily: "Basic" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img
-                src={START_SLEDGE}
-                alt="Start"
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  objectFit: "contain",
-                }}
-              />
-              Start
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <img
+                    src={END_LIGHTHOUSE}
+                    alt="End"
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      objectFit: "contain",
+                    }}
+                  />
+                  End
+                </div>
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img
-                src={END_LIGHTHOUSE}
-                alt="End"
-                style={{
-                  width: "30px",
-                  height: "30px",
-                  objectFit: "contain",
-                }}
-              />
-              End
-            </div>
-          </div>
-        </div>
           </div>
         </div>
       </div>
