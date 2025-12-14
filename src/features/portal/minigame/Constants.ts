@@ -7,6 +7,10 @@ import confetti from "canvas-confetti";
 
 import slidingPuzzle1 from "public/world/portal/images/slidingPuzzle1.webp";
 
+import lighthouse from "public/world/portal/images/lighthouse.png";
+import point from "public/world/portal/images/point.png";
+import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
+
 export const PORTAL_NAME = "christmas";
 export const PORTAL_TOKEN = "Christmas Token 2025";
 
@@ -85,15 +89,15 @@ export const INSTRUCTIONS: {
   width?: number;
 }[] = [
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: lighthouse,
     description: t(`${PORTAL_NAME}.resource1`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: point,
     description: t(`${PORTAL_NAME}.resource2`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: resetBtn,
     description: t(`${PORTAL_NAME}.resource3`),
   },
 ];
