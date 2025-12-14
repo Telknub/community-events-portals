@@ -136,8 +136,8 @@ export const SlidingPuzzle: React.FC<Props> = ({
   return (
     <>
       <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center flex-col gap-4">
-        <div className="relative w-full top-0 md:top-20 flex justify-center z-20">
-          <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
+        <div className="relative w-full bottom-4 flex justify-center z-20">
+          <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div className="flex flex-col items-center">
           <StatusBar seconds={seconds} onReset={onReset} />
