@@ -168,8 +168,8 @@ export const SudokuPuzzle: React.FC<Props> = ({
   return (
     <>
       <div className="fixed flex-col top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center">
-        <div className="relative w-full top-12 md:top-16 flex justify-center z-20">
-          <img className="w-[6rem] md:w-[8rem] " src={redRibbon} />
+        <div className="relative w-full bottom-10 md:bottom-12 flex justify-center z-20">
+          <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div
           className="p-[.7rem] md:p-[1rem] rounded-t-[3rem]"

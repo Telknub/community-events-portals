@@ -100,8 +100,8 @@ export const NonogramPuzzle: React.FC<Props> = ({
     <>
       <div className="fixed inset-0 bg-white-200 z-0 backdrop-blur-sm">
         <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
-          <div className="relative w-full top-12 md:top-16 flex justify-center z-20">
-            <img className="w-[6rem] md:w-[8rem]" src={redRibbon} />
+          <div className="relative w-full bottom-10 md:bottom-12 flex justify-center z-20">
+            <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
           </div>
           <div
             className="md:p-[1rem] p-[.7rem] rounded-t-[3rem]"
