@@ -79,17 +79,6 @@ export const Mission: React.FC<Props> = ({
           <div>
             <div className="w-full relative flex justify-between gap-1 items-center pt-1">
               <Attempts attemptsLeft={attemptsLeft} />
-              <div className="gap-1">
-                <Button
-                  className="whitespace-nowrap capitalize w-32 p-0"
-                  onClick={() => setPage("controls")}
-                >
-                  <div className="flex flex-row gap-1 justify-center items-center">
-                    <img src={key} className="h-5 mt-1" />
-                    {t(`${PORTAL_NAME}.controls`)}
-                  </div>
-                </Button>
-              </div>
             </div>
 
             <div className="w-full mt-1 mb-3 flex flex-col gap-2">

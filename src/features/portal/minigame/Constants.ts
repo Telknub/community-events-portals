@@ -5,8 +5,9 @@ import { ITEM_DETAILS } from "features/game/types/images";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import confetti from "canvas-confetti";
 
-import slidingPuzzle1 from "public/world/portal/images/slidingPuzzle1.webp";
-
+import img1 from "public/world/portal/images/img1.webp";
+import img2 from "public/world/portal/images/img2.webp";
+import img3 from "public/world/portal/images/img3.jpg";
 import lighthouse from "public/world/portal/images/lighthouse.png";
 import point from "public/world/portal/images/point.png";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
@@ -95,6 +96,7 @@ export const VICTORY_TEXT = {
   Sudoku: "You've uncovered the Owl's secret!",
   SlidingPuzzle: "The Owl watches, puzzle complete!",
 };
+export const PUZZLE_IMGS = [img1, img2, img3];
 
 // Jigsaw puzzle
 export const JIGSAW_PUZZLE_DIFFICULTY = { easy: 8, hard: 4 };
@@ -107,7 +109,6 @@ export const SUDOKU_DIFFICULTY = {
 
 // Sliding Puzzle
 export const SLIDING_PUZZLE_DIFFICULTY = { easy: 4, hard: 8 };
-export const SLIDING_PUZZLE_IMG = slidingPuzzle1;
 
 // Guide
 export const INSTRUCTIONS: {
@@ -115,19 +116,19 @@ export const INSTRUCTIONS: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: lighthouse,
-    description: t(`${PORTAL_NAME}.resource1`),
-  },
-  {
-    image: point,
-    description: t(`${PORTAL_NAME}.resource2`),
-  },
-  {
-    image: resetBtn,
-    description: t(`${PORTAL_NAME}.resource3`),
-  },
-];
+    {
+      image: lighthouse,
+      description: t(`${PORTAL_NAME}.resource1`),
+    },
+    {
+      image: point,
+      description: t(`${PORTAL_NAME}.resource2`),
+    },
+    {
+      image: resetBtn,
+      description: t(`${PORTAL_NAME}.resource3`),
+    },
+  ];
 
 export const RESOURCES_TABLE: {
   image: string;

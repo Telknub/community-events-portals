@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  SLIDING_PUZZLE_IMG,
+  PUZZLE_IMGS,
   SLIDING_PUZZLE_DIFFICULTY,
   SNOW,
 } from "../../Constants";
@@ -28,8 +28,10 @@ export const SlidingPuzzle: React.FC<Props> = ({
 }) => {
   const [tiles, setTiles] = useState<(number | null)[]>([]);
   const [isSolved, setIsSolved] = useState(false);
+  const [puzzleImg, setPuzzleImg] = useState<string>("");
 
   useEffect(() => {
+    getPuzzleImg();
     generatPuzzle();
   }, [difficulty]);
 
@@ -125,6 +127,12 @@ export const SlidingPuzzle: React.FC<Props> = ({
     return `${x}% ${y}%`;
   };
 
+  const getPuzzleImg = (): void => {
+    const randomIndex = Math.floor(Math.random() * PUZZLE_IMGS.length);
+    const puzzleImg = PUZZLE_IMGS[randomIndex];
+    setPuzzleImg(puzzleImg);
+  };
+
   return (
     <>
       <div className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm flex items-center justify-center flex-col gap-4">
@@ -155,7 +163,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
                     style={
                       tile !== null
                         ? {
-                          backgroundImage: `url(${SLIDING_PUZZLE_IMG})`,
+                          backgroundImage: `url(${puzzleImg})`,
                           backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
                           backgroundPosition: getBackgroundPosition(tile),
                         }

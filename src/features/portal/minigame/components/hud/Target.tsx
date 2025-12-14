@@ -8,6 +8,8 @@ import { PortalMachineState } from "../../lib/Machine";
 import { millisecondsToString } from "lib/utils/time";
 import { PORTAL_NAME } from "../../Constants";
 
+import christmasBall from "public/world/portal/images/SudokuBall.webp";
+
 const _target = (state: PortalMachineState) =>
   state.context.state?.minigames.prizes[PORTAL_NAME]?.score ?? 0;
 const _score = (state: PortalMachineState) => state.context.score;
@@ -23,14 +25,12 @@ export const Target: React.FC = () => {
 
   return (
     <Label
-      icon={SUNNYSIDE.resource.pirate_bounty}
+      icon={christmasBall}
       secondaryIcon={isTargetReached ? SUNNYSIDE.icons.confirm : undefined}
       type={isTargetReached ? "success" : "vibrant"}
     >
       {t(`${PORTAL_NAME}.targetScore`, {
-        target: millisecondsToString(target, {
-          length: "full",
-        }),
+        target,
       })}
     </Label>
   );

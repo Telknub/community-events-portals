@@ -18,6 +18,9 @@ import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import arrowDown from "public/world/portal/images/arrow_down.png";
 import resetButton from "public/world/portal/images/resetbutton_normal.webp"
 import { SUNNYSIDE } from "assets/sunnyside";
+import { Travel } from "../hud/Travel";
+import { Settings } from "../hud/Settings";
+import { EventObject } from "xstate";
 
 interface Props {
   onClose: () => void;
@@ -94,6 +97,22 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     return () => clearInterval(interval);
   }, [seconds, hasPower]);
 
+  useEffect(() => {
+    const onGameOver = (event: EventObject) => {
+      if (event.type === "GAME_OVER") {
+        onClose();
+      }
+    };
+    portalService.onEvent(onGameOver);
+
+    const onEndGameEarly = (event: EventObject) => {
+      if (event.type === "END_GAME_EARLY") {
+        onClose();
+      }
+    };
+    portalService.onEvent(onEndGameEarly);
+  }, []);
+
   if (score === POWER_DISPLAY_SCORE && !hasPower) {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-black/20">
@@ -150,6 +169,9 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       {puzzleType === "nonogram" && (
         <NonogramPuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
       )}
+
+      <Travel />
+      <Settings />
     </>
   );
 };

@@ -8,7 +8,7 @@ import { Score } from "./Score";
 import { Settings } from "./Settings";
 import { Travel } from "./Travel";
 import { Timer } from "./Timer";
-// import { Target } from "./Target";
+import { Target } from "./Target";
 import { Lives } from "./Lives";
 
 const _isJoystickActive = (state: PortalMachineState) =>
@@ -46,7 +46,7 @@ export const Hud: React.FC = () => {
     <HudContainer>
       <div>
         <div
-          className="absolute"
+          className="absolute flex flex-col gap-2"
           style={{
             top: `${PIXEL_SCALE * 4}px`,
             left: `${PIXEL_SCALE * 6}px`,
@@ -54,7 +54,7 @@ export const Hud: React.FC = () => {
         >
           {isPlaying && (
             <>
-              {/* <Target /> */}
+              <Target />
               <Timer />
               <Lives />
               <Score />
@@ -62,12 +62,10 @@ export const Hud: React.FC = () => {
           )}
         </div>
 
-        {!isJoystickActive && (
-          <>
-            <Travel />
-            <Settings />
-          </>
-        )}
+        <>
+          <Travel />
+          <Settings />
+        </>
       </div>
     </HudContainer>
   );

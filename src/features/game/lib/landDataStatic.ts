@@ -633,8 +633,76 @@ export const STATIC_OFFLINE_FARM: GameState = {
   },
 
   minigames: {
-    games: {},
-    prizes: {},
+    games: {
+      christmas: {
+        history: {
+          "2024-10-31": {
+            attempts: 7,
+            highscore: 255167,
+          },
+          "2024-11-01": {
+            attempts: 14,
+            highscore: 286349,
+          },
+          "2024-11-02": {
+            attempts: 2,
+            highscore: 306854,
+          },
+          "2024-11-03": {
+            attempts: 14,
+            highscore: 378155,
+          },
+          "2024-11-04": {
+            attempts: 1,
+            highscore: 76709,
+          },
+          "2025-10-28": {
+            attempts: 1,
+            highscore: 999987655,
+          },
+        },
+        highscore: 76709,
+        purchases: [
+          {
+            purchasedAt: 1730404371937,
+            sfl: 30,
+            items: {},
+          },
+          {
+            purchasedAt: 1730456882476,
+            sfl: 30,
+            items: {},
+          },
+          {
+            purchasedAt: 1730537352097,
+            sfl: 30,
+            items: {},
+          },
+          {
+            purchasedAt: 1730628549755,
+            sfl: 30,
+            items: {},
+          },
+          {
+            purchasedAt: 1761247801755,
+            sfl: 30,
+            items: {},
+          },
+        ],
+      },
+    },
+    prizes: {
+      christmas: {
+        coins: 0,
+        items: {
+          "Christmas Token 2025": 50,
+        },
+        wearables: {},
+        score: 3,
+        startAt: 1734566400000,
+        endAt: 1734652800000,
+      },
+    },
   },
 
   bounties: {

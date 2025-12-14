@@ -6,7 +6,7 @@ import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../Constants";
 import { Guide } from "./Guide";
 import { Leaderboard } from "./Leaderboard";
 
-import misionIcon from "public/world/page.png";
+import misionIcon from "public/world/portal/images/SudokuBall.webp";
 import guideIcon from "public/world/page.png";
 import leaderboardIcon from "assets/icons/trophy.png";
 

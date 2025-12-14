@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { JIGSAW_PUZZLE_DIFFICULTY, SNOW } from "../../Constants";
+import { JIGSAW_PUZZLE_DIFFICULTY, PUZZLE_IMGS, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants and Types ---
 
 const GRID_SIZE = 4; // 4x4 = 16 pieces
 const MAX_TILE_SIZE = 100; // Pixels per piece
-const IMAGE_URL = "public/world/portal/images/slidingPuzzle1.webp";
 
 // Interface to define the structure of a piece
 interface Tile {
@@ -36,6 +35,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
   const [isComplete, setIsComplete] = useState<boolean>(false);
 
   const [draggedItem, setDraggedItem] = useState<DragSource | null>(null);
+
+  const [puzzleImg, setPuzzleImg] = useState<string>("");
 
   // --- Initialization Logic ---
 
@@ -76,7 +77,14 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
     setIsComplete(false);
   };
 
+  const getPuzzleImg = (): void => {
+    const randomIndex = Math.floor(Math.random() * PUZZLE_IMGS.length);
+    const puzzleImg = PUZZLE_IMGS[randomIndex];
+    setPuzzleImg(puzzleImg);
+  };
+
   useEffect(() => {
+    getPuzzleImg();
     initializeGame(JIGSAW_PUZZLE_DIFFICULTY[difficulty]);
 
     const handleResize = () => {
@@ -211,7 +219,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
     const col = id % GRID_SIZE;
 
     return {
-      backgroundImage: `url(${IMAGE_URL})`,
+      backgroundImage: `url(${puzzleImg})`,
       backgroundPosition: `-${col * tileSize}px -${row * tileSize}px`,
       backgroundSize: `${GRID_SIZE * tileSize}px ${GRID_SIZE * tileSize}px`,
       backgroundRepeat: "no-repeat",
@@ -319,7 +327,6 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                   onDrop={handleDropOnPool}
                   style={{
                     // Dynamic width matching the grid or wider but contained
-                    // Dynamic width matching the grid or wider but contained
                     width: `${GRID_SIZE * tileSize}px`,
                     maxWidth: "100%",
                     minHeight: `${tileSize + 20}px`,
@@ -335,20 +342,12 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                     backgroundColor: "rgba(255,255,255,0.5)",
                   }}
                 >
-                  {pool.length === 0 && !isComplete && (
-                    <p style={{ width: "100%", textAlign: "center", color: "#666" }}>
-                      Arrastra piezas aquí o completa el puzzle.
-                    </p>
-                  )}
-
                   {pool.map((tile, index) => (
                     <div
                       key={`pool-${tile.id}`}
                       draggable={!isComplete}
                       onDragStart={(e) => handleDragStart(e, { type: "pool", index })}
                       style={{
-                        // Prevent shrinking
-                        // Prevent shrinking
                         flex: `0 0 ${tileSize}px`,
                         width: tileSize,
                         height: tileSize,
