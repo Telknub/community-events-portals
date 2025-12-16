@@ -5,9 +5,9 @@ import { SquareIcon } from "components/ui/SquareIcon";
 import { Label } from "components/ui/Label";
 import {
   RESOURCES_TABLE,
-  ENEMIES_TABLE,
   PORTAL_NAME,
   INSTRUCTIONS,
+  PUZZLE_TABLE,
 } from "../../Constants";
 
 export const Guide = () => {
@@ -67,19 +67,16 @@ export const Guide = () => {
           </tbody>
         </table>
         {/* Enemies */}
-        <Label type="default">{t(`${PORTAL_NAME}.enemies`)}</Label>
+        <Label type="default">{t(`${PORTAL_NAME}.puzzle`)}</Label>
         <table className="w-full text-xs table-fixed border-collapse">
           <tbody>
-            {ENEMIES_TABLE.map(({ image, description, width = 13 }, index) => (
+            {PUZZLE_TABLE.map(({ image, description, width = 100 }, index) => (
               <tr key={index}>
-                <td
+                {/* <td
                   style={{ border: "1px solid #b96f50" }}
                   className="p-1.5 w-1/6"
                 >
-                  <div className="flex items-center justify-center">
-                    {<SquareIcon icon={image} width={width} />}
-                  </div>
-                </td>
+                </td> */}
                 <td
                   style={{ border: "1px solid #b96f50" }}
                   className="p-1.5 w-5/6"
@@ -87,6 +84,9 @@ export const Guide = () => {
                   {t(`${PORTAL_NAME}.guideDescription`, {
                     description: description,
                   })}
+                  <div className="flex items-center justify-center pt-2">
+                    {<SquareIcon icon={image} width={width} />}
+                  </div>
                 </td>
               </tr>
             ))}

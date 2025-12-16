@@ -11,6 +11,13 @@ import img3 from "public/world/portal/images/img3.jpg";
 import lighthouse from "public/world/portal/images/lighthouse.png";
 import point from "public/world/portal/images/point.png";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
+import arrowDown from "public/world/portal/images/arrow_down.png";
+import sudokuPuzzle from "public/world/portal/images/sudokuPuzzle.png";
+import pipePuzzle from "public/world/portal/images/pipePuzzle.png";
+import jigsawPuzzle from "public/world/portal/images/jigsawPuzzle.png";
+import slidingPuzzle from "public/world/portal/images/slidingPuzzle.png";
+import nonogramPuzzle from "public/world/portal/images/nonogramPuzzle.png";
+import { SUNNYSIDE } from "assets/sunnyside";
 
 export const PORTAL_NAME = "christmas";
 export const PORTAL_TOKEN = "Christmas Token 2025";
@@ -128,6 +135,22 @@ export const INSTRUCTIONS: {
       image: resetBtn,
       description: t(`${PORTAL_NAME}.resource3`),
     },
+    {
+      image: SUNNYSIDE.icons.timer,
+      description: t(`${PORTAL_NAME}.resource4`),
+    },
+    {
+      image: SUNNYSIDE.icons.heart,
+      description: t(`${PORTAL_NAME}.resource5`),
+    },
+    {
+      image: SUNNYSIDE.icons.stopwatch,
+      description: t(`${PORTAL_NAME}.resource6`),
+    },
+    {
+      image: SUNNYSIDE.icons.arrow_up,
+      description: t(`${PORTAL_NAME}.resource7`),
+    },
   ];
 
 export const RESOURCES_TABLE: {
@@ -136,31 +159,43 @@ export const RESOURCES_TABLE: {
   width?: number;
 }[] = [
     {
-      image: ITEM_DETAILS["Abandoned Bear"].image,
-      description: t(`${PORTAL_NAME}.resource1`),
+      image: arrowDown,
+      description: t(`${PORTAL_NAME}.power.difficulty`),
     },
     {
-      image: ITEM_DETAILS["Abandoned Bear"].image,
-      description: t(`${PORTAL_NAME}.resource2`),
+      image: resetBtn,
+      description: t(`${PORTAL_NAME}.power.reset`),
     },
     {
-      image: ITEM_DETAILS["Abandoned Bear"].image,
-      description: t(`${PORTAL_NAME}.resource3`),
+      image: SUNNYSIDE.icons.heart,
+      description: t(`${PORTAL_NAME}.power.life`),
     },
   ];
 
-export const ENEMIES_TABLE: {
+export const PUZZLE_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
     {
-      image: ITEM_DETAILS["Abandoned Bear"].image,
-      description: t(`${PORTAL_NAME}.enemy1`),
+      image: sudokuPuzzle,
+      description: t(`${PORTAL_NAME}.puzzle1`),
     },
     {
-      image: ITEM_DETAILS["Abandoned Bear"].image,
-      description: t(`${PORTAL_NAME}.enemy2`),
+      image: pipePuzzle,
+      description: t(`${PORTAL_NAME}.puzzle2`),
+    },
+    {
+      image: jigsawPuzzle,
+      description: t(`${PORTAL_NAME}.puzzle3`),
+    },
+    {
+      image: nonogramPuzzle,
+      description: t(`${PORTAL_NAME}.puzzle4`),
+    },
+    {
+      image: slidingPuzzle,
+      description: t(`${PORTAL_NAME}.puzzle5`),
     },
   ];
 
