@@ -16,6 +16,8 @@ interface Props {
   onReset: () => void;
 }
 
+const SIZE = 5;
+
 //  Choose pattern by difficulty
 function choosePattern(difficulty: "easy" | "hard") {
   const pool =
@@ -62,7 +64,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
 
   /* Player board state */
   const [board, setBoard] = useState<boolean[][]>(
-    Array.from({ length: 6 }, () => Array(6).fill(false)),
+    Array.from({ length: SIZE }, () => Array(SIZE).fill(false)),
   );
   const [solved, markSolved] = useState(false);
 
@@ -114,13 +116,13 @@ export const NonogramPuzzle: React.FC<Props> = ({
 
             <div className="bg-white p-0 md:p-6 border-[1rem] border-[#265c42] border-double">
               {/* Column Clues */}
-              <div className="flex ml-[55px] sm:ml-[40px] md:ml-[80px]">
+              <div className="flex ml-[65px] sm:ml-[40px] md:ml-[80px]">
                 {colClues.map((clue, i) => (
                   <div
                     key={i}
                     className="flex flex-col items-center
                       w-[40px] sm:w-[50px] md:w-[70px]
-                      text-sm sm:text-xl md:text-[3rem] font-bold"
+                      text-base sm:text-2xl md:text-[3.5rem] font-bold"
                   >
                     {clue.map((num, j) => (
                       <div className="my-2" key={j}>
@@ -140,7 +142,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
                       className="
                         w-[60px] sm:w-[40px] md:w-[80px]
                         pr-1 sm:pr-2
-                        text-sm sm:text-xl md:text-[3rem]
+                        text-base sm:text-2xl md:text-[3.5rem]
                         text-right font-bold
                       "
                     >
@@ -152,7 +154,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
                     </div>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-6">
+                    <div className="grid grid-cols-5">
                       {PATTERN[r].map((_, c) => {
                         const isFilled = board[r][c];
                         return (

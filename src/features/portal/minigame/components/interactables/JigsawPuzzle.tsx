@@ -360,7 +360,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                   ))}
                 </div>
               </div>
-              {isComplete && (
+              {/* {isComplete && (
                 <div
                   style={{
                     padding: "20px",
@@ -376,7 +376,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                 >
                   🎉Happy Holidays!🎉
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
