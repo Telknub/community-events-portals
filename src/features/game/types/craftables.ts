@@ -23,12 +23,12 @@ import {
 } from "./collectibles";
 import { BoostTreasure } from "./treasure";
 import { MarineMarvelName, OldFishName } from "./fishing";
-import { SeasonalBanner } from "./seasons";
+import { ChapterBanner } from "./chapters";
 import { EpicFlowerName, MutantFlowerName } from "./flowers";
 import { translate } from "lib/i18n/translate";
 import { FactionShopCollectibleName } from "./factionShop";
 import { BEDS } from "./beds";
-import { SeasonalCollectibleName } from "./megastore";
+import { ChapterCollectibleName } from "./megastore";
 import { MonumentName } from "./monuments";
 import { PetName, PetShrineName } from "./pets";
 
@@ -198,7 +198,7 @@ export type CollectibleName =
   | GoblinBlacksmithItemName
   | SoldOutCollectibleName
   | GoblinPirateItemName
-  | SeasonalBanner
+  | ChapterBanner
   | BoostTreasure
   | WarBanner
   | LanternName
@@ -217,7 +217,7 @@ export type CollectibleName =
   | TreasureCollectibleItem
   | MutantFlowerName
   | BedName
-  | SeasonalCollectibleName
+  | ChapterCollectibleName
   | MonumentName
   | PetName
   | PetShrineName
@@ -1438,7 +1438,7 @@ export const COLLECTIBLES_DIMENSIONS: Record<CollectibleName, Dimensions> = {
   Snowman: { width: 1, height: 1 },
   "Festive Toy Train": { width: 2, height: 2 },
   "Golden Cow": { width: 2, height: 2 },
-  Kite: { width: 1, height: 1 },
+  Kite: { width: 2, height: 1 },
   "Acorn House": { width: 2, height: 2 },
   "Spring Duckling": { width: 1, height: 1 },
   Igloo: { width: 2, height: 2 },
