@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { EventBus } from "../../lib/EventBus";
 import { PortalContext } from "../../lib/PortalProvider";
 
@@ -21,6 +21,7 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { Travel } from "../hud/Travel";
 import { Settings } from "../hud/Settings";
 import { EventObject } from "xstate";
+import { SeasonalGreeting } from "../hud/SeasonalGreeting";
 
 interface Props {
   onClose: () => void;
@@ -29,6 +30,7 @@ interface Props {
 
 const _score = (state: PortalMachineState) => state.context.score;
 const _hasPower = (state: PortalMachineState) => state.context.hasPower;
+let greetingShown = false;
 
 export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const { t } = useAppTranslation();
@@ -43,6 +45,17 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const hasPower = useSelector(portalService, _hasPower);
 
   const button = useSound("tab");
+  const [showGreeting, setShowGreeting] = useState(!greetingShown);
+
+ useEffect(() => {
+    if (showGreeting) {
+      const timer = setTimeout(() => {
+        greetingShown = true; // mark globally
+        setShowGreeting(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showGreeting]);
 
   const getPoint = () => {
     setIsCompleted(true);
@@ -152,6 +165,8 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       </div>
     );
   }
+
+  if (showGreeting) return <SeasonalGreeting />;
 
   return (
     <>
