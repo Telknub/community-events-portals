@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { SUDOKU_DIFFICULTY, SNOW } from "../../Constants";
+import { SUDOKU_DIFFICULTY, SNOW, PORTAL_SOUNDS } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
@@ -147,11 +147,13 @@ export const SudokuPuzzle: React.FC<Props> = ({
       );
 
       setPuzzle(newPuzzle);
+      PORTAL_SOUNDS.click.play();
 
       if (isPuzzleSolved(newPuzzle, solution)) {
         setIsSolved(true);
         onComplete();
         SNOW();
+        PORTAL_SOUNDS.win.play();
       }
     }
   };
@@ -243,7 +245,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
                             : ""
                           }
                           ${!isCellChangeable(r, c)
-                            ? "opacity-90"
+                            ? "opacity-80"
                             : "cursor-pointer hover:img-highlight"
                           }
                           w-20 h-20 md:w-24 md:h-24

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { JIGSAW_PUZZLE_DIFFICULTY, PUZZLE_IMGS, SNOW } from "../../Constants";
+import { JIGSAW_PUZZLE_DIFFICULTY, PORTAL_SOUNDS, PUZZLE_IMGS, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants and Types ---
@@ -175,6 +175,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
     setBoard(newBoard);
     setPool(newPool);
     setDraggedItem(null);
+    PORTAL_SOUNDS.click.play();
     checkWinCondition(newBoard);
   };
 
@@ -197,6 +198,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
 
       setBoard(newBoard);
       setPool(newPool);
+      PORTAL_SOUNDS.click.play();
       checkWinCondition(newBoard);
     }
     setDraggedItem(null);
@@ -209,6 +211,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
       setIsComplete(true);
       onComplete();
       SNOW();
+      PORTAL_SOUNDS.win.play();
     };
   };
 

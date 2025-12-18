@@ -4,6 +4,7 @@ import {
   NONOGRAM_PATTERNS_HARD,
   Cell,
   SNOW,
+  PORTAL_SOUNDS,
 } from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
 import redRibbon from "public/world/portal/images/bow.webp";
@@ -75,6 +76,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
     setBoard((prev) => {
       const next = prev.map((row) => [...row]);
       next[r][c] = !next[r][c];
+      PORTAL_SOUNDS.click.play();
       return next;
     });
   };
@@ -95,6 +97,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
     if (solved) {
       SNOW();
       onComplete();
+      PORTAL_SOUNDS.win.play();
     }
   }, [solved]);
 

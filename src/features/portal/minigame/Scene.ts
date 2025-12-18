@@ -64,7 +64,7 @@ export class Scene extends BaseScene {
     // Background
     this.load.audio(
       "backgroundMusic",
-      "/world/portal/music/background-music.mp3",
+      "/world/portal/music/SunflowerChristmas.mp3",
     );
 
     // Points

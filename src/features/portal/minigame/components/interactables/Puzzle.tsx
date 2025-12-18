@@ -8,7 +8,7 @@ import { SlidingPuzzle } from "./SlidingPuzzle";
 import { JigsawPuzzle } from "./JigsawPuzzle";
 import { PipePuzzle } from "./PipePuzzle";
 import { NonogramPuzzle } from "./NonogramPuzzle";
-import { MAX_PUZZLES, PORTAL_NAME, POWER_DISPLAY_SCORE, PUZZLE_TIMES, PUZZLE_TYPES, PuzzleName } from "../../Constants";
+import { MAX_PUZZLES, PORTAL_NAME, PORTAL_SOUNDS, POWER_DISPLAY_SCORE, PUZZLE_TIMES, PUZZLE_TYPES, PuzzleName } from "../../Constants";
 import { useSound } from "lib/utils/hooks/useSound";
 import { PortalMachineState } from "../../lib/Machine";
 import { useSelector } from "@xstate/react";
@@ -72,6 +72,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
 
   const reset = () => {
     portalService.send("USE_RESET");
+    PORTAL_SOUNDS.reset.play();
     const newPuzzleType = availablePuzzles[
       Math.floor(Math.random() * availablePuzzles.length)
     ];
