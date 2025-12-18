@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { SNOW } from "../../Constants";
+import { PORTAL_SOUNDS, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants & Types ---
@@ -319,6 +319,8 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
     const newGrid = [...grid];
     newGrid[r] = newRow;
 
+    PORTAL_SOUNDS.click.play();
+
     const result = checkFlow(newGrid, gridSize);
     setGrid(result.grid);
 
@@ -326,6 +328,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
       setIsComplete(true);
       onComplete(); // Trigger win action
       SNOW();
+      PORTAL_SOUNDS.win.play();
     }
   };
 
@@ -373,7 +376,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                   userSelect: "none",
                 }}
               >
-                {isComplete && (
+                {/* {isComplete && (
                   <div style={{
                     position: "absolute",
                     top: 0, left: 0, right: 0, bottom: 0,
@@ -391,7 +394,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                   }}>
                     <span>🎉Happy Holidays!🎉</span>
                   </div>
-                )}
+                )} */}
 
                 {grid.map((row, r) =>
                   row.map((tile, c) => (

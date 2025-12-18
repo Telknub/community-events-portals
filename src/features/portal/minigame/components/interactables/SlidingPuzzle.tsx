@@ -6,6 +6,7 @@ import {
 } from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
 import redRibbon from "public/world/portal/images/bow.webp";
+import { PORTAL_SOUNDS } from "../../Constants";
 
 const SIZE_X = 3; // Columns
 const SIZE_Y = 3; // Rows
@@ -40,7 +41,10 @@ export const SlidingPuzzle: React.FC<Props> = ({
       const isSolved = checkIfSolved(tiles);
       setIsSolved(isSolved);
       if (isSolved) {
-        (onComplete(), SNOW());
+        (onComplete(), 
+         SNOW(),
+         PORTAL_SOUNDS.win.play()
+        );
       }
     }
   }, [tiles]);
@@ -105,6 +109,8 @@ export const SlidingPuzzle: React.FC<Props> = ({
         newTiles[index],
       ];
       setTiles(newTiles);
+
+      PORTAL_SOUNDS.click.play();
     }
   };
 

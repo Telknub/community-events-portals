@@ -19,8 +19,34 @@ import slidingPuzzle from "public/world/portal/images/slidingPuzzle.png";
 import nonogramPuzzle from "public/world/portal/images/nonogramPuzzle.png";
 import { SUNNYSIDE } from "assets/sunnyside";
 
+import clickSound from "public/world/portal/music/click.mp3";
+import winSound from "public/world/portal/music/win.mp3";
+import resetSound from "public/world/portal/music/reset.wav";
+
 export const PORTAL_NAME = "christmas";
 export const PORTAL_TOKEN = "Christmas Token 2025";
+
+// Portal sounds
+const createSound = (src: string, volume = 0.3) => {
+  const audio = new Audio(src);
+  audio.volume = volume;
+  return {
+    play: () => {
+      audio.currentTime = 0; // ensures it starts from beginning
+      audio.play();
+    },
+    pause: () => audio.pause(),
+    setVolume: (v: number) => {
+      audio.volume = (Math.min(1, Math.max(0, v)));
+    }
+  };
+};
+
+export const PORTAL_SOUNDS = {
+  click: createSound(clickSound),
+  win: createSound(winSound),
+  reset: createSound(resetSound),
+};
 
 // Game config
 export const GAME_SECONDS = 300;
