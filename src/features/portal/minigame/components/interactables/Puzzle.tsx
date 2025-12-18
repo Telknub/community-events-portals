@@ -52,7 +52,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       const timer = setTimeout(() => {
         greetingShown = true; // mark globally
         setShowGreeting(false);
-      }, 4000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showGreeting]);
