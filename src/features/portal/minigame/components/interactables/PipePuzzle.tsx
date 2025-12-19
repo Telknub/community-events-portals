@@ -1,21 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { PORTAL_SOUNDS, SNOW } from "../../Constants";
+import { PIPE_PUZZLE_DIFFICULTY, PORTAL_SOUNDS, PuzzleDifficulty, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants & Types ---
-
-type Difficulty = "easy" | "hard";
 
 const DIRT_PATH = "/world/portal/images/dirt_path.png";
 const DIRT_PATH_CURVE = "/world/portal/images/dirt_path_curve.png";
 const START_SLEDGE = "/world/portal/images/sledge.png";
 const END_LIGHTHOUSE = "/world/portal/images/lighthouse.png";
-
-const GRID_SIZES: Record<Difficulty, number> = {
-  easy: 5,
-  hard: 7,
-};
 
 // Pipe definitions
 // Directions: 0: North, 1: East, 2: South, 3: West
@@ -38,7 +31,7 @@ interface PipeTile {
 interface Props {
   onClose: () => void;
   onComplete: () => void;
-  difficulty?: Difficulty;
+  difficulty?: PuzzleDifficulty;
   seconds: number;
   onReset: () => void;
 }
@@ -77,7 +70,7 @@ const getConnections = (type: PipeType, rotation: number): boolean[] => {
 
 export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = "easy", seconds, onReset }) => {
   const [grid, setGrid] = useState<PipeTile[][]>([]);
-  const [gridSize, setGridSize] = useState<number>(GRID_SIZES[difficulty]);
+  const [gridSize, setGridSize] = useState<number>(PIPE_PUZZLE_DIFFICULTY[difficulty]);
   const [isComplete, setIsComplete] = useState<boolean>(false);
 
   const MAX_CELL_SIZE = 60;
@@ -86,7 +79,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
 
   // Initialize Game
   const initGame = useCallback(() => {
-    const size = GRID_SIZES[difficulty];
+    const size = PIPE_PUZZLE_DIFFICULTY[difficulty];
     setGridSize(size);
     setIsComplete(false);
 
@@ -293,7 +286,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
     const handleResize = () => {
       // Calculate available width
       // Container padding (20px*2) + Safety margin
-      const padding = difficulty === "easy" ? 200 : 60;
+      const padding = difficulty === "hard" ? 60 : 200;
       const safeWidth = window.innerWidth - padding;
       const calculatedCellSize = Math.floor(Math.min(safeWidth / gridSize, MAX_CELL_SIZE));
       setCellSize(Math.max(calculatedCellSize, 20)); // Min 20px
@@ -349,7 +342,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
             }}
           >
-            <StatusBar seconds={seconds} onReset={onReset} />
+            <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
             <div
               style={{
                 width: "fit-content",
@@ -358,9 +351,9 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                 flexDirection: "column",
                 alignItems: "center",
                 padding: "20px",
-                paddingRight: difficulty === "easy" ? "70px" : "20px",
-                paddingLeft: difficulty === "easy" ? "70px" : "20px",
-                paddingTop: difficulty === "easy" ? "40px" : "20px",
+                paddingRight: difficulty === "hard" ? "20px" : "70px",
+                paddingLeft: difficulty === "hard" ? "20px" : "70px",
+                paddingTop: difficulty === "hard" ? "20px" : "40px",
                 background: "#87cfee",
                 fontFamily: "Arial, sans-serif",
               }}
@@ -376,26 +369,6 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                   userSelect: "none",
                 }}
               >
-                {/* {isComplete && (
-                  <div style={{
-                    position: "absolute",
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    background: "rgba(0,0,0,0.6)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#FFF",
-                    fontSize: "35px",
-                    fontWeight: "bold",
-                    zIndex: 10,
-                    textShadow: "0 2px 4px black",
-                    flexDirection: "column",
-                    fontFamily: "Basic",
-                  }}>
-                    <span>🎉Happy Holidays!🎉</span>
-                  </div>
-                )} */}
-
                 {grid.map((row, r) =>
                   row.map((tile, c) => (
                     <div

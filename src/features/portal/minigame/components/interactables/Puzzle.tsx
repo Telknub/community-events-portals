@@ -2,13 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { EventBus } from "../../lib/EventBus";
 import { PortalContext } from "../../lib/PortalProvider";
 
-// import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SudokuPuzzle } from "./SudokuPuzzle";
 import { SlidingPuzzle } from "./SlidingPuzzle";
 import { JigsawPuzzle } from "./JigsawPuzzle";
 import { PipePuzzle } from "./PipePuzzle";
 import { NonogramPuzzle } from "./NonogramPuzzle";
-import { MAX_PUZZLES, PORTAL_NAME, PORTAL_SOUNDS, POWER_DISPLAY_SCORE, PUZZLE_TIMES, PUZZLE_TYPES, PuzzleName } from "../../Constants";
+import { MAX_PUZZLES, PORTAL_NAME, PORTAL_SOUNDS, POWER_DISPLAY_POINT_ID, PUZZLE_TIMES, PUZZLE_TYPES, PuzzleDifficulty, PuzzleName } from "../../Constants";
 import { useSound } from "lib/utils/hooks/useSound";
 import { PortalMachineState } from "../../lib/Machine";
 import { useSelector } from "@xstate/react";
@@ -28,34 +27,24 @@ interface Props {
   data?: any;
 }
 
-const _score = (state: PortalMachineState) => state.context.score;
-const _hasPower = (state: PortalMachineState) => state.context.hasPower;
+const _difficulty = (state: PortalMachineState) => state.context.difficulty;
 let greetingShown = false;
 
 export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
+
+  const difficultyPuzzle = useSelector(portalService, _difficulty) as PuzzleDifficulty;
+
+  const [hasPower, setHasPower] = React.useState(false);
+  const [difficulty, setDifficulty] = React.useState(difficultyPuzzle);
   const [puzzleType, setPuzzleType] = React.useState<PuzzleName>(data.puzzleType);
-  const [difficulty, setDifficulty] = React.useState(data.difficulty);
   const [seconds, setSeconds] = React.useState(PUZZLE_TIMES[puzzleType][difficulty]);
   const [isCompleted, setIsCompleted] = React.useState(false);
   const [availablePuzzles, setAvailablePuzzles] = React.useState(structuredClone(PUZZLE_TYPES).filter((puzzle) => puzzle !== puzzleType));
 
-  const score = useSelector(portalService, _score);
-  const hasPower = useSelector(portalService, _hasPower);
-
   const button = useSound("tab");
   const [showGreeting, setShowGreeting] = useState(!greetingShown);
-
- useEffect(() => {
-    if (showGreeting) {
-      const timer = setTimeout(() => {
-        greetingShown = true; // mark globally
-        setShowGreeting(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showGreeting]);
 
   const getPoint = () => {
     setIsCompleted(true);
@@ -64,8 +53,8 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       portalService.send("GAIN_POINTS");
       onClose();
 
-      if (portalService.state.context.score >= MAX_PUZZLES) {
-        portalService.send("GAME_OVER");
+      if (data.id === MAX_PUZZLES) {
+        EventBus.emit("next-level");
       }
     }, 1000);
   };
@@ -89,17 +78,21 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     } else {
       portalService.send("USE_POWER", { power });
     }
-    portalService.send("SET_POWER", { hasPower: true });
+    setHasPower(true);
   };
 
   const onFinish = () => {
     onClose();
     EventBus.emit("hurt-player", data.id);
+    if (data.id === MAX_PUZZLES) {
+      EventBus.emit("next-level");
+    }
   };
 
   useEffect(() => {
+    if (showGreeting) return;
     if (isCompleted) return;
-    if (score === POWER_DISPLAY_SCORE && !hasPower) return;
+    if (data.id === POWER_DISPLAY_POINT_ID && !hasPower) return;
     if (seconds <= 0) {
       onFinish();
       return;
@@ -110,7 +103,21 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
       setSeconds((s: number) => s - 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [seconds, hasPower]);
+  }, [seconds, hasPower, showGreeting]);
+
+  useEffect(() => {
+    if (showGreeting) {
+      const timer = setTimeout(() => {
+        greetingShown = true; // mark globally
+        setShowGreeting(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showGreeting]);
+
+  useEffect(() => {
+    setSeconds(PUZZLE_TIMES[puzzleType][difficulty]);
+  }, [difficulty]);
 
   useEffect(() => {
     const onGameOver = (event: EventObject) => {
@@ -128,21 +135,23 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     portalService.onEvent(onEndGameEarly);
   }, []);
 
-  if (score === POWER_DISPLAY_SCORE && !hasPower) {
+  if (data.id === POWER_DISPLAY_POINT_ID && !hasPower) {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-black/20">
         <div className="flex min-h-full flex-col items-center justify-center p-4">
           <span className="text-white text-lg mb-[3rem] text-center px-2">{t(`${PORTAL_NAME}.select.one`)}</span>
           <div className="flex flex-wrap justify-center gap-5 w-full max-w-[800px]">
-            <Button
-              className="w-[150px] md:w-[200px] aspect-[10/11]"
-              onClick={() => usePower("difficulty")}
-            >
-              <div className="flex flex-col gap-2 justify-center items-center">
-                <img src={arrowDown} className="w-6" />
-                <span className="text-center text-sm">{t(`${PORTAL_NAME}.power.difficulty`)}</span>
-              </div>
-            </Button>
+            {difficulty !== "easy" && (
+              <Button
+                className="w-[150px] md:w-[200px] aspect-[10/11]"
+                onClick={() => usePower("difficulty")}
+              >
+                <div className="flex flex-col gap-2 justify-center items-center">
+                  <img src={arrowDown} className="w-6" />
+                  <span className="text-center text-sm">{t(`${PORTAL_NAME}.power.difficulty`)}</span>
+                </div>
+              </Button>
+            )}
             <Button
               className="w-[150px] md:w-[200px] aspect-[10/11]"
               onClick={() => usePower("reset")}

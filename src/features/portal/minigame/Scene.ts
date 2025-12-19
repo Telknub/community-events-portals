@@ -6,16 +6,19 @@ import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import {
+  NEXT_DIFFICULTY_PUZZLE,
   PATH_PUZZLE_POINTS,
   PORTAL_NAME,
   PUZZLE_POINTS_CONFIG,
   PUZZLE_TYPES,
+  PuzzleDifficulty,
   PuzzleName,
   WALKING_SPEED,
 } from "./Constants";
 import { EventBus } from "./lib/EventBus";
 import { NPCBumpkin } from "features/world/scenes/BaseScene";
 import { PuzzlePoint } from "./containers/PuzzlePoint";
+import { interactableModalManager } from "./components/interactables/InteractableModals";
 
 export const NPCS: NPCBumpkin[] = [
   {
@@ -134,6 +137,28 @@ export class Scene extends BaseScene {
     EventBus.on("close-puzzle", (id: number) => {
       this.moveToNextPuzzlePoint(PATH_PUZZLE_POINTS[id]);
     });
+    EventBus.on("hurt-player", (id: number) => {
+      this.moveToNextPuzzlePoint(PATH_PUZZLE_POINTS[id]);
+    });
+    EventBus.on("next-level", () => {
+      this.cameras.main.fadeOut(500);
+      const currentDifficulty = this.portalService?.state.context.difficulty as PuzzleDifficulty;
+      this.portalService?.send("SET_DIFFICULTY", {
+        difficulty: NEXT_DIFFICULTY_PUZZLE[currentDifficulty],
+      });
+      this.cameras.main.on(
+        "camerafadeoutcomplete",
+        () => {
+          interactableModalManager.open("difficulty-message", { difficulty: NEXT_DIFFICULTY_PUZZLE[currentDifficulty] });
+          setTimeout(() => {
+            interactableModalManager.open(undefined);
+            this.cameras.main.fadeIn(500);
+            this.scene.restart();
+          }, 2000);
+        },
+        this,
+      );
+    });
 
     // reload scene when player hit retry
     const onRetry = (event: EventObject) => {
@@ -186,7 +211,6 @@ export class Scene extends BaseScene {
         y: config.y,
         scene: this,
         id: i + 1,
-        difficulty: config.difficulty,
         player: this.currentPlayer,
       });
     });

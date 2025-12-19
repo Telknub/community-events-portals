@@ -1,5 +1,4 @@
 import React, { useContext } from "react";
-import { Timer } from "../hud/Timer";
 import { Lives } from "../hud/Lives";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -8,15 +7,18 @@ import { Button } from "components/ui/Button";
 import { PortalMachineState } from "../../lib/Machine";
 import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
+import { Difficulty } from "./Difficulty";
+import { PuzzleDifficulty } from "../../Constants";
 
 interface Props {
   onReset: () => void;
   seconds: number;
+  difficulty: PuzzleDifficulty;
 }
 
 const _resetAttempts = (state: PortalMachineState) => state.context.resetAttempts;
 
-export const StatusBar: React.FC<Props> = ({ onReset, seconds }) => {
+export const StatusBar: React.FC<Props> = ({ onReset, seconds, difficulty }) => {
   const { portalService } = useContext(PortalContext);
 
   const resetAttempts = useSelector(portalService, _resetAttempts);
@@ -26,7 +28,7 @@ export const StatusBar: React.FC<Props> = ({ onReset, seconds }) => {
       <div className="flex flex-row w-full flex-wrap items-center justify-center">
         <div className="flex flex-row w-full justify-between px-3 pt-6 md:px-6 bg-[#265c42] rounded-t-[2.5rem] pb-2">
           <div className="flex flex-col gap-4">
-            <Timer />
+            <Difficulty difficulty={difficulty} />
             <Lives />
           </div>
           <div className="flex flex-row gap-1 md:gap-3">

@@ -3,8 +3,9 @@ import { Modal } from "components/ui/Modal";
 import { PuzzleName } from "../../Constants";
 import { SudokuPuzzle } from "./SudokuPuzzle";
 import { Puzzle } from "./Puzzle";
+import { DifficultyMessage } from "./DifficultyMessage";
 
-type InteractableName = PuzzleName;
+type InteractableName = "puzzle" | "difficulty-message" | undefined;
 
 class InteractableModalManager {
   private listener?: (
@@ -48,6 +49,9 @@ export const InteractableModals = () => {
       <Modal show={!!interactable}>
         {interactable === "puzzle" && (
           <Puzzle onClose={closeModal} data={data} />
+        )}
+        {interactable === "difficulty-message" && (
+          <DifficultyMessage onClose={closeModal} data={data} />
         )}
       </Modal>
     </>

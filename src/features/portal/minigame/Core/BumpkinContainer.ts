@@ -982,7 +982,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         this.animateRemovalHeart("-1");
         this.portalService?.send("LOSE_LIFE");
         onAnimationComplete(this.sprite, this.hurtAnimationKey as string, () => {
-          this.idle();
+          this.walk();
         });
       } catch (e) {
         // eslint-disable-next-line no-console

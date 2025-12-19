@@ -5,6 +5,7 @@ import {
   Cell,
   SNOW,
   PORTAL_SOUNDS,
+  PuzzleDifficulty,
 } from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
 import redRibbon from "public/world/portal/images/bow.webp";
@@ -12,7 +13,7 @@ import redRibbon from "public/world/portal/images/bow.webp";
 interface Props {
   onClose: () => void;
   onComplete: () => void;
-  difficulty: "easy" | "hard";
+  difficulty: PuzzleDifficulty;
   seconds: number;
   onReset: () => void;
 }
@@ -20,9 +21,14 @@ interface Props {
 const SIZE = 5;
 
 //  Choose pattern by difficulty
-function choosePattern(difficulty: "easy" | "hard") {
-  const pool =
-    difficulty === "easy" ? NONOGRAM_PATTERNS_EASY : NONOGRAM_PATTERNS_HARD;
+function choosePattern(difficulty: PuzzleDifficulty) {
+  const nonogramPuzzleDifficulty = {
+    easy: NONOGRAM_PATTERNS_EASY,
+    medium: NONOGRAM_PATTERNS_EASY,
+    hard: NONOGRAM_PATTERNS_HARD,
+  };
+
+  const pool = nonogramPuzzleDifficulty[difficulty];
 
   const keys = Object.keys(pool);
   const randomKey = keys[Math.floor(Math.random() * keys.length)];
@@ -115,7 +121,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
             }}
           >
-            <StatusBar seconds={seconds} onReset={onReset} />
+            <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
 
             <div className="bg-white p-0 md:p-6 border-[1rem] border-[#265c42] border-double">
               {/* Column Clues */}

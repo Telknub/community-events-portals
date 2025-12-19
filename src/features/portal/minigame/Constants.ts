@@ -77,11 +77,11 @@ export const BETA_TESTERS: number[] = [];
 
 // Puzzle
 export const PUZZLE_POINTS_CONFIG = [
-  { x: 313, y: 466, difficulty: "easy" },
-  { x: 380, y: 466, difficulty: "easy" },
-  { x: 457, y: 450, difficulty: "hard" },
-  { x: 432, y: 368, difficulty: "hard" },
-  { x: 345, y: 367, difficulty: "hard" },
+  { x: 313, y: 466 },
+  { x: 380, y: 466 },
+  { x: 457, y: 450 },
+  { x: 432, y: 368 },
+  { x: 345, y: 367 },
 ];
 export const PATH_PUZZLE_POINTS = [
   [{ x: PUZZLE_POINTS_CONFIG[0].x, y: PUZZLE_POINTS_CONFIG[0].y }],
@@ -101,47 +101,64 @@ export type PuzzleName = (typeof PUZZLE_TYPES)[number];
 export const MAX_PUZZLES = 5;
 export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
   sudoku: {
-    easy: 45,
-    hard: 60,
+    easy: 60,
+    medium: 45,
+    hard: 45,
   },
   sliding: {
-    easy: 45,
-    hard: 60,
+    easy: 60,
+    medium: 45,
+    hard: 45,
   },
   jigsaw: {
-    easy: 45,
-    hard: 60,
+    easy: 60,
+    medium: 45,
+    hard: 45,
   },
   pipe: {
-    easy: 45,
-    hard: 60,
+    easy: 60,
+    medium: 45,
+    hard: 45,
   },
   nonogram: {
-    easy: 45,
-    hard: 60,
+    easy: 60,
+    medium: 45,
+    hard: 45,
   },
 };
 
 // Puzzle config
-export const POWER_DISPLAY_SCORE = 2;
+export const POWER_DISPLAY_POINT_ID = 3;
 export const RESET_ATTEMPTS = 3;
 export const VICTORY_TEXT = {
   Sudoku: "You've uncovered the Owl's secret!",
   SlidingPuzzle: "The Owl watches, puzzle complete!",
 };
 export const PUZZLE_IMGS = [img1, img2, img3];
+export const NEXT_DIFFICULTY_PUZZLE = {
+  easy: "medium",
+  medium: "hard",
+  hard: "hard",
+}
+
+// Puzzle types
+export type PuzzleDifficulty = "easy" | "medium" | "hard";
 
 // Jigsaw puzzle
-export const JIGSAW_PUZZLE_DIFFICULTY = { easy: 8, hard: 4 };
+export const JIGSAW_PUZZLE_DIFFICULTY = { easy: 8, medium: 8, hard: 4 };
+
+// Pipe puzzle
+export const PIPE_PUZZLE_DIFFICULTY = { easy: 5, medium: 5, hard: 7 };
 
 // Sudoku puzzle
 export const SUDOKU_DIFFICULTY = {
   easy: 4,
+  medium: 4,
   hard: 6,
 };
 
 // Sliding Puzzle
-export const SLIDING_PUZZLE_DIFFICULTY = { easy: 4, hard: 8 };
+export const SLIDING_PUZZLE_DIFFICULTY = { easy: 4, medium: 4, hard: 8 };
 
 // Guide
 export const INSTRUCTIONS: {

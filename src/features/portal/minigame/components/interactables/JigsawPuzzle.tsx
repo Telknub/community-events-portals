@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { JIGSAW_PUZZLE_DIFFICULTY, PORTAL_SOUNDS, PUZZLE_IMGS, SNOW } from "../../Constants";
+import { JIGSAW_PUZZLE_DIFFICULTY, PORTAL_SOUNDS, PUZZLE_IMGS, PuzzleDifficulty, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 
 // --- Constants and Types ---
@@ -17,7 +17,7 @@ interface Tile {
 interface Props {
   onClose: () => void;
   onComplete: () => void;
-  difficulty: "hard" | "easy";
+  difficulty: PuzzleDifficulty;
   seconds: number;
   onReset: () => void;
 }
@@ -236,7 +236,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
       <div className="relative text-[#265c42] flex flex-col items-center justify-center w-full h-full">
         <div className="relative w-full bottom-10 md:bottom-12 flex justify-center z-20">
           <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
-        </div>        
+        </div>
         <div
           style={{
             display: "flex",
@@ -246,7 +246,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
           }}
         >
           <div className="border-[1rem] md:border-[1.5rem] border-[#a22633] bg-[#a22633] rounded-t-[3rem]">
-            <StatusBar seconds={seconds} onReset={onReset} />
+            <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
             <div className="md:p-[1rem] p-[.7rem]"
               style={{
                 backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
@@ -363,23 +363,6 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                   ))}
                 </div>
               </div>
-              {/* {isComplete && (
-                <div
-                  style={{
-                    padding: "20px",
-                    background: "#d4edda",
-                    color: "#155724",
-                    borderRadius: "5px",
-                    position: "absolute",
-                    top: "39%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "341px",
-                  }}
-                >
-                  🎉Happy Holidays!🎉
-                </div>
-              )} */}
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   PUZZLE_IMGS,
+  PuzzleDifficulty,
   SLIDING_PUZZLE_DIFFICULTY,
   SNOW,
 } from "../../Constants";
@@ -15,7 +16,7 @@ const TOTAL_TILES = SIZE_X * SIZE_Y;
 interface Props {
   onClose: () => void;
   onComplete: () => void;
-  difficulty: "easy" | "hard";
+  difficulty: PuzzleDifficulty;
   seconds: number;
   onReset: () => void;
 }
@@ -41,9 +42,9 @@ export const SlidingPuzzle: React.FC<Props> = ({
       const isSolved = checkIfSolved(tiles);
       setIsSolved(isSolved);
       if (isSolved) {
-        (onComplete(), 
-         SNOW(),
-         PORTAL_SOUNDS.win.play()
+        (onComplete(),
+          SNOW(),
+          PORTAL_SOUNDS.win.play()
         );
       }
     }
@@ -146,7 +147,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
           <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div className="flex flex-col items-center">
-          <StatusBar seconds={seconds} onReset={onReset} />
+          <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
           <div
             className="p-3 border-[1rem] border-[#265c42]"
             style={{

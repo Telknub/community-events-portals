@@ -9,6 +9,7 @@ import {
   GAME_LIVES,
   PORTAL_NAME,
   RESET_ATTEMPTS,
+  PuzzleDifficulty,
 } from "../Constants";
 import { GameState } from "features/game/types/game";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
@@ -37,7 +38,7 @@ export interface Context {
   isTraining: boolean;
 
   resetAttempts: number;
-  hasPower: boolean;
+  difficulty: PuzzleDifficulty;
 }
 
 // type UnlockAchievementsEvent = {
@@ -78,9 +79,9 @@ type UsePowerEvent = {
   power: string;
 };
 
-type SetPowerEvent = {
-  type: "SET_POWER";
-  hasPower: boolean;
+type SetDifficultyEvent = {
+  type: "SET_DIFFICULTY";
+  difficulty: PuzzleDifficulty;
 };
 
 export type PortalEvent =
@@ -100,7 +101,7 @@ export type PortalEvent =
   | SetValidationsEvent
   | UseResetEvent
   | UsePowerEvent
-  | SetPowerEvent;
+  | SetDifficultyEvent;
 
 export type PortalState = {
   value:
@@ -140,7 +141,7 @@ const resetGameTransition = {
       endAt: () => 0,
       validations: () => structuredClone(VALIDATIONS),
       resetAttempts: () => RESET_ATTEMPTS,
-      hasPower: () => false,
+      difficulty: () => "easy",
     }) as any,
   },
 };
@@ -166,7 +167,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
 
     // Portal minigame
     resetAttempts: RESET_ATTEMPTS,
-    hasPower: false,
+    difficulty: "easy",
   },
   on: {
     SET_JOYSTICK_ACTIVE: {
@@ -329,7 +330,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             lives: GAME_LIVES,
             validations: structuredClone(VALIDATIONS),
             resetAttempts: () => RESET_ATTEMPTS,
-            hasPower: () => false,
+            difficulty: () => "easy",
             state: (context: Context) => {
               if (context.isTraining) return context.state;
               startAttempt();
@@ -398,10 +399,10 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             return context;
           }),
         },
-        SET_POWER: {
+        SET_DIFFICULTY: {
           actions: assign({
-            hasPower: (context: Context, event: SetPowerEvent) => {
-              return event.hasPower;
+            difficulty: (context: Context, event: SetDifficultyEvent) => {
+              return event.difficulty;
             },
           }),
         },

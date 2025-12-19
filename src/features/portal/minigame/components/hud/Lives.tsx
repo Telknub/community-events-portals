@@ -14,7 +14,7 @@ export const Lives: React.FC = () => {
   const arrLives = Array.from({ length: lives }, (_, index) => index);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 min-w-[164px]">
       {arrLives.map((_, index) => (
         <SquareIcon key={index} icon={SUNNYSIDE.icons.heart} width={10} />
       ))}

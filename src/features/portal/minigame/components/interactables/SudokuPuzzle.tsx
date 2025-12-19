@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { SUDOKU_DIFFICULTY, SNOW, PORTAL_SOUNDS } from "../../Constants";
+import { SUDOKU_DIFFICULTY, SNOW, PORTAL_SOUNDS, PuzzleDifficulty } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
@@ -100,7 +100,7 @@ function removeItems(
   return puzzle;
 }
 
-function generateSudokuPuzzle(difficulty: "easy" | "hard") {
+function generateSudokuPuzzle(difficulty: PuzzleDifficulty) {
   const solution = generateSolutionGrid();
   const removeCount = SUDOKU_DIFFICULTY[difficulty];
   const puzzle = removeItems(solution, removeCount);
@@ -110,7 +110,7 @@ function generateSudokuPuzzle(difficulty: "easy" | "hard") {
 interface Props {
   onClose: () => void;
   onComplete: () => void;
-  difficulty: "easy" | "hard";
+  difficulty: PuzzleDifficulty;
   seconds: number;
   onReset: () => void;
 }
@@ -180,7 +180,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
               "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
           }}
         >
-          <StatusBar seconds={seconds} onReset={onReset} />
+          <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
           <div className="bg-[#a22633] py-6 px-4 md:p-6">
             {selectedCell && !isSolved && (
               <div className="flex justify-center shadow-lg pb-6">

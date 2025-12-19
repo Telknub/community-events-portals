@@ -9,7 +9,6 @@ interface Props {
   y: number;
   scene: Scene;
   id: number;
-  difficulty: string;
   player?: BumpkinContainer;
 }
 
@@ -19,17 +18,15 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
   private sprite: Phaser.GameObjects.Sprite;
   private openedPuzzle = false;
   private id: number;
-  private difficulty: string;
   private puzzleType: string = "";
 
   scene: Scene;
 
-  constructor({ x, y, scene, id, difficulty, player }: Props) {
+  constructor({ x, y, scene, id, player }: Props) {
     super(scene, x, y);
     this.scene = scene;
     this.player = player;
     this.id = id;
-    this.difficulty = difficulty;
 
     // Sprite
     this.spriteName = "point";
@@ -72,10 +69,6 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
         const lives = this.scene.portalService?.state.context.lives || 0;
         if (lives <= 0) {
           this.scene.portalService?.send("GAME_OVER");
-        } else {
-          setTimeout(() => {
-            interactableModalManager.open("puzzle", { puzzleType: this.puzzleType, id: this.id, difficulty: this.difficulty });
-          }, 2000);
         }
       }
     });
@@ -92,8 +85,7 @@ export class PuzzlePoint extends Phaser.GameObjects.Container {
       this.scene.puzzleTypes = this.scene.puzzleTypes.filter(
         (puzzle) => puzzle !== this.puzzleType,
       );
-      // this.puzzleType = "sudoku";
-      interactableModalManager.open("puzzle", { puzzleType: this.puzzleType, id: this.id, difficulty: this.difficulty });
+      interactableModalManager.open("puzzle", { puzzleType: this.puzzleType, id: this.id });
     }
   }
 }
