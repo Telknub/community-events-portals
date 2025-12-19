@@ -23,8 +23,8 @@ import clickSound from "public/world/portal/music/click.mp3";
 import winSound from "public/world/portal/music/win.mp3";
 import resetSound from "public/world/portal/music/reset.wav";
 
-export const PORTAL_NAME = "christmas";
-export const PORTAL_TOKEN = "Christmas Token 2025";
+export const PORTAL_NAME = "holiday-puzzle-2025";
+export const PORTAL_TOKEN = "Holiday Token 2025";
 
 // Portal sounds
 const createSound = (src: string, volume = 0.3) => {

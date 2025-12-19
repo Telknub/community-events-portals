@@ -34,7 +34,7 @@ export type Scenes = {
   infernos: Room<PlazaRoomState> | undefined;
   stream: Room<PlazaRoomState> | undefined;
   love_island: Room<PlazaRoomState> | undefined;
-  christmas: Room<PlazaRoomState> | undefined;
+  "holiday-puzzle-2025": Room<PlazaRoomState> | undefined;
 };
 
 export type SceneId = keyof Scenes;
@@ -166,14 +166,14 @@ export interface MMOContext {
 
 export type MMOState = {
   value:
-    | "error"
-    | "initialising"
-    | "introduction"
-    | "connecting"
-    | "connected"
-    | "kicked"
-    | "reconnecting"
-    | "exploring"; // Community island
+  | "error"
+  | "initialising"
+  | "introduction"
+  | "connecting"
+  | "connected"
+  | "kicked"
+  | "reconnecting"
+  | "exploring"; // Community island
   context: MMOContext;
 };
 
