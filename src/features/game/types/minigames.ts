@@ -35,6 +35,6 @@ export const SUPPORTED_MINIGAMES: MinigameName[] = [
   "easter-eggstravaganza",
   "mine-whack",
   "festival-of-colors-2025",
-  "memory",
   "holiday-puzzle-2025",
+  "memory",
 ];

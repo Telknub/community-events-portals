@@ -104,6 +104,10 @@ const FEATURE_FLAGS = {
 
   EASTER: () => false,
 
+  HOLIDAYS_EVENT_FLAG: (game) =>
+    betaTimeBasedFeatureFlag(new Date("2025-12-22T00:00:00Z"))(game) &&
+    Date.now() < new Date("2026-01-05T00:00:00Z").getTime(),
+
   STREAM_STAGE_ACCESS: adminFeatureFlag,
 
   MODERATOR: (game) =>
@@ -111,7 +115,9 @@ const FEATURE_FLAGS = {
 
   PET_HOUSE: testnetFeatureFlag,
   MEMORY_BETA: defaultFeatureFlag,
-  DAILY_BOXES: defaultFeatureFlag,
+
+  RENEW_PET_SHRINES: defaultFeatureFlag,
+  FISHING_PUZZLE: defaultFeatureFlag,
 } satisfies Record<string, FeatureFlag>;
 
 export type FeatureName = keyof typeof FEATURE_FLAGS;
