@@ -179,4 +179,10 @@ export const SPAWNS: () => SpawnLocation = () => ({
       y: 290,
     },
   },
+  holidays_island: {
+    default: {
+      x: 256,
+      y: 420,
+    },
+  },
 });
