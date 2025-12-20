@@ -105,7 +105,7 @@ const FEATURE_FLAGS = {
   EASTER: () => false,
 
   HOLIDAYS_EVENT_FLAG: (game) =>
-    betaTimeBasedFeatureFlag(new Date("2025-12-22T00:00:00Z"))(game) &&
+    betaTimeBasedFeatureFlag(new Date("2025-12-23T00:00:00Z"))(game) &&
     Date.now() < new Date("2026-01-05T00:00:00Z").getTime(),
 
   STREAM_STAGE_ACCESS: adminFeatureFlag,
@@ -114,7 +114,6 @@ const FEATURE_FLAGS = {
     !!((game.wardrobe.Halo ?? 0) > 0) && !!game.inventory["Beta Pass"]?.gt(0),
 
   PET_HOUSE: testnetFeatureFlag,
-  MEMORY_BETA: defaultFeatureFlag,
 
   RENEW_PET_SHRINES: defaultFeatureFlag,
   FISHING_PUZZLE: defaultFeatureFlag,
