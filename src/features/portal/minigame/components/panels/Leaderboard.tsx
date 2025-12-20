@@ -20,14 +20,14 @@ export const Leaderboard: React.FC = () => {
   return (
     <div className="flex flex-col gap-2 overflow-y-auto scrollable max-h-[75vh]">
       <div className="flex flex-col gap-2 px-2 pt-2">
-        <p>{t(`${PORTAL_NAME}.competition.description1`)}</p>
-        <p>{t(`${PORTAL_NAME}.competition.description2`)}</p>
+        {/* <p>{t(`${PORTAL_NAME}.competition.description1`)}</p>
+        <p>{t(`${PORTAL_NAME}.competition.description2`)}</p> */}
       </div>
       <PortalLeaderboard
         isAccumulator
         name={PORTAL_NAME}
-        startDate={new Date(Date.UTC(2025, 9, 29))}
-        endDate={new Date(Date.UTC(2025, 10, 4))}
+        startDate={new Date(Date.UTC(2025, 11, 23))}
+        endDate={new Date(Date.UTC(2026, 0, 5))}
         farmId={Number(farmId)}
         // formatPoints={(points) => {}}
         jwt={jwt as string}
