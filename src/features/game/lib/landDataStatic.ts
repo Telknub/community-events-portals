@@ -658,10 +658,10 @@ export const STATIC_OFFLINE_FARM: GameState = {
           },
           "2025-10-28": {
             attempts: 1,
-            highscore: 999987655,
+            highscore: 5,
           },
         },
-        highscore: 76709,
+        highscore: 5,
         purchases: [
           {
             purchasedAt: 1730404371937,

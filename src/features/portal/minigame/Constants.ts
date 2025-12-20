@@ -8,6 +8,7 @@ import confetti from "canvas-confetti";
 import img1 from "public/world/portal/images/img1.webp";
 import img2 from "public/world/portal/images/img2.webp";
 import img3 from "public/world/portal/images/img3.jpg";
+import img4 from "public/world/portal/images/img4.png";
 import lighthouse from "public/world/portal/images/lighthouse.png";
 import point from "public/world/portal/images/point.png";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
@@ -134,7 +135,7 @@ export const VICTORY_TEXT = {
   Sudoku: "You've uncovered the Owl's secret!",
   SlidingPuzzle: "The Owl watches, puzzle complete!",
 };
-export const PUZZLE_IMGS = [img1, img2, img3];
+export const PUZZLE_IMGS = [img1, img2, img3, img4];
 export const NEXT_DIFFICULTY_PUZZLE = {
   easy: "medium",
   medium: "hard",

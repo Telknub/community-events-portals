@@ -426,7 +426,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               });
             },
           }),
-          target: "introduction",
+          target: "gameOver",
         },
         GAME_OVER: {
           target: "gameOver",

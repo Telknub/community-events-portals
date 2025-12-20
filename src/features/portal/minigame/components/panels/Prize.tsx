@@ -10,7 +10,7 @@ import { PortalContext } from "../../lib/PortalProvider";
 import { secondsToString } from "lib/utils/time";
 import { PORTAL_NAME, PORTAL_TOKEN } from "../../Constants";
 
-import tokenIcon from "assets/icons/coins.webp";
+import tokenIcon from "assets/icons/holidays_token_2025.webp";
 
 const _prize = (state: PortalMachineState) => {
   return state.context.state?.minigames.prizes[PORTAL_NAME];

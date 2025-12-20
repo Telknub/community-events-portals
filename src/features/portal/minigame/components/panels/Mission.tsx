@@ -18,6 +18,7 @@ import { getUrl } from "features/portal/actions/loadPortal";
 import key from "public/world/base/key.png";
 import { OuterPanel } from "components/ui/Panel";
 import { Controls } from "./Controls";
+import { Prize } from "./Prize";
 
 interface Props {
   mode: "introduction" | "success" | "failed";
@@ -87,25 +88,29 @@ export const Mission: React.FC<Props> = ({
             </div>
 
             <div className="w-full flex flex-col gap-1 mb-3">
-              <OuterPanel className="w-full flex flex-col items-center">
-                <Label type="info">{t("leaderboard.score")}</Label>
-                <div>{formattedLastScore()}</div>
-              </OuterPanel>
-              <div className="flex gap-1">
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
-                  <div>{formattedBestToday()}</div>
-                </OuterPanel>
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">
-                    {t(`${PORTAL_NAME}.bestAllTime`)}
-                  </Label>
-                  <div>{formattedBestAllTime()}</div>
-                </OuterPanel>
-              </div>
-              {/* <div className="w-full">
-                <Prize />
-              </div> */}
+              {showScore ?
+                <>
+                  <OuterPanel className="w-full flex flex-col items-center">
+                    <Label type="info">{t("leaderboard.score")}</Label>
+                    <div>{formattedLastScore()}</div>
+                  </OuterPanel>
+                  <div className="flex gap-1">
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
+                      <div>{formattedBestToday()}</div>
+                    </OuterPanel>
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">
+                        {t(`${PORTAL_NAME}.bestAllTime`)}
+                      </Label>
+                      <div>{formattedBestAllTime()}</div>
+                    </OuterPanel>
+                  </div>
+                </> :
+                <div className="w-full">
+                  <Prize />
+                </div>
+              }
             </div>
           </div>
 
