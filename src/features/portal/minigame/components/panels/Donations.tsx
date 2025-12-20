@@ -34,7 +34,7 @@ export const Donations: React.FC = () => {
   const handleDonate = () => {
     donate({
       matic: donation.toNumber(),
-      address: CONFIG.PORTAL_DONATION_ADDRESS,
+      address: CONFIG?.CHRISTMAS_EVENT_DONATION ?? "",
     });
   };
 

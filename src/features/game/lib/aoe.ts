@@ -36,8 +36,8 @@ export const setAOELastUsed = (
   createdAt: number,
 ): void => {
   aoe[item] = aoe[item] ?? {};
-  aoe[item][dx] = aoe[item][dx] ?? {};
-  aoe[item][dx][dy] = createdAt;
+  aoe[item]![dx] = aoe[item]![dx] ?? {};
+  aoe[item]![dx]![dy] = createdAt;
 };
 
 export const setAOEAvailableAt = (
@@ -48,8 +48,8 @@ export const setAOEAvailableAt = (
   waitTime: number,
 ): void => {
   aoe[item] = aoe[item] ?? {};
-  aoe[item][dx] = aoe[item][dx] ?? {};
-  aoe[item][dx][dy] = createdAt + waitTime;
+  aoe[item]![dx] = aoe[item]![dx] ?? {};
+  aoe[item]![dx]![dy] = createdAt + waitTime;
 };
 
 export function isCollectibleOnFarm({

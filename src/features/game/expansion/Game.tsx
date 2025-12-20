@@ -326,7 +326,7 @@ const GameContent: React.FC = () => {
 
   const hasAccess = (pathName: string) => {
     return (
-      PATH_ACCESS[pathName] && PATH_ACCESS[pathName](gameState.context.state)
+      PATH_ACCESS[pathName]?.(gameState.context.state)
     );
   };
 

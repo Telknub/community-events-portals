@@ -30,7 +30,7 @@ export function flipCollectible({
     if (!collectibles[name]) {
       throw new Error(`Collectible ${name} not found`);
     }
-    const collectible = collectibles[name].find(
+    const collectible = collectibles[name]?.find(
       (collectible) => collectible.id === id,
     );
 

@@ -351,8 +351,8 @@ export const CropMachineModalContent: React.FC<Props> = ({
                           count={inventory[seed] ?? new Decimal(0)}
                           onClick={() => handlePickSeed(seed)}
                           secondaryImage={
-                            CROP_SEEDS[seed].yield
-                              ? ITEM_DETAILS[CROP_SEEDS[seed].yield].image
+                            CROP_SEEDS[seed]?.yield
+                              ? ITEM_DETAILS[CROP_SEEDS[seed].yield!].image
                               : undefined
                           }
                         />
@@ -446,13 +446,12 @@ export const CropMachineModalContent: React.FC<Props> = ({
                           onClick={() =>
                             incrementSeeds(
                               (inventory[selectedSeed]?.toNumber() ?? 0) -
-                                totalSeeds,
+                              totalSeeds,
                             )
                           }
                           disabled={!canIncrementSeeds()}
-                          className={`px-2 ${
-                            isMobile ? "" : "px-2"
-                          } w-auto min-w-min`}
+                          className={`px-2 ${isMobile ? "" : "px-2"
+                            } w-auto min-w-min`}
                         >
                           <span className={isMobile ? "text-xs" : "text-sm"}>
                             {t("cropMachine.all")}
@@ -704,55 +703,55 @@ const PackBox: React.FC<{
   selectedPackIndex,
   setSelectedPackIndex,
 }) => {
-  const now = useNow({ live: true, autoEndAt: item?.readyAt });
-  const getQueueItemCountLabelType = (
-    packIndex: number,
-    itemReady: boolean,
-  ) => {
-    if (itemReady) return "success";
+    const now = useNow({ live: true, autoEndAt: item?.readyAt });
+    const getQueueItemCountLabelType = (
+      packIndex: number,
+      itemReady: boolean,
+    ) => {
+      if (itemReady) return "success";
 
-    if (packIndex === growingCropPackIndex && paused) {
-      return "danger";
-    }
+      if (packIndex === growingCropPackIndex && paused) {
+        return "danger";
+      }
 
-    if (packIndex === growingCropPackIndex) return "info";
+      if (packIndex === growingCropPackIndex) return "info";
 
-    return "default";
-  };
+      return "default";
+    };
 
-  if (item === null)
+    if (item === null)
+      return (
+        <Box
+          key={index}
+          image={add}
+          onClick={() => setSelectedPackIndex(index)}
+          isSelected={index === selectedPackIndex}
+        />
+      );
+
+    const isReady = item.readyAt && item.readyAt < now;
+
     return (
       <Box
-        key={index}
-        image={add}
-        onClick={() => setSelectedPackIndex(index)}
+        key={`${item.startTime}-${index}`}
         isSelected={index === selectedPackIndex}
+        image={ITEM_DETAILS[`${item.crop} Seed`].image}
+        count={!isReady ? new Decimal(item.seeds) : undefined}
+        countLabelType={getQueueItemCountLabelType(index, !!isReady)}
+        overlayIcon={
+          <img
+            src={SUNNYSIDE.icons.confirm}
+            alt="confirm"
+            className="object-contain absolute z-10"
+            style={{
+              width: `${PIXEL_SCALE * 8}px`,
+              bottom: `${0.5}px`,
+              right: `${0.5}px`,
+            }}
+          />
+        }
+        showOverlay={!!isReady}
+        onClick={() => setSelectedPackIndex(index)}
       />
     );
-
-  const isReady = item.readyAt && item.readyAt < now;
-
-  return (
-    <Box
-      key={`${item.startTime}-${index}`}
-      isSelected={index === selectedPackIndex}
-      image={ITEM_DETAILS[`${item.crop} Seed`].image}
-      count={!isReady ? new Decimal(item.seeds) : undefined}
-      countLabelType={getQueueItemCountLabelType(index, !!isReady)}
-      overlayIcon={
-        <img
-          src={SUNNYSIDE.icons.confirm}
-          alt="confirm"
-          className="object-contain absolute z-10"
-          style={{
-            width: `${PIXEL_SCALE * 8}px`,
-            bottom: `${0.5}px`,
-            right: `${0.5}px`,
-          }}
-        />
-      }
-      showOverlay={!!isReady}
-      onClick={() => setSelectedPackIndex(index)}
-    />
-  );
-};
+  };

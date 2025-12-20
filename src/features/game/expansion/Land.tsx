@@ -137,8 +137,8 @@ const _buildingPositions = (state: MachineState) => {
       ([, value]) =>
         value
           ?.map((item) => item.coordinates)
-          .filter((coords) => coords !== undefined)
-          .map((coords) => ({ x: coords.x, y: coords.y })),
+          .filter((coords) => !!coords)
+          .map((coords) => ({ x: coords!.x, y: coords!.y })),
     ),
   };
 };

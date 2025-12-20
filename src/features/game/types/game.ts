@@ -524,10 +524,10 @@ export type GiantFruitBounty = Bounty & {
 
 export type ExoticBounty = Bounty & {
   name:
-    | ExoticCropName
-    | BeachBountyTreasure
-    | FullMoonFruit
-    | RecipeCraftableName;
+  | ExoticCropName
+  | BeachBountyTreasure
+  | FullMoonFruit
+  | RecipeCraftableName;
 };
 
 export type MarkBounty = Bounty & {
@@ -810,8 +810,8 @@ type CustomCollectibles = {
 // Mapping to determine which type should be used for a placed collectible
 type PlacedTypes<Name extends CollectibleName> = {
   [key in Name]: key extends keyof CustomCollectibles
-    ? CustomCollectibles[key]
-    : PlacedItem[];
+  ? CustomCollectibles[key]
+  : PlacedItem[];
 };
 
 export type Collectibles = Partial<PlacedTypes<CollectibleName>>;
@@ -849,8 +849,8 @@ type CustomBuildings = {
 
 type PlacedBuildings<Name extends BuildingName> = {
   [key in Name]: key extends keyof CustomBuildings
-    ? CustomBuildings[key]
-    : PlacedItem[];
+  ? CustomBuildings[key]
+  : PlacedItem[];
 };
 
 export type Buildings = Partial<PlacedBuildings<BuildingName>>;
@@ -903,19 +903,19 @@ export type Bid = {
   biddedAt: number;
   tickets: number;
 } & (
-  | {
+    | {
       type: "collectible";
       collectible: InventoryItemName;
     }
-  | {
+    | {
       type: "wearable";
       wearable: BumpkinItem;
     }
-  | {
+    | {
       type: "nft";
       nft: AuctionNFT;
     }
-);
+  );
 export type Minted = Partial<
   Record<
     ChapterName,
@@ -1157,9 +1157,9 @@ export type KingdomChore = {
   completedAt?: number;
   skippedAt?: number;
 } & (
-  | { startedAt: number; startCount: number }
-  | { startedAt?: never; startCount?: never }
-);
+    | { startedAt: number; startCount: number }
+    | { startedAt?: never; startCount?: never }
+  );
 
 export type SeasonWeek = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
@@ -1852,14 +1852,14 @@ export interface GameState {
   craftingBox: {
     status: "pending" | "idle" | "crafting";
     item?:
-      | {
-          collectible: RecipeCollectibleName;
-          wearable?: never;
-        }
-      | {
-          collectible?: never;
-          wearable: BumpkinItem;
-        };
+    | {
+      collectible: RecipeCollectibleName;
+      wearable?: never;
+    }
+    | {
+      collectible?: never;
+      wearable: BumpkinItem;
+    };
     startedAt: number;
     readyAt: number;
     recipes: Partial<Recipes>;
@@ -1944,14 +1944,14 @@ export type FaceRecognitionEvent =
   | { event: "succeeded"; createdAt: number; confidence: number }
   | { event: "failed"; createdAt: number; confidence: number }
   | {
-      event: "duplicate";
-      createdAt: number;
-      duplicates: {
-        similarity: number;
-        faceId: string;
-        farmId: number;
-      }[];
-    };
+    event: "duplicate";
+    createdAt: number;
+    duplicates: {
+      similarity: number;
+      faceId: string;
+      farmId: number;
+    }[];
+  };
 
 export interface Context {
   state?: GameState;

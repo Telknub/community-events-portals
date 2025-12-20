@@ -212,7 +212,7 @@ export const CraftTab: React.FC<Props> = ({
     return selectedItems.reduce((acc, item) => {
       const collectible = item?.collectible;
       if (collectible && acc[collectible]) {
-        acc[collectible] = acc[collectible].minus(1);
+        acc[collectible] = acc[collectible]!.minus(1);
       }
       return acc;
     }, updatedInventory);
@@ -224,7 +224,7 @@ export const CraftTab: React.FC<Props> = ({
     selectedItems.forEach((item) => {
       const wearable = item?.wearable;
       if (wearable && updatedWardrobe[wearable]) {
-        updatedWardrobe[wearable] = updatedWardrobe[wearable] - 1;
+        updatedWardrobe[wearable] = updatedWardrobe[wearable]! - 1;
       }
     });
     return updatedWardrobe;
@@ -370,8 +370,8 @@ export const CraftTab: React.FC<Props> = ({
 
       newSelectedItems[index] = selectedIngredient;
     } else if (
-      selectedItems[index].collectible === selectedIngredient?.collectible &&
-      selectedItems[index].wearable === selectedIngredient?.wearable
+      selectedItems[index]?.collectible === selectedIngredient?.collectible &&
+      selectedItems[index]?.wearable === selectedIngredient?.wearable
     ) {
       // If the box has the same resource, set it to null
       newSelectedItems[index] = null;
@@ -826,70 +826,70 @@ const CraftButton: React.FC<{
   gems,
   onInstantCraft,
 }) => {
-  const { t } = useTranslation();
-  const [showConfirmation, setShowConfirmation] = useState(false);
+    const { t } = useTranslation();
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const hasRequiredIngredients = useMemo(() => {
-    return selectedItems.every((ingredient) => {
-      if (!ingredient) return true;
+    const hasRequiredIngredients = useMemo(() => {
+      return selectedItems.every((ingredient) => {
+        if (!ingredient) return true;
 
-      if (ingredient.collectible) {
-        return (inventory[ingredient.collectible] ?? new Decimal(0)).gte(1);
-      }
-      if (ingredient.wearable) {
-        return (wardrobe[ingredient.wearable] ?? 0) >= 1;
-      }
-      return true;
-    });
-  }, [selectedItems, inventory, wardrobe]);
+        if (ingredient.collectible) {
+          return (inventory[ingredient.collectible] ?? new Decimal(0)).gte(1);
+        }
+        if (ingredient.wearable) {
+          return (wardrobe[ingredient.wearable] ?? 0) >= 1;
+        }
+        return true;
+      });
+    }, [selectedItems, inventory, wardrobe]);
 
-  if (isCrafting && isReady) {
+    if (isCrafting && isReady) {
+      return (
+        <Button className="mt-2 whitespace-nowrap" onClick={handleCollect}>
+          {t("collect")}
+        </Button>
+      );
+    }
+
+    if (isCrafting || isPending) {
+      return (
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 mt-2">
+          <Button disabled={true}>{t("crafting")}</Button>
+          <Button
+            disabled={!inventory.Gem?.gte(gems) || isPending}
+            onClick={() => setShowConfirmation(true)}
+          >
+            <div className="flex items-center justify-center gap-1">
+              <img src={fastForward} className="h-5" />
+              <span className="text-sm flex items-center">{gems}</span>
+              <img src={ITEM_DETAILS["Gem"].image} className="h-5" />
+            </div>
+          </Button>
+          <ConfirmationModal
+            show={showConfirmation}
+            onHide={() => setShowConfirmation(false)}
+            onCancel={() => setShowConfirmation(false)}
+            onConfirm={() => {
+              onInstantCraft(gems);
+              setShowConfirmation(false);
+            }}
+            messages={[
+              t("instantCook.confirmationMessage"),
+              t("instantCook.costMessage", { gems }),
+            ]}
+            confirmButtonLabel={t("instantCook.finish")}
+          />
+        </div>
+      );
+    }
+
     return (
-      <Button className="mt-2 whitespace-nowrap" onClick={handleCollect}>
-        {t("collect")}
+      <Button
+        className="mt-2 whitespace-nowrap"
+        onClick={handleCraft}
+        disabled={isCraftingBoxEmpty || !hasRequiredIngredients}
+      >
+        {`${t("craft")} 1`}
       </Button>
     );
-  }
-
-  if (isCrafting || isPending) {
-    return (
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-1 mt-2">
-        <Button disabled={true}>{t("crafting")}</Button>
-        <Button
-          disabled={!inventory.Gem?.gte(gems) || isPending}
-          onClick={() => setShowConfirmation(true)}
-        >
-          <div className="flex items-center justify-center gap-1">
-            <img src={fastForward} className="h-5" />
-            <span className="text-sm flex items-center">{gems}</span>
-            <img src={ITEM_DETAILS["Gem"].image} className="h-5" />
-          </div>
-        </Button>
-        <ConfirmationModal
-          show={showConfirmation}
-          onHide={() => setShowConfirmation(false)}
-          onCancel={() => setShowConfirmation(false)}
-          onConfirm={() => {
-            onInstantCraft(gems);
-            setShowConfirmation(false);
-          }}
-          messages={[
-            t("instantCook.confirmationMessage"),
-            t("instantCook.costMessage", { gems }),
-          ]}
-          confirmButtonLabel={t("instantCook.finish")}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <Button
-      className="mt-2 whitespace-nowrap"
-      onClick={handleCraft}
-      disabled={isCraftingBoxEmpty || !hasRequiredIngredients}
-    >
-      {`${t("craft")} 1`}
-    </Button>
-  );
-};
+  };

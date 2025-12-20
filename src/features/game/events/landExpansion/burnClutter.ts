@@ -40,6 +40,6 @@ export function burnClutter({ state, action }: Options) {
     const cheer = amount / CLUTTER[item].sellUnit;
 
     game.inventory.Cheer = (game.inventory.Cheer ?? new Decimal(0)).add(cheer);
-    game.inventory[item] = game.inventory[item].sub(amount);
+    game.inventory[item] = game.inventory[item]?.sub(amount);
   });
 }

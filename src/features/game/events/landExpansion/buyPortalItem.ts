@@ -88,7 +88,7 @@ export function buyEventShopItem({ state, action }: Options): GameState {
       const name = item.name;
 
       // If already exists, throw error
-      if (purchases!.items?.[name] && purchases!.items?.[name] >= max) {
+      if (purchases?.items?.[name] && purchases.items[name]! >= max) {
         throw new Error("Item already purchased");
       }
 
@@ -106,7 +106,7 @@ export function buyEventShopItem({ state, action }: Options): GameState {
       const name = item.name;
 
       // If already exists, throw error
-      if (purchases!.wearables?.[name] && purchases!.wearables?.[name] >= max) {
+      if (purchases?.wearables?.[name] && purchases.wearables[name]! >= max) {
         throw new Error("Wearable already purchased");
       }
 

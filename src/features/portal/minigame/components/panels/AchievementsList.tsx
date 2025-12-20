@@ -14,7 +14,7 @@ import { useSound } from "lib/utils/hooks/useSound";
 import { PORTAL_NAME } from "../../Constants";
 
 const _achievements = (state: PortalMachineState) =>
-  state.context.state?.minigames.games[PORTAL_NAME]?.achievements ?? {};
+  (state.context.state?.minigames.games[PORTAL_NAME] as any)?.achievements ?? {};
 
 type Props = {
   onBack: () => void;

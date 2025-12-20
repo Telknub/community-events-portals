@@ -634,7 +634,7 @@ export const STATIC_OFFLINE_FARM: GameState = {
 
   minigames: {
     games: {
-      christmas: {
+      "holiday-puzzle-2025": {
         history: {
           "2024-10-31": {
             attempts: 7,
@@ -692,10 +692,10 @@ export const STATIC_OFFLINE_FARM: GameState = {
       },
     },
     prizes: {
-      christmas: {
+      "holiday-puzzle-2025": {
         coins: 0,
         items: {
-          "Christmas Token 2025": 50,
+          "Holiday Token 2025": 50,
         },
         wearables: {},
         score: 3,

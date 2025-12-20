@@ -20,9 +20,10 @@ export function isBuffActive({
   game: GameState;
   now?: number;
 }) {
+  const activeBuff = game.buffs?.[buff];
   return (
-    game.buffs?.[buff]?.startedAt &&
-    game.buffs?.[buff].startedAt + game.buffs?.[buff].durationMS > now
+    !!activeBuff?.startedAt &&
+    activeBuff.startedAt + activeBuff.durationMS > now
   );
 }
 export function applyBuff({

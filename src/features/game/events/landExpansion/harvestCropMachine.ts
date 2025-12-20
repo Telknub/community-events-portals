@@ -37,7 +37,7 @@ export function getPackYieldAmount(
 
   const criticalDrop = (name: CriticalHitName) => {
     if (criticalHitObj[name]) {
-      criticalHitObj[name]--;
+      criticalHitObj[name]!--;
       return true;
     }
     return false;

@@ -337,7 +337,7 @@ const PlantAll: React.FC<{
   const availableSeeds = seasonalSeeds.reduce(
     (acc, seed: CropSeedName) => {
       if (state.inventory[seed]) {
-        acc[seed] = state.inventory[seed].toNumber();
+        acc[seed] = state.inventory[seed]?.toNumber() ?? 0;
       }
       return acc;
     },
@@ -416,8 +416,8 @@ const PlantAll: React.FC<{
               {availablePlots.length > 0
                 ? selectedSeed
                   ? t("obsidianShrine.plant", {
-                      seed: selectedSeed,
-                    })
+                    seed: selectedSeed,
+                  })
                   : t("obsidianShrine.selectSeed")
                 : t("obsidianShrine.noPlots")}
             </Button>
