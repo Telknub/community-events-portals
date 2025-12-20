@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /// <reference lib="webworker" />
+/// <reference no-default-lib="true"/>
 
 import "workbox-core";
 import { googleFontsCache, offlineFallback } from "workbox-recipes";
