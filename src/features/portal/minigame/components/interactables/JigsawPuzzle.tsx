@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "../hud/StatusBar";
-import { JIGSAW_PUZZLE_DIFFICULTY, PORTAL_SOUNDS, PUZZLE_IMGS, PuzzleDifficulty, SNOW } from "../../Constants";
+import { JIGSAW_PUZZLE_DIFFICULTY, PORTAL_NAME, PORTAL_SOUNDS, PUZZLE_IMGS, PuzzleDifficulty, SNOW } from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
+import { Button } from "components/ui/Button";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
+import { ModalOverlay } from "components/ui/ModalOverlay";
+import { InnerPanel } from "components/ui/Panel";
+import { SUNNYSIDE } from "assets/sunnyside";
+import { PIXEL_SCALE } from "features/game/lib/constants";
 
 // --- Constants and Types ---
 
@@ -25,6 +31,7 @@ interface Props {
 type DragSource = { type: "board"; index: number } | { type: "pool"; index: number };
 
 export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty, seconds, onReset }) => {
+  const { t } = useAppTranslation();
   // State
   // The board can have empty slots (null)
   const [board, setBoard] = useState<(Tile | null)[]>([]);
@@ -37,6 +44,8 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
   const [draggedItem, setDraggedItem] = useState<DragSource | null>(null);
 
   const [puzzleImg, setPuzzleImg] = useState<string>("");
+
+  const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
 
   // --- Initialization Logic ---
 
@@ -297,14 +306,36 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
             <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
             <div className="md:p-[1rem] p-[.7rem]"
               style={{
+                position: "relative",
                 backgroundImage: "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
               }}
             >
+              <ModalOverlay
+                show={isImageOpen}
+                onBackdropClick={() => setIsImageOpen(false)}
+              >
+                <InnerPanel className="aspect-[1/1]">
+                  <div style={{ width: `${PIXEL_SCALE * 9}px` }} />
+                  <img
+                    src={SUNNYSIDE.icons.close}
+                    className="cursor-pointer"
+                    onClick={() => setIsImageOpen(false)}
+                    style={{
+                      width: `${PIXEL_SCALE * 9}px`,
+                      position: "absolute",
+                      top: "0",
+                      right: "0",
+                      margin: "1rem",
+                    }}
+                  />
+                  <img src={puzzleImg} alt="Jigsaw Puzzle" />
+                </InnerPanel>
+              </ModalOverlay>
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "20px",
+                  gap: "15px",
                   alignItems: "center",
                   border: "15px solid transparent",
                   backgroundColor: "#fdf5e6",
@@ -370,8 +401,6 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                   ))}
                 </div>
 
-                <div style={{ width: "100%", height: "2px", background: "#aaa" }} />
-
                 {/* Piece Pool */}
                 <div
                   id="jigsaw-pool" // Identity for touch drop
@@ -415,6 +444,7 @@ export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty,
                     />
                   ))}
                 </div>
+                <Button onClick={() => setIsImageOpen(true)}>{t(`${PORTAL_NAME}.jigsaw.view.image`)}</Button>
               </div>
             </div>
           </div>

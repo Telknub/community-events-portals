@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  PORTAL_NAME,
   PUZZLE_IMGS,
   PuzzleDifficulty,
   SLIDING_PUZZLE_DIFFICULTY,
@@ -8,6 +9,12 @@ import {
 import { StatusBar } from "../hud/StatusBar";
 import redRibbon from "public/world/portal/images/bow.webp";
 import { PORTAL_SOUNDS } from "../../Constants";
+import { ModalOverlay } from "components/ui/ModalOverlay";
+import { InnerPanel } from "components/ui/Panel";
+import { PIXEL_SCALE } from "features/game/lib/constants";
+import { SUNNYSIDE } from "assets/sunnyside";
+import { Button } from "components/ui/Button";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 const SIZE_X = 3; // Columns
 const SIZE_Y = 3; // Rows
@@ -28,9 +35,11 @@ export const SlidingPuzzle: React.FC<Props> = ({
   seconds,
   onReset
 }) => {
+  const { t } = useAppTranslation();
   const [tiles, setTiles] = useState<(number | null)[]>([]);
   const [isSolved, setIsSolved] = useState(false);
   const [puzzleImg, setPuzzleImg] = useState<string>("");
+  const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
 
   useEffect(() => {
     getPuzzleImg();
@@ -151,11 +160,33 @@ export const SlidingPuzzle: React.FC<Props> = ({
           <div
             className="p-3 border-[1rem] border-[#265c42]"
             style={{
+              position: "relative",
               backgroundImage:
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
             }}
           >
-            <div className="border-[1.5rem] border-[#a22633] border-double w:p-0 md:p-6 bg-white">
+            <ModalOverlay
+              show={isImageOpen}
+              onBackdropClick={() => setIsImageOpen(false)}
+            >
+              <InnerPanel className="aspect-[1/1]">
+                <div style={{ width: `${PIXEL_SCALE * 9}px` }} />
+                <img
+                  src={SUNNYSIDE.icons.close}
+                  className="cursor-pointer"
+                  onClick={() => setIsImageOpen(false)}
+                  style={{
+                    width: `${PIXEL_SCALE * 9}px`,
+                    position: "absolute",
+                    top: "0",
+                    right: "0",
+                    margin: "1rem",
+                  }}
+                />
+                <img src={puzzleImg} alt="Jigsaw Puzzle" />
+              </InnerPanel>
+            </ModalOverlay>
+            <div className="border-[1.5rem] border-[#a22633] border-double w:p-0 md:p-2 bg-white">
               <div
                 className="grid gap-1 w-[250px] h-[250px] md:w-[500px] md:h-[500px] "
                 style={{
@@ -181,22 +212,15 @@ export const SlidingPuzzle: React.FC<Props> = ({
                   />
                 ))}
               </div>
+              <div className="p-2">
+                <Button
+                  onClick={() => setIsImageOpen(true)}>
+                  {t(`${PORTAL_NAME}.jigsaw.view.image`)}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* {isSolved && (
-        <div
-          className="absolute bg-blue text-black-400 text-xxl font-bold bg-blue"
-          style={{
-            ...pixelGrayBorderStyle,
-            padding: `${PIXEL_SCALE * 8}px`,
-            background: "#546395",
-          }}
-        >
-          {VICTORY_TEXT.SlidingPuzzle}
-        </div>
-      )} */}
       </div>
     </>
   );
