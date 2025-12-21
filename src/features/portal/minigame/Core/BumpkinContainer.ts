@@ -972,6 +972,8 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   }
 
   public hurt() {
+    this.animateRemovalHeart("-1");
+    this.portalService?.send("LOSE_LIFE");
     if (
       this.sprite?.anims &&
       this.scene?.anims.exists(this.hurtAnimationKey as string) &&
@@ -979,8 +981,6 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     ) {
       try {
         this.sprite.anims.play(this.hurtAnimationKey as string, true);
-        this.animateRemovalHeart("-1");
-        this.portalService?.send("LOSE_LIFE");
         onAnimationComplete(this.sprite, this.hurtAnimationKey as string, () => {
           this.walk();
         });
