@@ -9,6 +9,7 @@ import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
 import { Difficulty } from "./Difficulty";
 import { PuzzleDifficulty } from "../../Constants";
+import { Timer } from "./Timer";
 
 interface Props {
   onReset: () => void;
@@ -27,7 +28,8 @@ export const StatusBar: React.FC<Props> = ({ onReset, seconds, difficulty }) => 
     <>
       <div className="flex flex-row w-full flex-wrap items-center justify-center">
         <div className="flex flex-row w-full justify-between px-3 pt-6 md:px-6 bg-[#265c42] rounded-t-[2.5rem] pb-2">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <Timer />
             <Difficulty difficulty={difficulty} />
             <Lives />
           </div>

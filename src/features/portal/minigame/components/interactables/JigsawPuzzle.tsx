@@ -9,11 +9,6 @@ import { InnerPanel } from "components/ui/Panel";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 
-// --- Constants and Types ---
-
-const GRID_SIZE = 4; // 4x4 = 16 pieces
-const MAX_TILE_SIZE = 100; // Pixels per piece
-
 // Interface to define the structure of a piece
 interface Tile {
   id: number; // Unique ID: represents which part of the image it is (0-15)
@@ -32,6 +27,11 @@ type DragSource = { type: "board"; index: number } | { type: "pool"; index: numb
 
 export const JigsawPuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty, seconds, onReset }) => {
   const { t } = useAppTranslation();
+
+  // --- Constants and Types ---
+  const GRID_SIZE = 4; // 4x4 = 16 pieces
+  const MAX_TILE_SIZE = 100; // Pixels per piece
+
   // State
   // The board can have empty slots (null)
   const [board, setBoard] = useState<(Tile | null)[]>([]);

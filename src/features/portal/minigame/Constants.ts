@@ -105,27 +105,27 @@ export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
   sudoku: {
     easy: 60,
     medium: 45,
-    ...getRepeatedLevels("hard", 45, 8, 5)
+    ...getRepeatedLevels("hard", 45, 4, 10)
   },
   sliding: {
     easy: 60,
     medium: 45,
-    ...getRepeatedLevels("hard", 45, 8, 5)
+    ...getRepeatedLevels("hard", 45, 4, 10)
   },
   jigsaw: {
     easy: 60,
     medium: 45,
-    ...getRepeatedLevels("hard", 45, 8, 5)
+    ...getRepeatedLevels("hard", 45, 4, 10)
   },
   pipe: {
     easy: 60,
     medium: 45,
-    ...getRepeatedLevels("hard", 45, 8, 5)
+    ...getRepeatedLevels("hard", 45, 4, 10)
   },
   nonogram: {
     easy: 60,
     medium: 45,
-    ...getRepeatedLevels("hard", 45, 8, 5)
+    ...getRepeatedLevels("hard", 45, 4, 10)
   },
 };
 
@@ -143,11 +143,7 @@ export const NEXT_DIFFICULTY_PUZZLE = {
   "hard 1": "hard 2",
   "hard 2": "hard 3",
   "hard 3": "hard 4",
-  "hard 4": "hard 5",
-  "hard 5": "hard 6",
-  "hard 6": "hard 7",
-  "hard 7": "hard 8",
-  "hard 8": "hard 8",
+  "hard 4": "hard 4",
 }
 
 // Nonogram Patterns 5x5
@@ -234,45 +230,41 @@ export type PuzzleDifficulty = "easy"
   | "hard 1"
   | "hard 2"
   | "hard 3"
-  | "hard 4"
-  | "hard 5"
-  | "hard 6"
-  | "hard 7"
-  | "hard 8";
+  | "hard 4";
 
 // Jigsaw puzzle
 export const JIGSAW_PUZZLE_DIFFICULTY = {
   easy: 8,
-  medium: 8,
-  ...getRepeatedLevels("hard", 4, 8)
+  medium: 4,
+  ...getRepeatedLevels("hard", 2, 4)
 } as Record<PuzzleDifficulty, number>;
 
 // Pipe puzzle
 export const PIPE_PUZZLE_DIFFICULTY = {
   easy: 5,
-  medium: 5,
-  ...getRepeatedLevels("hard", 7, 8)
+  medium: 6,
+  ...getRepeatedLevels("hard", 7, 4)
 } as Record<PuzzleDifficulty, number>;
 
 // Sudoku puzzle
 export const SUDOKU_DIFFICULTY = {
   easy: 4,
-  medium: 4,
-  ...getRepeatedLevels("hard", 6, 8)
+  medium: 5,
+  ...getRepeatedLevels("hard", 6, 4)
 } as Record<PuzzleDifficulty, number>;
 
 // Sliding Puzzle
 export const SLIDING_PUZZLE_DIFFICULTY = {
   easy: 4,
-  medium: 4,
-  ...getRepeatedLevels("hard", 8, 8)
+  medium: 6,
+  ...getRepeatedLevels("hard", 8, 4)
 } as Record<PuzzleDifficulty, number>;
 
 // Nonogram puzzle
 export const NONOGRAM_PUZZLE_DIFFICULTY = {
   easy: NONOGRAM_PATTERNS_EASY,
   medium: NONOGRAM_PATTERNS_EASY,
-  ...getRepeatedLevels("hard", NONOGRAM_PATTERNS_HARD, 8)
+  ...getRepeatedLevels("hard", NONOGRAM_PATTERNS_HARD, 4)
 } as Record<PuzzleDifficulty, Record<string, pattern>>;
 
 // Guide

@@ -11,6 +11,7 @@ import { Target } from "./Target";
 import { Lives } from "./Lives";
 import { Difficulty } from "./Difficulty";
 import { PuzzleDifficulty } from "../../Constants";
+import { Timer } from "./Timer";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -58,6 +59,7 @@ export const Hud: React.FC = () => {
           {isPlaying && (
             <>
               <Target />
+              <Timer />
               <Difficulty difficulty={difficulty} />
               <Lives />
               <Score />
