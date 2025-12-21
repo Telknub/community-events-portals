@@ -98,11 +98,19 @@ export class Scene extends BaseScene {
     this.physics.world.drawDebug = false;
 
     // Background music
+    if (this.backgroundMusic) {
+      this.backgroundMusic.stop();
+    }
+
     this.backgroundMusic = this.sound.add("backgroundMusic", {
       loop: true,
       volume: 0.1,
     });
     this.backgroundMusic.play();
+
+    this.events.on("shutdown", () => {
+      this.backgroundMusic?.stop();
+    });
 
     // Create minigame
     this.createPuzzlePoints();
@@ -141,6 +149,8 @@ export class Scene extends BaseScene {
       this.moveToNextPuzzlePoint(PATH_PUZZLE_POINTS[id]);
     });
     EventBus.on("next-level", () => {
+      const lives = this.portalService?.state.context.lives || 0;
+      if (lives <= 0) return;
       this.cameras.main.fadeOut(500);
       const currentDifficulty = this.portalService?.state.context.difficulty as PuzzleDifficulty;
       this.portalService?.send("SET_DIFFICULTY", {

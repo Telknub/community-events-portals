@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
-  NONOGRAM_PATTERNS_EASY,
-  NONOGRAM_PATTERNS_HARD,
   Cell,
   SNOW,
   PORTAL_SOUNDS,
   PuzzleDifficulty,
+  NONOGRAM_PUZZLE_DIFFICULTY,
 } from "../../Constants";
 import { StatusBar } from "../hud/StatusBar";
 import redRibbon from "public/world/portal/images/bow.webp";
@@ -22,13 +21,7 @@ const SIZE = 5;
 
 //  Choose pattern by difficulty
 function choosePattern(difficulty: PuzzleDifficulty) {
-  const nonogramPuzzleDifficulty = {
-    easy: NONOGRAM_PATTERNS_EASY,
-    medium: NONOGRAM_PATTERNS_EASY,
-    hard: NONOGRAM_PATTERNS_HARD,
-  };
-
-  const pool = nonogramPuzzleDifficulty[difficulty];
+  const pool = NONOGRAM_PUZZLE_DIFFICULTY[difficulty] as Record<string, Cell[][]>;
 
   const keys = Object.keys(pool);
   const randomKey = keys[Math.floor(Math.random() * keys.length)];

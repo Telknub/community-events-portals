@@ -23,6 +23,7 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import clickSound from "public/world/portal/music/click.mp3";
 import winSound from "public/world/portal/music/win.mp3";
 import resetSound from "public/world/portal/music/reset.wav";
+import { getRepeatedLevels } from "./lib/Utils";
 
 export const PORTAL_NAME = "holiday-puzzle-2025";
 export const PORTAL_TOKEN = "Holiday Token 2025";
@@ -104,27 +105,27 @@ export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
   sudoku: {
     easy: 60,
     medium: 45,
-    hard: 45,
+    ...getRepeatedLevels("hard", 45, 8, 5)
   },
   sliding: {
     easy: 60,
     medium: 45,
-    hard: 45,
+    ...getRepeatedLevels("hard", 45, 8, 5)
   },
   jigsaw: {
     easy: 60,
     medium: 45,
-    hard: 45,
+    ...getRepeatedLevels("hard", 45, 8, 5)
   },
   pipe: {
     easy: 60,
     medium: 45,
-    hard: 45,
+    ...getRepeatedLevels("hard", 45, 8, 5)
   },
   nonogram: {
     easy: 60,
     medium: 45,
-    hard: 45,
+    ...getRepeatedLevels("hard", 45, 8, 5)
   },
 };
 
@@ -138,28 +139,141 @@ export const VICTORY_TEXT = {
 export const PUZZLE_IMGS = [img1, img2, img3, img4];
 export const NEXT_DIFFICULTY_PUZZLE = {
   easy: "medium",
-  medium: "hard",
-  hard: "hard",
+  medium: "hard 1",
+  "hard 1": "hard 2",
+  "hard 2": "hard 3",
+  "hard 3": "hard 4",
+  "hard 4": "hard 5",
+  "hard 5": "hard 6",
+  "hard 6": "hard 7",
+  "hard 7": "hard 8",
+  "hard 8": "hard 8",
 }
 
+// Nonogram Patterns 5x5
+export type Cell = 0 | 1;
+export type pattern = Cell[][];
+export const NONOGRAM_PATTERNS_EASY: Record<string, pattern> = {
+  christmas_tree: [
+    [0, 0, 1, 0, 0],
+    [0, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1],
+    [0, 0, 1, 0, 0],
+    [0, 1, 1, 1, 0],
+  ],
+  arrow_up: [
+    [0, 0, 1, 0, 0],
+    [0, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0],
+  ],
+  heart: [
+    [0, 1, 0, 1, 0],
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 0],
+    [0, 0, 1, 0, 0],
+  ],
+  smiley: [
+    [0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 1],
+    [0, 1, 1, 1, 0],
+  ],
+  diamond: [
+    [0, 0, 1, 0, 0],
+    [0, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 0],
+    [0, 0, 1, 0, 0],
+  ],
+  star: [
+    [0, 1, 0, 1, 0],
+    [0, 0, 1, 0, 0],
+    [1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 0],
+    [0, 0, 1, 0, 0],
+  ],
+};
+export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
+  flower: [
+    [0, 0, 1, 0, 0],
+    [0, 1, 0, 1, 0],
+    [1, 0, 0, 0, 1],
+    [0, 1, 0, 1, 0],
+    [0, 0, 1, 0, 0],
+  ],
+  x_shape: [
+    [1, 0, 0, 0, 1],
+    [0, 1, 0, 1, 0],
+    [0, 0, 1, 0, 0],
+    [0, 1, 0, 1, 0],
+    [1, 0, 0, 0, 1],
+  ],
+  moon: [
+    [0, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1],
+    [1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 1],
+    [0, 1, 1, 1, 0],
+  ],
+  circle: [
+    [0, 1, 1, 1, 0],
+    [1, 1, 0, 1, 1],
+    [1, 0, 0, 0, 1],
+    [1, 1, 0, 1, 1],
+    [0, 1, 1, 1, 0],
+  ],
+};
+
 // Puzzle types
-export type PuzzleDifficulty = "easy" | "medium" | "hard";
+export type PuzzleDifficulty = "easy"
+  | "medium"
+  | "hard 1"
+  | "hard 2"
+  | "hard 3"
+  | "hard 4"
+  | "hard 5"
+  | "hard 6"
+  | "hard 7"
+  | "hard 8";
 
 // Jigsaw puzzle
-export const JIGSAW_PUZZLE_DIFFICULTY = { easy: 8, medium: 8, hard: 4 };
+export const JIGSAW_PUZZLE_DIFFICULTY = {
+  easy: 8,
+  medium: 8,
+  ...getRepeatedLevels("hard", 4, 8)
+} as Record<PuzzleDifficulty, number>;
 
 // Pipe puzzle
-export const PIPE_PUZZLE_DIFFICULTY = { easy: 5, medium: 5, hard: 7 };
+export const PIPE_PUZZLE_DIFFICULTY = {
+  easy: 5,
+  medium: 5,
+  ...getRepeatedLevels("hard", 7, 8)
+} as Record<PuzzleDifficulty, number>;
 
 // Sudoku puzzle
 export const SUDOKU_DIFFICULTY = {
   easy: 4,
   medium: 4,
-  hard: 6,
-};
+  ...getRepeatedLevels("hard", 6, 8)
+} as Record<PuzzleDifficulty, number>;
 
 // Sliding Puzzle
-export const SLIDING_PUZZLE_DIFFICULTY = { easy: 4, medium: 4, hard: 8 };
+export const SLIDING_PUZZLE_DIFFICULTY = {
+  easy: 4,
+  medium: 4,
+  ...getRepeatedLevels("hard", 8, 8)
+} as Record<PuzzleDifficulty, number>;
+
+// Nonogram puzzle
+export const NONOGRAM_PUZZLE_DIFFICULTY = {
+  easy: NONOGRAM_PATTERNS_EASY,
+  medium: NONOGRAM_PATTERNS_EASY,
+  ...getRepeatedLevels("hard", NONOGRAM_PATTERNS_HARD, 8)
+} as Record<PuzzleDifficulty, Record<string, pattern>>;
 
 // Guide
 export const INSTRUCTIONS: {
@@ -281,84 +395,4 @@ export const SNOW = () => {
       requestAnimationFrame(frame);
     }
   })();
-};
-
-// Nonogram Patterns 5x5
-export type Cell = 0 | 1;
-type pattern = Cell[][];
-
-export const NONOGRAM_PATTERNS_EASY: Record<string, pattern> = {
-  christmas_tree: [
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1],
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 0],
-  ],
-  arrow_up: [
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-  ],
-  heart: [
-    [0, 1, 0, 1, 0],
-    [1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 0],
-    [0, 0, 1, 0, 0],
-  ],
-  smiley: [
-    [0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0],
-    [0, 0, 0, 0, 0],
-    [1, 0, 0, 0, 1],
-    [0, 1, 1, 1, 0],
-  ],
-  diamond: [
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 0],
-    [0, 0, 1, 0, 0],
-  ],
-  star: [
-    [0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 0],
-    [1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 0],
-    [0, 0, 1, 0, 0],
-  ],
-};
-
-export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
-  flower: [
-    [0, 0, 1, 0, 0],
-    [0, 1, 0, 1, 0],
-    [1, 0, 0, 0, 1],
-    [0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 0],
-  ],
-  x_shape: [
-    [1, 0, 0, 0, 1],
-    [0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 0],
-    [0, 1, 0, 1, 0],
-    [1, 0, 0, 0, 1],
-  ],
-  moon: [
-    [0, 1, 1, 1, 0],
-    [1, 1, 0, 0, 1],
-    [1, 0, 0, 0, 0],
-    [1, 1, 0, 0, 1],
-    [0, 1, 1, 1, 0],
-  ],
-  circle: [
-    [0, 1, 1, 1, 0],
-    [1, 1, 0, 1, 1],
-    [1, 0, 0, 0, 1],
-    [1, 1, 0, 1, 1],
-    [0, 1, 1, 1, 0],
-  ],
 };

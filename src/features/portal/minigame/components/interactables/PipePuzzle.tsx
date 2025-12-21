@@ -286,7 +286,7 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
     const handleResize = () => {
       // Calculate available width
       // Container padding (20px*2) + Safety margin
-      const padding = difficulty === "hard" ? 60 : 200;
+      const padding = difficulty === "easy" || difficulty === "medium" ? 200 : 60;
       const safeWidth = window.innerWidth - padding;
       const calculatedCellSize = Math.floor(Math.min(safeWidth / gridSize, MAX_CELL_SIZE));
       setCellSize(Math.max(calculatedCellSize, 20)); // Min 20px
@@ -351,9 +351,9 @@ export const PipePuzzle: React.FC<Props> = ({ onClose, onComplete, difficulty = 
                 flexDirection: "column",
                 alignItems: "center",
                 padding: "20px",
-                paddingRight: difficulty === "hard" ? "20px" : "70px",
-                paddingLeft: difficulty === "hard" ? "20px" : "70px",
-                paddingTop: difficulty === "hard" ? "20px" : "40px",
+                paddingRight: difficulty === "easy" || difficulty === "medium" ? "70px" : "20px",
+                paddingLeft: difficulty === "easy" || difficulty === "medium" ? "70px" : "20px",
+                paddingTop: difficulty === "easy" || difficulty === "medium" ? "40px" : "20px",
                 background: "#87cfee",
                 fontFamily: "Arial, sans-serif",
               }}

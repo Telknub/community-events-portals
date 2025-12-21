@@ -6,6 +6,7 @@ import {
   BETA_TESTERS,
   INITIAL_DATE,
   ATTEMPTS_BETA_TESTERS,
+  Cell,
 } from "../Constants";
 
 /**
@@ -159,4 +160,24 @@ export const onAnimationComplete = (
       }
     },
   );
+};
+
+export const getRepeatedLevels = (
+  name: string,
+  value: number | Record<string, Cell[][]>,
+  amount: number,
+  decrement = 0,
+  increment = 0,
+) => {
+  const levels: Record<string, number | Record<string, Cell[][]>> = {};
+
+  for (let i = 1; i <= amount; i++) {
+    levels[`${name} ${i}`] = value;
+    if (typeof value === "number") {
+      value -= decrement;
+      value += increment;
+    }
+  }
+
+  return levels;
 };
