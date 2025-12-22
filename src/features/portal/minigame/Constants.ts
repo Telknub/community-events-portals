@@ -13,11 +13,11 @@ import lighthouse from "public/world/portal/images/lighthouse.png";
 import point from "public/world/portal/images/point.png";
 import resetBtn from "public/world/portal/images/resetbutton_normal.webp";
 import arrowDown from "public/world/portal/images/arrow_down.png";
-import sudokuPuzzle from "public/world/portal/images/sudokuPuzzle.png";
-import pipePuzzle from "public/world/portal/images/pipePuzzle.png";
-import jigsawPuzzle from "public/world/portal/images/jigsawPuzzle.png";
-import slidingPuzzle from "public/world/portal/images/slidingPuzzle.png";
-import nonogramPuzzle from "public/world/portal/images/nonogramPuzzle.png";
+import nonogramGif from "public/world/portal/images/nonogram-ezgif.gif";
+import pipeGif from "public/world/portal/images/pipe-ezgif.gif";
+import slidingGif from "public/world/portal/images/sliding-ezgif.gif";
+import jigsawGif from "public/world/portal/images/jigsaw-ezgif1.gif";
+import sudokuGif from "public/world/portal/images/sudoku-ezgif.gif";
 import { SUNNYSIDE } from "assets/sunnyside";
 
 import clickSound from "public/world/portal/music/click.mp3";
@@ -176,8 +176,8 @@ export const NONOGRAM_PATTERNS_EASY: Record<string, pattern> = {
     [0, 1, 0, 1, 0],
     [0, 0, 0, 0, 0],
     [1, 0, 0, 0, 1],
-    [0, 1, 1, 1, 0],
-  ],
+    [1, 1, 1, 1, 1],
+],
   diamond: [
     [0, 0, 1, 0, 0],
     [0, 1, 1, 1, 0],
@@ -192,22 +192,20 @@ export const NONOGRAM_PATTERNS_EASY: Record<string, pattern> = {
     [0, 1, 1, 1, 0],
     [0, 0, 1, 0, 0],
   ],
-};
-export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
-  flower: [
-    [0, 0, 1, 0, 0],
-    [0, 1, 0, 1, 0],
-    [1, 0, 0, 0, 1],
-    [0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 0],
-  ],
+   flower: [
+    [0, 1, 1, 1, 0],
+    [1, 1, 0, 1, 1],
+    [1, 0, 1, 0, 1],
+    [1, 1, 0, 1, 1],
+    [0, 1, 1, 1, 0],
+],
   x_shape: [
-    [1, 0, 0, 0, 1],
-    [0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 0],
-    [0, 1, 0, 1, 0],
-    [1, 0, 0, 0, 1],
-  ],
+    [1, 1, 0, 1, 1],
+    [1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1],
+    [1, 1, 0, 1, 1],
+],
   moon: [
     [0, 1, 1, 1, 0],
     [1, 1, 0, 0, 1],
@@ -222,6 +220,73 @@ export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
     [1, 1, 0, 1, 1],
     [0, 1, 1, 1, 0],
   ],
+};
+
+// Nonogram Patterns 7x7
+export const NONOGRAM_PATTERNS_HARD: Record<string, pattern> = {
+  cake: [
+    [0, 0, 1, 1, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [1, 0, 1, 1, 0, 0, 1],
+    [1, 1, 0, 0, 1, 1, 1],
+    [1, 0, 1, 1, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1],
+    [0, 1, 1, 1, 1, 1, 0],
+],
+muffin: [
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0],
+    [1, 1, 0, 0, 0, 1, 1],
+    [1, 0, 1, 1, 1, 0, 1],
+    [0, 1, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0]
+],
+gift: [
+    [0, 1, 1, 0, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1],
+],
+candy_cane: [
+    [1, 1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0],
+    [0, 1, 1, 0, 0, 1, 0],
+    [0, 1, 1, 0, 1, 0, 1],
+    [0, 1, 1, 0, 1, 1, 1],
+    [0, 1, 1, 0, 1, 1, 1], 
+],
+snowman: [
+    [1, 1, 1, 1, 0, 0, 0],
+    [1, 1, 1, 0, 1, 0, 1],
+    [0, 1, 1, 0, 0, 0, 0],
+    [0, 1, 1, 0, 1, 1, 1],
+    [1, 0, 1, 1, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0, 0],
+],
+snowflake: [
+    [0, 1, 0, 1, 0, 1, 0],
+    [1, 1, 0, 1, 0, 1, 1],
+    [0, 0, 1, 1, 1, 0, 0],
+    [1, 1, 1, 0, 1, 1, 1],
+    [0, 0, 1, 1, 1, 0, 0],
+    [1, 1, 0, 1, 0, 1, 1],
+    [0, 1, 0, 1, 0, 1, 0]
+],
+cup: [
+    [0, 1, 1, 1, 0, 0, 0],
+    [1, 0, 0, 0, 1, 0, 0],
+    [1, 0, 0, 0, 1, 1, 0],
+    [1, 1, 1, 1, 1, 0, 1],
+    [1, 1, 1, 1, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 0, 0, 0]
+],
 };
 
 // Puzzle types
@@ -308,10 +373,10 @@ export const RESOURCES_TABLE: {
   description: string;
   width?: number;
 }[] = [
-    {
-      image: arrowDown,
-      description: t(`${PORTAL_NAME}.power.difficulty`),
-    },
+    // {
+    //   image: arrowDown,
+    //   description: t(`${PORTAL_NAME}.power.difficulty`),
+    // },
     {
       image: resetBtn,
       description: t(`${PORTAL_NAME}.power.reset`),
@@ -328,23 +393,23 @@ export const PUZZLE_TABLE: {
   width?: number;
 }[] = [
     {
-      image: sudokuPuzzle,
+      image: sudokuGif,
       description: t(`${PORTAL_NAME}.puzzle1`),
     },
     {
-      image: pipePuzzle,
+      image: pipeGif,
       description: t(`${PORTAL_NAME}.puzzle2`),
     },
     {
-      image: jigsawPuzzle,
+      image: jigsawGif,
       description: t(`${PORTAL_NAME}.puzzle3`),
     },
     {
-      image: nonogramPuzzle,
+      image: nonogramGif,
       description: t(`${PORTAL_NAME}.puzzle4`),
     },
     {
-      image: slidingPuzzle,
+      image: slidingGif,
       description: t(`${PORTAL_NAME}.puzzle5`),
     },
   ];

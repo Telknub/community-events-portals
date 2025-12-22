@@ -7724,5 +7724,17 @@
   "holiday-puzzle-2025.difficulty": "Difficoltà",
   "holiday-puzzle-2025.difficulty.easy": "Facile",
   "holiday-puzzle-2025.difficulty.medium": "Medio",
-  "holiday-puzzle-2025.difficulty.hard": "Difficile"
+  "retentionDashboard.title": "Dashboard di conservazione",
+  "retentionDashboard.latestReport": "Ultimo rapporto: {{date}}",
+  "retentionDashboard.activeUsers": "Utenti attivi",
+  "retentionDashboard.tableTitle": "Ultimi 60 giorni",
+  "retentionDashboard.date": "Data",
+  "retentionDashboard.signups": "Iscrizioni",
+  "retentionDashboard.d1": "D1",
+  "retentionDashboard.d7": "D7",
+  "retentionDashboard.d30": "D30",
+  "retentionDashboard.noData": "Nessun record di conservazione negli ultimi 60 giorni.",
+  "retentionDashboard.unknownDate": "Data sconosciuta",
+  "holiday-puzzle-2025.difficulty.hard": "Difficile {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "Visualizza immagine"
 }
