@@ -7735,5 +7735,6 @@
   "holiday-puzzle-2025.difficulty": "Difficulty",
   "holiday-puzzle-2025.difficulty.easy": "Easy",
   "holiday-puzzle-2025.difficulty.medium": "Medium",
-  "holiday-puzzle-2025.difficulty.hard": "Hard"
+  "holiday-puzzle-2025.difficulty.hard": "Hard {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "View Image"
 }

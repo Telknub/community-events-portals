@@ -7724,7 +7724,6 @@
   "holiday-puzzle-2025.difficulty": "Schwierigkeit",
   "holiday-puzzle-2025.difficulty.easy": "Einfach",
   "holiday-puzzle-2025.difficulty.medium": "Mittel",
-  "holiday-puzzle-2025.difficulty.hard": "Schwer",
   "retentionDashboard.title": "Dashboard zur Aufbewahrung",
   "retentionDashboard.latestReport": "Neuester Bericht: {{date}}",
   "retentionDashboard.activeUsers": "Aktive Nutzer",
@@ -7735,5 +7734,7 @@
   "retentionDashboard.d7": "D7",
   "retentionDashboard.d30": "D30",
   "retentionDashboard.noData": "Keine Aufbewahrungsaufzeichnungen für die letzten 60 Tage.",
-  "retentionDashboard.unknownDate": "Unbekanntes Datum"
+  "retentionDashboard.unknownDate": "Unbekanntes Datum",
+  "holiday-puzzle-2025.difficulty.hard": "Schwer {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "Bild ansehen"
 }

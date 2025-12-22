@@ -7724,7 +7724,6 @@
   "holiday-puzzle-2025.difficulty": "Kesulitan",
   "holiday-puzzle-2025.difficulty.easy": "Mudah",
   "holiday-puzzle-2025.difficulty.medium": "Sedang",
-  "holiday-puzzle-2025.difficulty.hard": "Keras",
   "retentionDashboard.title": "Dasbor Retensi",
   "retentionDashboard.latestReport": "Laporan terbaru: {{date}}",
   "retentionDashboard.activeUsers": "Pengguna Aktif",
@@ -7735,5 +7734,7 @@
   "retentionDashboard.d7": "D7",
   "retentionDashboard.d30": "D30",
   "retentionDashboard.noData": "Tidak ada catatan penyimpanan selama 60 hari terakhir.",
-  "retentionDashboard.unknownDate": "Tanggal tidak diketahui"
+  "retentionDashboard.unknownDate": "Tanggal tidak diketahui",
+  "holiday-puzzle-2025.difficulty.hard": "Keras {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "Lihat Gambar"
 }

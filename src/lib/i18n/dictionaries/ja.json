@@ -7724,7 +7724,6 @@
   "holiday-puzzle-2025.difficulty": "難易度",
   "holiday-puzzle-2025.difficulty.easy": "簡単",
   "holiday-puzzle-2025.difficulty.medium": "ミディアム",
-  "holiday-puzzle-2025.difficulty.hard": "ハード",
   "retentionDashboard.title": "リテンションダッシュボード",
   "retentionDashboard.latestReport": "最新レポート:{{date}}",
   "retentionDashboard.activeUsers": "アクティブユーザ",
@@ -7735,5 +7734,7 @@
   "retentionDashboard.d7": "D7",
   "retentionDashboard.d30": "30",
   "retentionDashboard.noData": "過去 60 日間の保存記録はありません。",
-  "retentionDashboard.unknownDate": "日付不明"
+  "retentionDashboard.unknownDate": "日付不明",
+  "holiday-puzzle-2025.difficulty.hard": "ハード {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "[イメージを表示]"
 }

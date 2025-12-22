@@ -7666,7 +7666,6 @@
   "retentionDashboard.d30": "D30",
   "retentionDashboard.noData": "Tiada rekod penyimpanan selama 60 hari terakhir.",
   "retentionDashboard.unknownDate": "Tarikh tidak diketahui",
-  "eventHolidays.noticeboard.one": "Selamat datang ke Acara Komuniti Holidays 2025!",
   "holiday-puzzle-2025.portal.title": "Festival Warna",
   "holiday-puzzle-2025.portal.description": "<<Easter description> >.",
   "holiday-puzzle-2025.portal.missionObjectives": "Misi: Mencapai mata {{targetScore}}.",
@@ -7736,5 +7735,6 @@
   "holiday-puzzle-2025.difficulty": "Kesukaran",
   "holiday-puzzle-2025.difficulty.easy": "Mudah",
   "holiday-puzzle-2025.difficulty.medium": "Perantara",
-  "holiday-puzzle-2025.difficulty.hard": "Keras"
+  "holiday-puzzle-2025.difficulty.hard": "Keras {{number}}",
+  "holiday-puzzle-2025.jigsaw.view.image": "Lihat Imej"
 }
