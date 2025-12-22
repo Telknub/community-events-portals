@@ -111,6 +111,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
   };
 
   const handleTileClick = (index: number) => {
+    if (isSolved) return;
     const emptyIndex = tiles.indexOf(null);
     if (isAdjacent(index, emptyIndex)) {
       const newTiles = [...tiles];
