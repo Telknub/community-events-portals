@@ -7724,5 +7724,16 @@
   "holiday-puzzle-2025.difficulty": "Difficulté",
   "holiday-puzzle-2025.difficulty.easy": "Facile",
   "holiday-puzzle-2025.difficulty.medium": "Moyen",
-  "holiday-puzzle-2025.difficulty.hard": "Difficile"
+  "holiday-puzzle-2025.difficulty.hard": "Difficile",
+  "retentionDashboard.title": "Tableau de bord de rétention",
+  "retentionDashboard.latestReport": "Dernier rapport : {{date}}",
+  "retentionDashboard.activeUsers": "Utilisateurs actifs",
+  "retentionDashboard.tableTitle": "Les 60 derniers jours",
+  "retentionDashboard.date": "Date",
+  "retentionDashboard.signups": "Inscriptions",
+  "retentionDashboard.d1": "D1",
+  "retentionDashboard.d7": "D7",
+  "retentionDashboard.d30": "D30",
+  "retentionDashboard.noData": "Aucun enregistrement de conservation au cours des 60 derniers jours.",
+  "retentionDashboard.unknownDate": "Date inconnue"
 }

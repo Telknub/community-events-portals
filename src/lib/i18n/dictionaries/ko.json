@@ -7724,5 +7724,16 @@
   "holiday-puzzle-2025.difficulty": "난이도",
   "holiday-puzzle-2025.difficulty.easy": "간편합니다",
   "holiday-puzzle-2025.difficulty.medium": "미디엄",
-  "holiday-puzzle-2025.difficulty.hard": "하드"
+  "holiday-puzzle-2025.difficulty.hard": "하드",
+  "retentionDashboard.title": "보존 대시보드",
+  "retentionDashboard.latestReport": "최신 보고서: {{date}}",
+  "retentionDashboard.activeUsers": "액티브 유저",
+  "retentionDashboard.tableTitle": "지난 60일",
+  "retentionDashboard.date": "날짜",
+  "retentionDashboard.signups": "가입",
+  "retentionDashboard.d1": "D1",
+  "retentionDashboard.d7": "D7",
+  "retentionDashboard.d30": "D30",
+  "retentionDashboard.noData": "지난 60일 동안의 보존 기록이 없습니다.",
+  "retentionDashboard.unknownDate": "알 수 없는 날짜"
 }

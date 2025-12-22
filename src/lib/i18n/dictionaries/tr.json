@@ -7724,5 +7724,17 @@
   "holiday-puzzle-2025.difficulty": "Zorluk",
   "holiday-puzzle-2025.difficulty.easy": "Kolay",
   "holiday-puzzle-2025.difficulty.medium": "Orta",
-  "holiday-puzzle-2025.difficulty.hard": "Sert"
+  "holiday-puzzle-2025.difficulty.hard": "Sert",
+  "eventHolidays.noticeboard.one": "Holidays 2025 Topluluk Etkinliğine Hoş Geldiniz!",
+  "retentionDashboard.title": "Tutma Paneli",
+  "retentionDashboard.latestReport": "Son rapor: {{date}}",
+  "retentionDashboard.activeUsers": "Aktif Kullanıcılar",
+  "retentionDashboard.tableTitle": "Son 60 gün",
+  "retentionDashboard.date": "TARİH",
+  "retentionDashboard.signups": "Kayıtlar",
+  "retentionDashboard.d1": "D1",
+  "retentionDashboard.d7": "D7",
+  "retentionDashboard.d30": "D30",
+  "retentionDashboard.noData": "Son 60 gün boyunca saklama kaydı yok.",
+  "retentionDashboard.unknownDate": "Bilinmeyen tarih"
 }
