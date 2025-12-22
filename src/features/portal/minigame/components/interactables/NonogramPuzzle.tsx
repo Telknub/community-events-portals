@@ -17,8 +17,6 @@ interface Props {
   onReset: () => void;
 }
 
-const SIZE = 5;
-
 //  Choose pattern by difficulty
 function choosePattern(difficulty: PuzzleDifficulty) {
   const pool = NONOGRAM_PUZZLE_DIFFICULTY[difficulty] as Record<string, Cell[][]>;
@@ -54,6 +52,8 @@ export const NonogramPuzzle: React.FC<Props> = ({
 }) => {
   /* Load random pattern whenever difficulty changes */
   const PATTERN = React.useMemo(() => choosePattern(difficulty), [difficulty]);
+
+  const SIZE = PATTERN.length;
 
   /* Clues are derived from pattern */
   const rowClues = React.useMemo(() => getClues(PATTERN), [PATTERN]);
@@ -156,7 +156,7 @@ export const NonogramPuzzle: React.FC<Props> = ({
                     </div>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-5">
+                    <div className={`grid grid-cols-${SIZE}`}>
                       {PATTERN[r].map((_, c) => {
                         const isFilled = board[r][c];
                         return (
