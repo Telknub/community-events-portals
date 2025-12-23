@@ -13,6 +13,7 @@ import { MinigameName } from "features/game/types/minigames";
 import { LeagueId, LeagueName } from "features/leagues/leagues";
 
 const API_URL = CONFIG.API_URL;
+const API_URL_CHRISTMAS = "https://api.sunflower-land.com";
 
 type Options = {
   farmId: number;
@@ -351,7 +352,7 @@ export async function getPortalLeaderboard({
     return cache;
   }
 
-  const url = `${API_URL}/leaderboard/portals/${farmId}?name=${name}&from=${from}&to=${to}`;
+  const url = `${API_URL_CHRISTMAS}/leaderboard/portals/${farmId}?name=${name}&from=${from}&to=${to}`;
 
   const response = await window.fetch(url, {
     method: "GET",
