@@ -1135,7 +1135,7 @@ export const KNOWN_IDS: Record<InventoryItemName, number> = {
   "Winter Alpaca": 2344,
   "Penguin Surprise": 2345,
   "Frozen Meat": 2346,
-  "Ho Ho oh oh...": 2347,
+  "Ho Ho oh oh…": 2347,
 
   // Monument Items
   "Big Orange": 2281,
@@ -1311,6 +1311,11 @@ export const KNOWN_IDS: Record<InventoryItemName, number> = {
   "Basic Food Box": 2719,
   "Weekly Mega Box": 2720,
   "Basic Love Box": 2721,
+
+  // Processed Food
+  "Fish Flake": 2722,
+  "Fish Stick": 2723,
+  "Fish Oil": 2724,
 };
 
 // The reverse of above
