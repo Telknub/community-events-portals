@@ -112,6 +112,13 @@ export const Phaser: React.FC = () => {
 
   const ref = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    game.current?.registry.set(
+      "mmoServer",
+      mmoService.getSnapshot().context.server,
+    );
+  }, [mmoService.getSnapshot().context.server]);
+
   return (
     <div>
       <div id="game-content" ref={ref} />
