@@ -152,14 +152,17 @@ export class Scene extends BaseScene {
       const lives = this.portalService?.state.context.lives || 0;
       if (lives <= 0) return;
       this.cameras.main.fadeOut(500);
-      const currentDifficulty = this.portalService?.state.context.difficulty as PuzzleDifficulty;
+      const currentDifficulty = this.portalService?.state.context
+        .difficulty as PuzzleDifficulty;
       this.portalService?.send("SET_DIFFICULTY", {
         difficulty: NEXT_DIFFICULTY_PUZZLE[currentDifficulty],
       });
       this.cameras.main.on(
         "camerafadeoutcomplete",
         () => {
-          interactableModalManager.open("difficulty-message", { difficulty: NEXT_DIFFICULTY_PUZZLE[currentDifficulty] });
+          interactableModalManager.open("difficulty-message", {
+            difficulty: NEXT_DIFFICULTY_PUZZLE[currentDifficulty],
+          });
           setTimeout(() => {
             interactableModalManager.open(undefined);
             this.cameras.main.fadeIn(500);

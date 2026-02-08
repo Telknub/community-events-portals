@@ -3,9 +3,17 @@ import { Game, AUTO } from "phaser";
 import NinePatchPlugin from "phaser3-rex-plugins/plugins/ninepatch-plugin.js";
 import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-plugin.js";
 
+import {
+  SceneId,
+  mmoMachine,
+  MachineInterpreter as MMOMachineInterpreter,
+} from "features/world/mmoMachine";
+import * as AuthProvider from "features/auth/lib/Provider";
+import { Context } from "features/game/GameProvider";
+
 import { Preloader } from "features/world/scenes/Preloader";
 import { PortalContext } from "./lib/PortalProvider";
-import { useActor } from "@xstate/react";
+import { useActor, useInterpret } from "@xstate/react";
 import { Scene } from "./Scene";
 import { NPCModals } from "./components/npcs/NPCModals";
 import { InteractableModals } from "./components/interactables/InteractableModals";
@@ -14,6 +22,27 @@ import { PORTAL_NAME } from "./Constants";
 export const Phaser: React.FC = () => {
   const { portalService } = useContext(PortalContext);
   const [portalState] = useActor(portalService);
+
+  const { authService } = useContext(AuthProvider.Context);
+  const [authState] = useActor(authService);
+
+  const { gameService } = useContext(Context);
+  const [gameState] = useActor(gameService);
+
+  const mmoService = useInterpret(mmoMachine, {
+    context: {
+      jwt: authState.context.user.rawToken,
+      farmId: gameState.context.farmId,
+      bumpkin: gameState.context.state.bumpkin,
+      pets: gameState.context.state.pets,
+      faction: gameState.context.state.faction?.name,
+      sceneId: (name ?? "plaza") as SceneId,
+      experience: gameState.context.state.bumpkin?.experience ?? 0,
+      isCommunity: true,
+      moderation: gameState.context.moderation,
+      username: gameState.context.state.username,
+    },
+  }) as unknown as MMOMachineInterpreter;
 
   const game = useRef<Game | null>(null);
 
@@ -70,6 +99,7 @@ export const Phaser: React.FC = () => {
       parent: "game-content",
     });
 
+    game.current.registry.set("mmoService", mmoService);
     game.current.registry.set("initialScene", scene);
     game.current.registry.set("gameState", portalState.context.state);
     game.current.registry.set("id", portalState.context.id);
