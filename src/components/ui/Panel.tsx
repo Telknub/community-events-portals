@@ -143,9 +143,7 @@ export const OuterPanel: React.FC<React.PropsWithChildren<PanelProps>> = ({
         </div>
       )}
       <div
-        // Fix for dark mode
-
-        className={classNames(className, "bg-[#c28569]")}
+        className={classNames(className)}
         style={{
           ...pixelDarkBorderStyle,
           padding: `${PIXEL_SCALE * 1}px`,
@@ -158,6 +156,15 @@ export const OuterPanel: React.FC<React.PropsWithChildren<PanelProps>> = ({
               }
             : {}),
           ...style,
+          backgroundColor: "#c28569",
+          clipPath: `
+            polygon(
+              0% 2%, 1% 4%, 25% 2%, 38% 5%, 52% 3%, 68% 6%, 82% 2%, 94% 4%, 100% 3%, 
+              98% 25%, 100% 50%, 97% 75%, 99% 92%,    
+              85% 100%, 65% 96%, 45% 100%, 25% 97%, 8% 100%,    
+              0% 85%, 3% 60%, 0% 35%
+            )
+          `,
         }}
         {...otherDivProps}
       >
