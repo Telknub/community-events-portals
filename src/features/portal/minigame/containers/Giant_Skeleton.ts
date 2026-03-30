@@ -2,7 +2,7 @@ import { BumpkinContainer } from "../Core/BumpkinContainer";
 import { Scene } from "../Scene";
 import { createAnimation } from "../lib/Utils";
 import { MachineInterpreter } from "../lib/Machine";
-import { WINGS_IMMUNITY } from "../Constants";
+import { SHIRT_IMMUNITY } from "../Constants";
 
 interface Props {
   x: number;
@@ -236,13 +236,13 @@ export class Giant_Skeleton extends Phaser.GameObjects.Container {
   private handleImmunity() {
     if (!this.player) return;
 
-    const wing = this.player.clothing.wings;
+    const shirt = this.player.clothing.shirt;
     const enlargePlayer = 1.5;
     const defaultScale = 1;
 
-    if (!wing) {
+    if (!shirt) {
       this.player.setScale(enlargePlayer);
-    } else if (WINGS_IMMUNITY.includes(wing)) {
+    } else if (SHIRT_IMMUNITY.includes(shirt)) {
       this.player.setScale(defaultScale);
     } else {
       this.player.setScale(enlargePlayer);

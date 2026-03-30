@@ -1,9 +1,9 @@
 import {
-  BumpkinWings,
   BumpkinAura,
   Equipped,
   BumpkinShoe,
   BumpkinHat,
+  BumpkinShirt,
 } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
@@ -165,11 +165,10 @@ export const HONEY_SPAWN_POSITION: Position = { x: 304, y: -50 };
 export const HONEY_TARGET_Y = 80;
 
 // Immunities
-export const AURA_IMMUNITY: BumpkinAura = "Slime Aura";
-export const WINGS_IMMUNITY: BumpkinWings = "Sol & Luna";
-export const SHOES_IMMUNITY: BumpkinShoe = "Crimstone Boots";
-export const HAT_IMMUNITY: BumpkinHat = "Grumpy Cat";
-
+export const AURA_IMMUNITY: BumpkinAura = "Glitch Aura";  // Prevents from turning into a rice bun
+export const SHIRT_IMMUNITY: BumpkinShirt[] = ["Neon Noiz Jacket", "404 Chic Top"]; // Prevents from getting enlarged
+export const SHOES_IMMUNITY: BumpkinShoe[] = ["Neon Noiz Shoes", "404 Chic Boots"]; // Prevents inverted controls
+export const HAT_IMMUNITY: BumpkinHat = "Aether Specs"; // Prevents from slowing down
 // Guide
 export const INSTRUCTIONS: {
   image: string;
@@ -232,11 +231,19 @@ export const IMMUNITY_GUIDE: {
     description: t(`${PORTAL_NAME}.aura_immunityDescription`),
   },
   {
-    image: getWearableImage(`${WINGS_IMMUNITY}`),
-    description: t(`${PORTAL_NAME}.wings_immunityDescription`),
+    image: getWearableImage(`${SHIRT_IMMUNITY[0]}`),
+    description: t(`${PORTAL_NAME}.shirt_immunityDescription`),
   },
   {
-    image: getWearableImage(`${SHOES_IMMUNITY}`),
+    image: getWearableImage(`${SHIRT_IMMUNITY[1]}`),
+    description: t(`${PORTAL_NAME}.shirt_immunityDescription`),
+  },
+  {
+    image: getWearableImage(`${SHOES_IMMUNITY[0]}`),
+    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+  },
+  {
+    image: getWearableImage(`${SHOES_IMMUNITY[1]}`),
     description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
   },
   {
@@ -272,7 +279,7 @@ export const ENEMIES_TABLE: {
   },
 ];
 
-export type Immunity_Wearables = "aura" | "wings" | "shoe" | "hat";
+export type Immunity_Wearables = "aura" | "shirt" | "shoe" | "hat";
 
 export const IMMUNITY_TOOLTIP: {
   id: Immunity_Wearables;
@@ -285,9 +292,9 @@ export const IMMUNITY_TOOLTIP: {
     description: t(`${PORTAL_NAME}.aura_immunityDescription`),
   },
   {
-    id: "wings",
+    id: "shirt",
     image: wings_immunity_icon,
-    description: t(`${PORTAL_NAME}.wings_immunityDescription`),
+    description: t(`${PORTAL_NAME}.shirt_immunityDescription`),
   },
   {
     id: "shoe",
