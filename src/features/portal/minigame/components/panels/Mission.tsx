@@ -21,6 +21,7 @@ import { Controls } from "./Controls";
 import { Immunities_Wearables } from "./ImmunitiesWearables";
 import { ModalOverlay } from "components/ui/ModalOverlay";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
+import { GameState } from "features/game/types/game";
 
 interface Props {
   mode: "introduction" | "success" | "failed";
@@ -30,6 +31,7 @@ interface Props {
   onConfirm: () => void;
   trainingButtonText?: string;
   onTraining?: () => void;
+  gameState: GameState;
 }
 
 const _isJoystickActive = (state: PortalMachineState) =>
@@ -54,10 +56,9 @@ const useSwappablePair = () => {
     null,
   );
 
-  const setSlotRef =
-    (slot: SwapSlot) => (element: HTMLDivElement | null) => {
-      slotRefs.current[slot] = element;
-    };
+  const setSlotRef = (slot: SwapSlot) => (element: HTMLDivElement | null) => {
+    slotRefs.current[slot] = element;
+  };
 
   const swapOnce = () => {
     if (hasSwappedRef.current) return false;
@@ -124,6 +125,7 @@ export const Mission: React.FC<Props> = ({
   onConfirm,
   trainingButtonText,
   onTraining,
+  gameState,
 }) => {
   const { t } = useAppTranslation();
 
@@ -221,7 +223,9 @@ export const Mission: React.FC<Props> = ({
                 </OuterPanel>
                 <div className="flex gap-1">
                   <OuterPanel className="w-full flex flex-col items-center">
-                    <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
+                    <Label type="default">
+                      {t(`${PORTAL_NAME}.bestToday`)}
+                    </Label>
                     <div>{formattedBestToday()}</div>
                   </OuterPanel>
                   <OuterPanel className="w-full flex flex-col items-center">
@@ -232,10 +236,9 @@ export const Mission: React.FC<Props> = ({
                   </OuterPanel>
                 </div>
                 <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">
-                    {t(`${PORTAL_NAME}.Immunity`)}
-                  </Label>
-                  <Immunities_Wearables />
+                  <Label type="default">{t(`${PORTAL_NAME}.Immunity`)}</Label>
+                  {/* Remove gameState={gameState} */}
+                  <Immunities_Wearables gameState={gameState} />
                 </OuterPanel>
               </div>
             )}
