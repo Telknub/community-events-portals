@@ -18,7 +18,7 @@ import { getUrl } from "features/portal/actions/loadPortal";
 import key from "public/world/base/key.png";
 import { OuterPanel } from "components/ui/Panel";
 import { Controls } from "./Controls";
-import { Immunities_Wearables } from "./ImmunitiesWearables";
+import { ImmunitiesWearables } from "./ImmunitiesWearables";
 import { ModalOverlay } from "components/ui/ModalOverlay";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 
@@ -37,6 +37,7 @@ const _isJoystickActive = (state: PortalMachineState) =>
 const _lastScore = (state: PortalMachineState) => state.context.lastScore;
 const _minigame = (state: PortalMachineState) =>
   state.context.state?.minigames.games[PORTAL_NAME];
+const _bumpkinParts = (state: PortalMachineState) => state.context.state?.bumpkin.equipped;
 const _jwt = (state: PortalMachineState) => state.context.jwt;
 
 type SwapSlot = "left" | "right";
@@ -132,6 +133,7 @@ export const Mission: React.FC<Props> = ({
   const isJoystickActive = useSelector(portalService, _isJoystickActive);
   const lastScore = useSelector(portalService, _lastScore);
   const minigame = useSelector(portalService, _minigame);
+  const bumpkinParts = useSelector(portalService, _bumpkinParts);
   const jwt = useSelector(portalService, _jwt);
 
   const farmId = !getUrl() ? 0 : decodeToken(jwt as string).farmId;
@@ -213,32 +215,29 @@ export const Mission: React.FC<Props> = ({
               )}
             </div>
 
-            {showScore && (
-              <div className="w-full flex flex-col gap-1 mb-3">
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="info">{t("leaderboard.score")}</Label>
-                  <div>{formattedLastScore()}</div>
-                </OuterPanel>
-                <div className="flex gap-1">
+            <div className="w-full flex flex-col gap-1 mb-3">
+              {showScore && (
+                <>
                   <OuterPanel className="w-full flex flex-col items-center">
-                    <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
-                    <div>{formattedBestToday()}</div>
+                    <Label type="info">{t("leaderboard.score")}</Label>
+                    <div>{formattedLastScore()}</div>
                   </OuterPanel>
-                  <OuterPanel className="w-full flex flex-col items-center">
-                    <Label type="default">
-                      {t(`${PORTAL_NAME}.bestAllTime`)}
-                    </Label>
-                    <div>{formattedBestAllTime()}</div>
-                  </OuterPanel>
-                </div>
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">
-                    {t(`${PORTAL_NAME}.Immunity`)}
-                  </Label>
-                  <Immunities_Wearables />
-                </OuterPanel>
-              </div>
-            )}
+                  <div className="flex gap-1">
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
+                      <div>{formattedBestToday()}</div>
+                    </OuterPanel>
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">
+                        {t(`${PORTAL_NAME}.bestAllTime`)}
+                      </Label>
+                      <div>{formattedBestAllTime()}</div>
+                    </OuterPanel>
+                  </div>
+                </>
+              )}
+              <ImmunitiesWearables bumpkinParts={bumpkinParts!} />
+            </div>
           </div>
 
           {trainingButtonText ? (

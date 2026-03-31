@@ -60,10 +60,10 @@ export const Hud: React.FC = () => {
             </>
           )}
         </div>
-        {isPlaying && <Powers />}
 
-        {!isJoystickActive && (
+        {isPlaying && (
           <>
+            <Powers />
             <Travel />
             <Settings />
           </>
