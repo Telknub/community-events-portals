@@ -40,7 +40,7 @@ export const SLIDING_SPEED = 300;
 export const DEPTH = 1000;
 
 // Attempts
-export const INITIAL_DATE = "2026-04-1"; // YYYY-MM-DD
+export const INITIAL_DATE = "2026-03-31"; // YYYY-MM-DD
 export const INITIAL_DATE_LEADERBOARD = "2026-04-05"; // YYYY-MM-DD
 export const ATTEMPTS_BETA_TESTERS = 100;
 export const UNLIMITED_ATTEMPTS_SFL = 150; // If this value is less than 0, the option disappears
@@ -58,6 +58,42 @@ export const BETA_TESTERS: number[] = [
   9239, 36214, 55626, 3249, 128122,
 ];
 // export const BETA_TESTERS: number[] = [];
+
+export const ATTEMPTS_PURCHASED_BY_MISTAKE: { id: number; attempts: number | "unlimited" }[] = [
+  { id: 170459, attempts: 1 },
+  { id: 39, attempts: "unlimited" },
+  { id: 43569, attempts: 1 },
+  { id: 128281, attempts: 1 },
+  { id: 7363530391431153, attempts: 1 },
+  { id: 1164010181301338, attempts: 1 },
+  { id: 6301933697173094, attempts: 1 },
+  { id: 6339055894914183, attempts: 1 },
+  { id: 6799684710405550, attempts: 1 },
+  { id: 4989477240831826, attempts: 1 },
+  { id: 4604110514183664, attempts: 1 },
+  { id: 4471177087219028, attempts: 1 },
+  { id: 161865, attempts: "unlimited" },
+  { id: 90898, attempts: 1 },
+  { id: 6674238736421706, attempts: 1 },
+  { id: 766602799051301, attempts: 1 },
+  { id: 1866422544171811, attempts: 1 },
+  { id: 1423003006227343, attempts: 1 },
+  { id: 7305414419203497, attempts: "unlimited" },
+  { id: 188262, attempts: 3 },
+  { id: 7132003891079063, attempts: 1 },
+  { id: 5031, attempts: "unlimited" },
+  { id: 5236692983496508, attempts: 7 },
+  { id: 760685500011135, attempts: 1 },
+  { id: 8406259486677961, attempts: "unlimited" },
+  { id: 163654, attempts: 1 },
+  { id: 3228704070507365, attempts: "unlimited" },
+  { id: 155439, attempts: 1 },
+  { id: 3279154164595495, attempts: 1 },
+  { id: 1621, attempts: "unlimited" },
+  { id: 405, attempts: "unlimited" },
+  { id: 1862131619980240, attempts: 1 },
+  { id: 8258779428596841, attempts: "unlimited" }
+]
 
 export const CANNON_CONFIG: (Position & { side: Side })[] = [
   { x: 344, y: 327, side: "left" },
@@ -179,46 +215,46 @@ export const INSTRUCTIONS: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: food,
-    description: t(`${PORTAL_NAME}.instructions1`),
-  },
-  {
-    image: giantIcon,
-    description: t(`${PORTAL_NAME}.instructions2`),
-  },
-  {
-    image: auraIcon,
-    description: t(`${PORTAL_NAME}.instructions3`),
-  },
-  {
-    image: healthBar_icon,
-    description: t(`${PORTAL_NAME}.instructions4`),
-  },
-];
+    {
+      image: food,
+      description: t(`${PORTAL_NAME}.instructions1`),
+    },
+    {
+      image: giantIcon,
+      description: t(`${PORTAL_NAME}.instructions2`),
+    },
+    {
+      image: auraIcon,
+      description: t(`${PORTAL_NAME}.instructions3`),
+    },
+    {
+      image: healthBar_icon,
+      description: t(`${PORTAL_NAME}.instructions4`),
+    },
+  ];
 
 export const RESOURCES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: riceBun,
-    description: t(`${PORTAL_NAME}.resource1`),
-  },
-  {
-    image: cannon,
-    description: t(`${PORTAL_NAME}.resource2`),
-  },
-  {
-    image: chest,
-    description: t(`${PORTAL_NAME}.resource3`),
-  },
-  {
-    image: combination_assets,
-    description: t(`${PORTAL_NAME}.resource4`),
-  },
-];
+    {
+      image: riceBun,
+      description: t(`${PORTAL_NAME}.resource1`),
+    },
+    {
+      image: cannon,
+      description: t(`${PORTAL_NAME}.resource2`),
+    },
+    {
+      image: chest,
+      description: t(`${PORTAL_NAME}.resource3`),
+    },
+    {
+      image: combination_assets,
+      description: t(`${PORTAL_NAME}.resource4`),
+    },
+  ];
 
 export const REFEREE: {
   image: string;
@@ -235,59 +271,59 @@ export const IMMUNITY_GUIDE: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: getWearableImage(`${AURA_IMMUNITY}`),
-    immunityName: AURA_IMMUNITY,
-    description: t(`${PORTAL_NAME}.aura_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${TOOL_IMMUNITY}`),
-    immunityName: TOOL_IMMUNITY,
-    description: t(`${PORTAL_NAME}.tool_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${SHOES_IMMUNITY[0]}`),
-    immunityName: SHOES_IMMUNITY[0],
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${SHOES_IMMUNITY[1]}`),
-    immunityName: SHOES_IMMUNITY[1],
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${HAT_IMMUNITY}`),
-    immunityName: HAT_IMMUNITY,
-    description: t(`${PORTAL_NAME}.hat_immunityDescription`),
-  },
-];
+    {
+      image: getWearableImage(`${AURA_IMMUNITY}`),
+      immunityName: AURA_IMMUNITY,
+      description: t(`${PORTAL_NAME}.aura_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${TOOL_IMMUNITY}`),
+      immunityName: TOOL_IMMUNITY,
+      description: t(`${PORTAL_NAME}.tool_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${SHOES_IMMUNITY[0]}`),
+      immunityName: SHOES_IMMUNITY[0],
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${SHOES_IMMUNITY[1]}`),
+      immunityName: SHOES_IMMUNITY[1],
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${HAT_IMMUNITY}`),
+      immunityName: HAT_IMMUNITY,
+      description: t(`${PORTAL_NAME}.hat_immunityDescription`),
+    },
+  ];
 
 export const ENEMIES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: giantIcon,
-    description: t(`${PORTAL_NAME}.enemy1`),
-  },
-  {
-    image: blastIcon,
-    description: t(`${PORTAL_NAME}.enemy2`),
-  },
-  {
-    image: menaceIcon,
-    description: t(`${PORTAL_NAME}.enemy3`),
-  },
-  {
-    image: sniperIcon,
-    description: t(`${PORTAL_NAME}.enemy4`),
-  },
-  {
-    image: orangePuddle,
-    description: t(`${PORTAL_NAME}.enemy5`),
-  },
-];
+    {
+      image: giantIcon,
+      description: t(`${PORTAL_NAME}.enemy1`),
+    },
+    {
+      image: blastIcon,
+      description: t(`${PORTAL_NAME}.enemy2`),
+    },
+    {
+      image: menaceIcon,
+      description: t(`${PORTAL_NAME}.enemy3`),
+    },
+    {
+      image: sniperIcon,
+      description: t(`${PORTAL_NAME}.enemy4`),
+    },
+    {
+      image: orangePuddle,
+      description: t(`${PORTAL_NAME}.enemy5`),
+    },
+  ];
 
 export type Immunity_Wearables = "aura" | "tool" | "shoe" | "hat";
 
@@ -296,27 +332,27 @@ export const IMMUNITY_TOOLTIP: {
   image: string;
   description: string;
 }[] = [
-  {
-    id: "aura",
-    image: aura_immunity_icon,
-    description: t(`${PORTAL_NAME}.aura_immunityDescription`),
-  },
-  {
-    id: "tool",
-    image: wings_immunity_icon,
-    description: t(`${PORTAL_NAME}.tool_immunityDescription`),
-  },
-  {
-    id: "shoe",
-    image: shoes_immunity,
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    id: "hat",
-    image: hat_immunity,
-    description: t(`${PORTAL_NAME}.hat_immunityDescription`),
-  },
-];
+    {
+      id: "aura",
+      image: aura_immunity_icon,
+      description: t(`${PORTAL_NAME}.aura_immunityDescription`),
+    },
+    {
+      id: "tool",
+      image: wings_immunity_icon,
+      description: t(`${PORTAL_NAME}.tool_immunityDescription`),
+    },
+    {
+      id: "shoe",
+      image: shoes_immunity,
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      id: "hat",
+      image: hat_immunity,
+      description: t(`${PORTAL_NAME}.hat_immunityDescription`),
+    },
+  ];
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["goldtooth"];

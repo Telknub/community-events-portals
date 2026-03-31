@@ -6,6 +6,7 @@ import {
   BETA_TESTERS,
   INITIAL_DATE,
   ATTEMPTS_BETA_TESTERS,
+  ATTEMPTS_PURCHASED_BY_MISTAKE,
 } from "../Constants";
 
 /**
@@ -40,9 +41,23 @@ export const getAttemptsLeft = (minigame?: Minigame, farmId = 0) => {
   // Total attempts
   let attemptsLeft = freeTotalAttempts - totalAttemptsUsed + restockAttempts;
 
-  // +Beta attemtps
+  // Beta attemtps
   if (BETA_TESTERS.includes(farmId) && dateKey < INITIAL_DATE) {
     attemptsLeft += ATTEMPTS_BETA_TESTERS;
+  }
+
+  console.log("farmId", farmId);
+
+  // Attempts purchased by mistake
+  const purchasedByMistake = ATTEMPTS_PURCHASED_BY_MISTAKE.find(
+    (item) => item.id === farmId
+  );
+
+  if (purchasedByMistake) {
+    if (purchasedByMistake.attempts === "unlimited") {
+      return Infinity;
+    }
+    attemptsLeft += purchasedByMistake.attempts;
   }
 
   return attemptsLeft;

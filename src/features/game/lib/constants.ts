@@ -408,10 +408,28 @@ export const INITIAL_FARM: GameState = {
 
   minigames: {
     games: {
-      "easter-eggstravaganza": {
-        history: {},
-        highscore: 0,
-      },
+      "april-fools": {
+        "history": {
+          // "2026-03-30": {
+          //   "attempts": 1,
+          //   "highscore": 9,
+          //   "prizeClaimedAt": 1774809958435
+          // },
+          "2026-03-31": {
+            "attempts": 3,
+            "highscore": 14,
+            "prizeClaimedAt": 1775000603121
+          }
+        },
+        "highscore": 14,
+        "purchases": [
+          // {
+          //   "purchasedAt": 1751266607794,
+          //   "sfl": 100,
+          //   "items": {}
+          // }
+        ],
+      }
     },
     prizes: {},
   },
