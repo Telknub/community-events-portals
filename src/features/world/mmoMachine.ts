@@ -35,6 +35,7 @@ export type Scenes = {
   stream: Room<PlazaRoomState> | undefined;
   love_island: Room<PlazaRoomState> | undefined;
   april_fools_island: Room<PlazaRoomState> | undefined;
+  "april-fools": Room<PlazaRoomState> | undefined;
 };
 
 export type SceneId = keyof Scenes;
@@ -166,14 +167,14 @@ export interface MMOContext {
 
 export type MMOState = {
   value:
-    | "error"
-    | "initialising"
-    | "introduction"
-    | "connecting"
-    | "connected"
-    | "kicked"
-    | "reconnecting"
-    | "exploring"; // Community island
+  | "error"
+  | "initialising"
+  | "introduction"
+  | "connecting"
+  | "connected"
+  | "kicked"
+  | "reconnecting"
+  | "exploring"; // Community island
   context: MMOContext;
 };
 

@@ -179,46 +179,46 @@ export const INSTRUCTIONS: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: food,
-    description: t(`${PORTAL_NAME}.instructions1`),
-  },
-  {
-    image: giantIcon,
-    description: t(`${PORTAL_NAME}.instructions2`),
-  },
-  {
-    image: auraIcon,
-    description: t(`${PORTAL_NAME}.instructions3`),
-  },
-  {
-    image: healthBar_icon,
-    description: t(`${PORTAL_NAME}.instructions4`),
-  },
-];
+    {
+      image: food,
+      description: t(`${PORTAL_NAME}.instructions1`),
+    },
+    {
+      image: giantIcon,
+      description: t(`${PORTAL_NAME}.instructions2`),
+    },
+    {
+      image: auraIcon,
+      description: t(`${PORTAL_NAME}.instructions3`),
+    },
+    {
+      image: healthBar_icon,
+      description: t(`${PORTAL_NAME}.instructions4`),
+    },
+  ];
 
 export const RESOURCES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: riceBun,
-    description: t(`${PORTAL_NAME}.resource1`),
-  },
-  {
-    image: cannon,
-    description: t(`${PORTAL_NAME}.resource2`),
-  },
-  {
-    image: chest,
-    description: t(`${PORTAL_NAME}.resource3`),
-  },
-  {
-    image: combination_assets,
-    description: t(`${PORTAL_NAME}.resource4`),
-  },
-];
+    {
+      image: riceBun,
+      description: t(`${PORTAL_NAME}.resource1`),
+    },
+    {
+      image: cannon,
+      description: t(`${PORTAL_NAME}.resource2`),
+    },
+    {
+      image: chest,
+      description: t(`${PORTAL_NAME}.resource3`),
+    },
+    {
+      image: combination_assets,
+      description: t(`${PORTAL_NAME}.resource4`),
+    },
+  ];
 
 export const REFEREE: {
   image: string;
@@ -235,59 +235,59 @@ export const IMMUNITY_GUIDE: {
   description: string;
   width?: number;
 }[] = [
-  {
-    image: getWearableImage(`${AURA_IMMUNITY}`),
-    immunityName: AURA_IMMUNITY,
-    description: t(`${PORTAL_NAME}.aura_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${TOOL_IMMUNITY}`),
-    immunityName: TOOL_IMMUNITY,
-    description: t(`${PORTAL_NAME}.tool_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${SHOES_IMMUNITY[0]}`),
-    immunityName: SHOES_IMMUNITY[0],
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${SHOES_IMMUNITY[1]}`),
-    immunityName: SHOES_IMMUNITY[1],
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    image: getWearableImage(`${HAT_IMMUNITY}`),
-    immunityName: HAT_IMMUNITY,
-    description: t(`${PORTAL_NAME}.hat_immunityDescription`),
-  },
-];
+    {
+      image: getWearableImage(`${AURA_IMMUNITY}`),
+      immunityName: AURA_IMMUNITY,
+      description: t(`${PORTAL_NAME}.aura_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${TOOL_IMMUNITY}`),
+      immunityName: TOOL_IMMUNITY,
+      description: t(`${PORTAL_NAME}.tool_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${SHOES_IMMUNITY[0]}`),
+      immunityName: SHOES_IMMUNITY[0],
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${SHOES_IMMUNITY[1]}`),
+      immunityName: SHOES_IMMUNITY[1],
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      image: getWearableImage(`${HAT_IMMUNITY}`),
+      immunityName: HAT_IMMUNITY,
+      description: t(`${PORTAL_NAME}.hat_immunityDescription`),
+    },
+  ];
 
 export const ENEMIES_TABLE: {
   image: string;
   description: string;
   width?: number;
 }[] = [
-  {
-    image: giantIcon,
-    description: t(`${PORTAL_NAME}.enemy1`),
-  },
-  {
-    image: blastIcon,
-    description: t(`${PORTAL_NAME}.enemy2`),
-  },
-  {
-    image: menaceIcon,
-    description: t(`${PORTAL_NAME}.enemy3`),
-  },
-  {
-    image: sniperIcon,
-    description: t(`${PORTAL_NAME}.enemy4`),
-  },
-  {
-    image: orangePuddle,
-    description: t(`${PORTAL_NAME}.enemy5`),
-  },
-];
+    {
+      image: giantIcon,
+      description: t(`${PORTAL_NAME}.enemy1`),
+    },
+    {
+      image: blastIcon,
+      description: t(`${PORTAL_NAME}.enemy2`),
+    },
+    {
+      image: menaceIcon,
+      description: t(`${PORTAL_NAME}.enemy3`),
+    },
+    {
+      image: sniperIcon,
+      description: t(`${PORTAL_NAME}.enemy4`),
+    },
+    {
+      image: orangePuddle,
+      description: t(`${PORTAL_NAME}.enemy5`),
+    },
+  ];
 
 export type Immunity_Wearables = "aura" | "tool" | "shoe" | "hat";
 
@@ -296,27 +296,27 @@ export const IMMUNITY_TOOLTIP: {
   image: string;
   description: string;
 }[] = [
-  {
-    id: "aura",
-    image: aura_immunity_icon,
-    description: t(`${PORTAL_NAME}.aura_immunityDescription`),
-  },
-  {
-    id: "tool",
-    image: wings_immunity_icon,
-    description: t(`${PORTAL_NAME}.tool_immunityDescription`),
-  },
-  {
-    id: "shoe",
-    image: shoes_immunity,
-    description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
-  },
-  {
-    id: "hat",
-    image: hat_immunity,
-    description: t(`${PORTAL_NAME}.hat_immunityDescription`),
-  },
-];
+    {
+      id: "aura",
+      image: aura_immunity_icon,
+      description: t(`${PORTAL_NAME}.aura_immunityDescription`),
+    },
+    {
+      id: "tool",
+      image: wings_immunity_icon,
+      description: t(`${PORTAL_NAME}.tool_immunityDescription`),
+    },
+    {
+      id: "shoe",
+      image: shoes_immunity,
+      description: t(`${PORTAL_NAME}.shoes_immunityDescription`),
+    },
+    {
+      id: "hat",
+      image: hat_immunity,
+      description: t(`${PORTAL_NAME}.hat_immunityDescription`),
+    },
+  ];
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["goldtooth"];

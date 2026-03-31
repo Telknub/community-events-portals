@@ -127,17 +127,19 @@ export abstract class BaseScene extends Phaser.Scene {
 
   cursorKeys:
     | {
-      up: Phaser.Input.Keyboard.Key;
-      down: Phaser.Input.Keyboard.Key;
-      left: Phaser.Input.Keyboard.Key;
-      right: Phaser.Input.Keyboard.Key;
-      w?: Phaser.Input.Keyboard.Key;
-      s?: Phaser.Input.Keyboard.Key;
-      a?: Phaser.Input.Keyboard.Key;
-      d?: Phaser.Input.Keyboard.Key;
-      e?: Phaser.Input.Keyboard.Key;
-      space: Phaser.Input.Keyboard.Key;
-    }
+        up: Phaser.Input.Keyboard.Key;
+        down: Phaser.Input.Keyboard.Key;
+        left: Phaser.Input.Keyboard.Key;
+        right: Phaser.Input.Keyboard.Key;
+        w?: Phaser.Input.Keyboard.Key;
+        s?: Phaser.Input.Keyboard.Key;
+        a?: Phaser.Input.Keyboard.Key;
+        d?: Phaser.Input.Keyboard.Key;
+        e?: Phaser.Input.Keyboard.Key;
+        x?: Phaser.Input.Keyboard.Key;
+        z?: Phaser.Input.Keyboard.Key;
+        space: Phaser.Input.Keyboard.Key;
+      }
     | undefined;
 
   // Advanced server timing - not used
@@ -884,6 +886,8 @@ export abstract class BaseScene extends Phaser.Scene {
       this.cursorKeys.s = this.input.keyboard?.addKey("S", false);
       this.cursorKeys.d = this.input.keyboard?.addKey("D", false);
       this.cursorKeys.e = this.input.keyboard?.addKey("E", false);
+      this.cursorKeys.x = this.input.keyboard?.addKey("X", false);
+      this.cursorKeys.z = this.input.keyboard?.addKey("Z", false);
 
       this.input.keyboard?.removeCapture("SPACE");
     }

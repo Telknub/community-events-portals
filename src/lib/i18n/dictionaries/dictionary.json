@@ -5185,6 +5185,8 @@
   "april-fools.controls.move": "Move",
   "april-fools.controls.joystick": "Joystick",
   "april-fools.controls.buttons": "Buttons",
+  "april-fools.controls.shoot": "Shoot",
+  "april-fools.controls.interact": "Interact",
   "april-fools.eventToken": "{{token}} x {{tokenName}}",
   "april-fools.start.training": "Start Training",
   "april-fools.power.life": "You get a life back",

@@ -815,7 +815,7 @@ export class Scene extends BaseScene {
     if (!this.cursorKeys) return;
 
     const animation =
-      this.isMoving && !this.isCannonEnabled ? "carryNone" : "carryNoneIdle";
+      this.isMoving && !(this.isCannonEnabled.left || this.isCannonEnabled.right) ? "carryNone" : "carryNoneIdle";
 
     this.currentPlayer[animation]?.();
   }
@@ -823,16 +823,26 @@ export class Scene extends BaseScene {
   private controls() {
     if (!this.cursorKeys || this.currentPlayer?.isHurting) return;
     const spaceKey = this.cursorKeys.space;
+    const altShootKey = this.cursorKeys.z;
     const interactKey = this.cursorKeys.e;
+    const altInteractKey = this.cursorKeys.x;
     const isShootJustDown =
+      (altShootKey ? Phaser.Input.Keyboard.JustDown(altShootKey) : false) ||
       Phaser.Input.Keyboard.JustDown(spaceKey) ||
       this.mobileButtonState.shoot.justDown;
-    const isShootDown = spaceKey.isDown || this.mobileButtonState.shoot.isDown;
+    const isShootDown =
+      spaceKey.isDown ||
+      altShootKey?.isDown ||
+      this.mobileButtonState.shoot.isDown;
     const isShootJustUp =
+      (altShootKey ? Phaser.Input.Keyboard.JustUp(altShootKey) : false) ||
       Phaser.Input.Keyboard.JustUp(spaceKey) ||
       this.mobileButtonState.shoot.justUp;
     const isInteractJustDown =
       (interactKey ? Phaser.Input.Keyboard.JustDown(interactKey) : false) ||
+      (altInteractKey
+        ? Phaser.Input.Keyboard.JustDown(altInteractKey)
+        : false) ||
       this.mobileButtonState.interact.justDown;
 
     if (this.isUsingCannon) {

@@ -12,12 +12,14 @@ import { PORTAL_NAME } from "../../Constants";
 import moveControls1 from "public/world/base/move_controls_1.png";
 import moveControls2 from "public/world/base/move_controls_2.png";
 import spaceKey from "public/world/base/space_key.png";
+import zKey from "public/world/base/z_key.png";
 import qKey from "public/world/base/q_key.png";
 import eKey from "public/world/base/e_key.png";
+import xKey from "public/world/base/x_key.png";
 import vKey from "public/world/base/v_key.png";
 import joystick from "public/world/base/joystick.png";
-// import useToolButton from "public/world/use_tool_button.webp";
-// import changeToolButton from "public/world/change_tool_button.webp";
+import shootingButton from "public/world/portal/images/shooting_button.png";
+import interactButton from "public/world/portal/images/interact_button.png";
 
 export const JOYSTICK_LOCAL_STORAGE_KEY = "settings.controls.joystickEnabled";
 
@@ -84,30 +86,32 @@ export const Controls: React.FC<Props> = ({ onBack }) => {
               )}
             </div>
           </OuterPanel>
-          {/* <OuterPanel className="w-full flex flex-col items-center">
-            <Label type="default">{t(`${PORTAL_NAME}.controls.useTool`)}</Label>
+          <OuterPanel className="w-full flex flex-col items-center">
+            <Label type="default">{t(`${PORTAL_NAME}.controls.shoot`)}</Label>
             <div className="h-100 flex-1 flex flex-col items-center justify-center">
               {isTouchDevice() ? (
-                <img src={useToolButton} className="h-10" />
+                <img src={shootingButton} className="h-10 my-2" />
               ) : (
-                <>
+                <div className="flex items-center justify-center gap-2">
                   <img src={spaceKey} className="h-10" />
-                  <img src={eKey} className="h-10" />
-                  <img src={vKey} className="h-10" />
-                </>
+                  <img src={zKey} className="h-10" />
+                </div>
               )}
             </div>
             <Label type="default">
-              {t(`${PORTAL_NAME}.controls.changeTool`)}
+              {t(`${PORTAL_NAME}.controls.interact`)}
             </Label>
             <div className="h-100 flex-1 flex flex-col items-center justify-center">
               {isTouchDevice() ? (
-                <img src={changeToolButton} className="h-10" />
+                <img src={interactButton} className="h-10 my-2" />
               ) : (
-                <img src={qKey} className="h-10" />
+                <div className="flex items-center justify-center gap-2">
+                  <img src={eKey} className="h-10" />
+                  <img src={xKey} className="h-10" />
+                </div>
               )}
             </div>
-          </OuterPanel> */}
+          </OuterPanel>
         </div>
       </div>
     </div>

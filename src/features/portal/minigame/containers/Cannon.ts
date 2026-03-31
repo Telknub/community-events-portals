@@ -279,6 +279,7 @@ export class Cannon extends Phaser.GameObjects.Container {
     }
 
     if (
+      (keys.z ? Phaser.Input.Keyboard.JustDown(keys.z) : false) ||
       Phaser.Input.Keyboard.JustDown(keys.space) ||
       this.isMobileShootJustDown()
     ) {
