@@ -127,19 +127,19 @@ export abstract class BaseScene extends Phaser.Scene {
 
   cursorKeys:
     | {
-        up: Phaser.Input.Keyboard.Key;
-        down: Phaser.Input.Keyboard.Key;
-        left: Phaser.Input.Keyboard.Key;
-        right: Phaser.Input.Keyboard.Key;
-        w?: Phaser.Input.Keyboard.Key;
-        s?: Phaser.Input.Keyboard.Key;
-        a?: Phaser.Input.Keyboard.Key;
-        d?: Phaser.Input.Keyboard.Key;
-        e?: Phaser.Input.Keyboard.Key;
-        x?: Phaser.Input.Keyboard.Key;
-        z?: Phaser.Input.Keyboard.Key;
-        space: Phaser.Input.Keyboard.Key;
-      }
+      up: Phaser.Input.Keyboard.Key;
+      down: Phaser.Input.Keyboard.Key;
+      left: Phaser.Input.Keyboard.Key;
+      right: Phaser.Input.Keyboard.Key;
+      w?: Phaser.Input.Keyboard.Key;
+      s?: Phaser.Input.Keyboard.Key;
+      a?: Phaser.Input.Keyboard.Key;
+      d?: Phaser.Input.Keyboard.Key;
+      e?: Phaser.Input.Keyboard.Key;
+      x?: Phaser.Input.Keyboard.Key;
+      z?: Phaser.Input.Keyboard.Key;
+      space: Phaser.Input.Keyboard.Key;
+    }
     | undefined;
 
   // Advanced server timing - not used
@@ -354,7 +354,7 @@ export abstract class BaseScene extends Phaser.Scene {
         experience: this.gameState.bumpkin?.experience ?? 0,
         totalDeliveries: this.gameState.delivery.fulfilledCount ?? 0,
         dailyStreak: this.gameState.dailyRewards?.streaks ?? 0,
-        isVip: hasVipAccess({ game: this.gameState }),
+        isVip: hasVipAccess({ game: this.gameState, now: Date.now() }),
         createdAt: this.gameState.createdAt,
         islandType: this.gameState.island.type,
       });

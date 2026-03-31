@@ -163,7 +163,7 @@ export const Portal: React.FC = () => {
       )}
 
       {hasError && (
-        <Modal show>
+        <Modal onHide={() => portalService.send("SIMULATE_ERROR", { hasError: false })} show>
           <Panel>
             <div className="flex flex-col p-2">
               <Label className="mb-2" type="danger">{t(`${PORTAL_NAME}.critical.error`)}</Label>

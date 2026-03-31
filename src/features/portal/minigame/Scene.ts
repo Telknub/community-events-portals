@@ -627,6 +627,7 @@ export class Scene extends BaseScene {
           .image(x, y, texture)
           .setInteractive()
           .setScale(scale)
+          .setScrollFactor(0)
           .setAlpha(0.85)
           .setDepth(buttonDepth);
 
@@ -647,17 +648,20 @@ export class Scene extends BaseScene {
         return button;
       };
 
-      const aspectRatioX = (this.cameras.main.width / this.cameras.main.height) / (this.map.width / this.map.height);
-      const offsetX = 25;
-      const offsetXLeft = (this.map.width * SQUARE_WIDTH / 2) * (1 - aspectRatioX) + offsetX;
-      const offsetXRight = (this.map.width * SQUARE_WIDTH / 2) * (1 + aspectRatioX) + offsetX;
-      const controlsBottomY = this.map.height * SQUARE_WIDTH - 80;
-      const joystickX = offsetXLeft + 140;
-      const joystickY = controlsBottomY;
-      const shootButtonX = offsetXRight - 140;
-      const shootButtonY = controlsBottomY;
-      const interactButtonX = offsetXRight - 110;
-      const interactButtonY = controlsBottomY - 64;
+      const camera = this.cameras.main;
+      const zoom = camera.zoom;
+
+      // Calculate screen boundaries natively for scrollFactor(0) objects
+      const leftEdge = camera.width / 2 - camera.width / (2 * zoom);
+      const rightEdge = camera.width / 2 + camera.width / (2 * zoom);
+      const bottomEdge = camera.height / 2 + camera.height / (2 * zoom);
+
+      const joystickX = leftEdge + 140;
+      const joystickY = bottomEdge - 80;
+      const shootButtonX = rightEdge - 140;
+      const shootButtonY = bottomEdge - 80;
+      const interactButtonX = rightEdge - 110;
+      const interactButtonY = bottomEdge - 140;
 
       this.joystick = new VirtualJoyStick(this, {
         x: joystickX,
@@ -670,7 +674,7 @@ export class Scene extends BaseScene {
           .circle(0, 0, 17, 0xffffff, 0.6)
           .setDepth(buttonDepth),
         forceMin: 2,
-      }).setScrollFactor(1);
+      }).setScrollFactor(0);
 
       createActionButton({
         x: shootButtonX,

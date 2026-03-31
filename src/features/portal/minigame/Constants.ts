@@ -162,7 +162,7 @@ export const POWER_UNLOCK_THRESHOLDS = {
   EXPLOSIVE: 50,
 };
 
-export const HONEY_SPAWN_POSITION: Position = { x: 304, y: -50 };
+export const HONEY_SPAWN_POSITION: Position = { x: 490, y: -50 };
 export const HONEY_TARGET_Y = 80;
 
 // Immunities

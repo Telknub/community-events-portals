@@ -62,7 +62,7 @@ export class Honey extends Phaser.GameObjects.Container {
   private splat() {
     const spriteName = "honey_screenSplat";
     this.sprite.setTexture(spriteName);
-    this.setDepth(1);
+    this.setDepth(10);
     (this.body as Phaser.Physics.Arcade.Body)
       .setSize(this.sprite.width, this.sprite.height)
       .setOffset(-this.sprite.width / 2, -this.sprite.height / 2);

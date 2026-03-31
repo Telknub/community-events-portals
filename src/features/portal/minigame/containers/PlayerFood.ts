@@ -73,24 +73,8 @@ export class PlayerFood extends Phaser.GameObjects.Container {
             this.scene.physics.add.overlap(this, enemy, () => {
                 if (this.isDefeating && !this.config.noEnemyContact) return;
                 this.isDefeating = true;
-
-                // Defeat enemy
-                if (!enemy.isDefeated) {
-                    enemy.defeat();
-                };
-
-                if (!this.config.noEnemyContact) {
-                    // Stop movement
-                    const body = this.body as Phaser.Physics.Arcade.Body;
-                    body.setVelocity(0, 0);
-
-                    // Play splat animation once, then destroy
-                    this.sprite.setScale(1);
-                    createAnimation(this.scene, this.sprite, this.config.splatTexture, "action", 0, 4, 10, 0);
-                    onAnimationComplete(this.sprite, `${this.config.splatTexture}_action_anim`, () => {
-                        this.destroy();
-                    });
-                }
+                if (!enemy.isDefeated) enemy.defeat();
+                this.playContact();
             });
         });
 
@@ -106,6 +90,21 @@ export class PlayerFood extends Phaser.GameObjects.Container {
 
         this.scene.physics.add.overlap(this, this.scene.currentPlayer, () => {
             this.scene.currentPlayer?.hurt();
+            this.destroy();
+        });
+    }
+
+    private playContact() {
+        if (this.config.noEnemyContact) return;
+
+        // Stop movement
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(0, 0);
+
+        // Play splat animation once, then destroy
+        this.sprite.setScale(1);
+        createAnimation(this.scene, this.sprite, this.config.splatTexture, "action", 0, 4, 10, 0);
+        onAnimationComplete(this.sprite, `${this.config.splatTexture}_action_anim`, () => {
             this.destroy();
         });
     }
