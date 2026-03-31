@@ -166,14 +166,13 @@ export const HONEY_SPAWN_POSITION: Position = { x: 490, y: -50 };
 export const HONEY_TARGET_Y = 80;
 
 // Immunities
-export const AURA_IMMUNITY: BumpkinAura = "Diamond Snow Aura"; // Prevents from turning into a rice bun
-export const TOOL_IMMUNITY: BumpkinTool = "Trident"; // Prevents from getting enlarged
+export const AURA_IMMUNITY: BumpkinAura = "Glitch Aura"; // Prevents from turning into a rice bun
+export const TOOL_IMMUNITY: BumpkinTool = "Admin Fools Tools"; // Prevents from getting enlarged
 export const SHOES_IMMUNITY: BumpkinShoe[] = [
   "Neon Noiz Shoes",
   "404 Chic Boots",
-  "Peg Leg",
 ]; // Prevents inverted controls
-export const HAT_IMMUNITY: BumpkinHat = "Pumpkin Head"; // Prevents from slowing down
+export const HAT_IMMUNITY: BumpkinHat = "Aether Specs"; // Prevents from slowing down
 // Guide
 export const INSTRUCTIONS: {
   image: string;
