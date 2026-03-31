@@ -301,10 +301,13 @@ export abstract class BaseScene extends Phaser.Scene {
     try {
       this.initialiseMap();
 
+      const logicalWidth = Math.max(window.innerWidth, window.innerHeight);
+      const logicalHeight = Math.min(window.innerWidth, window.innerHeight);
+
       const mapWidthPx = this.map.width * SQUARE_WIDTH;
       const mapHeightPx = this.map.height * SQUARE_WIDTH;
-      const zoomX = window.innerWidth / mapWidthPx;
-      const zoomY = window.innerHeight / mapHeightPx;
+      const zoomX = logicalWidth / mapWidthPx;
+      const zoomY = logicalHeight / mapHeightPx;
       this.zoom = zoomY;
 
       this.createMapBorders();
@@ -602,8 +605,9 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   public createMapBorders() {
+    const logicalWidth = Math.max(window.innerWidth, window.innerHeight);
     const mapWidthPx = this.map.width * SQUARE_WIDTH;
-    const extraWidthPx = (window.innerWidth - mapWidthPx * this.zoom) / 2;
+    const extraWidthPx = (logicalWidth - mapWidthPx * this.zoom) / 2;
     if (extraWidthPx <= 0) return;
 
     const extraCols = Math.ceil(extraWidthPx / this.zoom / SQUARE_WIDTH);
@@ -738,10 +742,13 @@ export abstract class BaseScene extends Phaser.Scene {
   public initialiseCamera() {
     const camera = this.cameras.main;
 
+    const logicalWidth = Math.max(window.innerWidth, window.innerHeight);
+    const logicalHeight = Math.min(window.innerWidth, window.innerHeight);
+
     const mapWidthPx = this.map.width * SQUARE_WIDTH;
     const mapHeightPx = this.map.height * SQUARE_WIDTH;
 
-    const extraWidthPx = (window.innerWidth - mapWidthPx * this.zoom) / 2;
+    const extraWidthPx = (logicalWidth - mapWidthPx * this.zoom) / 2;
     const extraCols =
       extraWidthPx > 0 ? Math.ceil(extraWidthPx / this.zoom / SQUARE_WIDTH) : 0;
     const expandedWidthPx = extraCols * SQUARE_WIDTH;
@@ -755,7 +762,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
     camera.setZoom(this.zoom);
 
-    const offsetY = (window.innerHeight - mapHeightPx * this.zoom) / 2;
+    const offsetY = (logicalHeight - mapHeightPx * this.zoom) / 2;
     camera.setPosition(0, Math.max(offsetY, 0));
     camera.centerOnX(mapWidthPx / 2);
 
@@ -857,19 +864,6 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   public initialiseControls() {
-    if (isTouchDevice()) {
-      // Initialise joystick
-      const { centerX, centerY, height } = this.cameras.main;
-      this.joystick = new VirtualJoystick(this, {
-        x: centerX,
-        y: centerY - 35 + height / this.zoom / 2,
-        radius: 15,
-        base: this.add.circle(0, 0, 15, 0x000000, 0.2).setDepth(1000000000),
-        thumb: this.add.circle(0, 0, 7, 0xffffff, 0.2).setDepth(1000000000),
-        forceMin: 2,
-      });
-    }
-
     // Initialise Keyboard
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
     if (this.cursorKeys) {

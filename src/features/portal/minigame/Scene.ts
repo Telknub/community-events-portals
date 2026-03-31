@@ -36,6 +36,8 @@ import { RiceBun } from "./containers/RiceBun";
 import { Honey } from "./containers/Honey";
 import { Chest } from "./containers/Chest";
 import { LineGlitch } from "./containers/LineGlitch";
+import VirtualJoyStick from "phaser3-rex-plugins/plugins/virtualjoystick";
+import { SQUARE_WIDTH } from "features/game/lib/constants";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -63,6 +65,18 @@ export class Scene extends BaseScene {
   private honey?: Honey;
   public chests: Chest[] = [];
   private glitch!: LineGlitch;
+  private interactButton?: Phaser.GameObjects.Image;
+  private mobileButtonState = {
+    shoot: {
+      isDown: false,
+      justDown: false,
+      justUp: false,
+    },
+    interact: {
+      isDown: false,
+      justDown: false,
+    },
+  };
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -415,6 +429,24 @@ export class Scene extends BaseScene {
       frameHeight: 24,
     });
 
+    // Mobile specific controls
+    this.load.image(
+      "shooting_button",
+      "/world/portal/images/shooting_button.png",
+    );
+    this.load.image(
+      "shooting_button_pressed",
+      "/world/portal/images/shooting_button_pressed.png",
+    );
+    this.load.image(
+      "interact_button",
+      "/world/portal/images/interact_button.png",
+    );
+    this.load.image(
+      "interact_button_pressed",
+      "/world/portal/images/interact_button_pressed.png",
+    );
+
     // Player cannon
     this.load.spritesheet(
       "player_cannon_shoot",
@@ -513,6 +545,43 @@ export class Scene extends BaseScene {
     this.menaceSkeleton.forEach((skeleton) => skeleton.update());
 
     super.update();
+    this.resetMobileButtonTransitions();
+  }
+
+  private resetMobileButtonState() {
+    this.mobileButtonState.shoot.isDown = false;
+    this.mobileButtonState.shoot.justDown = false;
+    this.mobileButtonState.shoot.justUp = false;
+    this.mobileButtonState.interact.isDown = false;
+    this.mobileButtonState.interact.justDown = false;
+  }
+
+  private resetMobileButtonTransitions() {
+    this.mobileButtonState.shoot.justDown = false;
+    this.mobileButtonState.shoot.justUp = false;
+    this.mobileButtonState.interact.justDown = false;
+  }
+
+  private updateInteractButtonAvailability() {
+    if (!this.interactButton) return;
+
+    const isEnabled = this.isCannonEnabled.left || this.isCannonEnabled.right;
+
+    if (this.interactButton.input) {
+      this.interactButton.input.enabled = isEnabled;
+    }
+
+    if (!isEnabled) {
+      this.mobileButtonState.interact.isDown = false;
+      this.mobileButtonState.interact.justDown = false;
+    }
+
+    this.interactButton.setAlpha(isEnabled ? 0.85 : 0.35);
+    this.interactButton.setTexture(
+      isEnabled && this.mobileButtonState.interact.isDown
+        ? "interact_button_pressed"
+        : "interact_button",
+    );
   }
 
   private initialiseProperties() {
@@ -520,6 +589,7 @@ export class Scene extends BaseScene {
     this.updateCallbacks = [];
     this.allEnemies = [];
     this.riceBuns = [];
+    this.resetMobileButtonState();
   }
 
   private initializeCreates() {
@@ -534,74 +604,111 @@ export class Scene extends BaseScene {
 
   private initializeControls() {
     if (isTouchDevice()) {
-      // const baseX = this.cameras.main.width / 2;
-      // const baseY = this.cameras.main.height / 2;
-      // const offsetX = window.innerWidth / (2 * this.zoom) - TILE_SIZE;
-      // const offsetY = window.innerHeight / (2 * this.zoom) - TILE_SIZE;
+      const { width, height, centerX } = this.cameras.main;
+      const buttonDepth = 1000000000;
+      const createActionButton = ({
+        x,
+        y,
+        texture,
+        pressedTexture,
+        scale,
+        onPress,
+        onRelease,
+      }: {
+        x: number;
+        y: number;
+        texture: string;
+        pressedTexture: string;
+        scale: number;
+        onPress: () => void;
+        onRelease: () => void;
+      }) => {
+        const button = this.add
+          .image(x, y, texture)
+          .setInteractive()
+          .setScale(scale)
+          .setAlpha(0.85)
+          .setDepth(buttonDepth);
 
-      // // Joystick
-      // this.joystick = new VirtualJoyStick(this, {
-      //   x: baseX - offsetX,
-      //   y: baseY + offsetY,
-      //   radius: 15,
-      //   base: this.add.circle(0, 0, 20, 0x000000, 0.5).setDepth(1000000000),
-      //   thumb: this.add.circle(0, 0, 8, 0xffffff, 0.5).setDepth(1000000000),
-      //   forceMin: 2,
-      // });
+        const release = () => {
+          onRelease();
+          button.setTexture(texture);
+        };
 
-      // // Use tool button
-      // const useToolButton = this.add
-      //   .image(
-      //     baseX + offsetX - TILE_SIZE / 6,
-      //     baseY + offsetY,
-      //     "use_tool_button",
-      //   )
-      //   .setInteractive()
-      //   .setScrollFactor(0)
-      //   .setScale(1.5)
-      //   .setAlpha(0.8)
-      //   .setDepth(1000000000000)
-      //   .on("pointerdown", () => {
-      //     if (this.isUseToolButtonPressed) return;
-      //     this.isUseToolButtonPressed = true;
-      //     this.mobileKeys.useTool = true;
-      //     useToolButton.setTexture("use_tool_button_pressed");
-      //   })
-      //   .on("pointerup", () => {
-      //     this.isUseToolButtonPressed = false;
-      //     useToolButton.setTexture("use_tool_button");
-      //   })
-      //   .on("pointerout", () => {
-      //     this.isUseToolButtonPressed = false;
-      //     useToolButton.setTexture("use_tool_button");
-      //   });
+        button
+          .on("pointerdown", () => {
+            onPress();
+            button.setTexture(pressedTexture);
+          })
+          .on("pointerup", release)
+          .on("pointerout", release)
+          .on("pointerupoutside", release);
 
-      // // Change tool button
-      // const changeToolButton = this.add
-      //   .image(
-      //     baseX + offsetX + TILE_SIZE / 3,
-      //     baseY + offsetY - TILE_SIZE + TILE_SIZE / 8,
-      //     "change_tool_button",
-      //   )
-      //   .setInteractive()
-      //   .setScrollFactor(0)
-      //   .setScale(0.75)
-      //   .setAlpha(0.8)
-      //   .setDepth(1000000000000)
-      //   .on("pointerdown", () => {
-      //     if (this.isChangeToolButtonPressed) return;
-      //     this.isChangeToolButtonPressed = true;
-      //     this.mobileKeys.changeTool = true;
-      //     changeToolButton.setTexture("change_tool_button_pressed");
-      //   })
-      //   .on("pointerup", () => {
-      //     this.isChangeToolButtonPressed = false;
-      //     changeToolButton.setTexture("change_tool_button");
-      //   })
-      //   .on("pointerout", () => {
-      //     this.isChangeToolButtonPressed = false;
-      //     changeToolButton.setTexture("change_tool_button");
-      //   });
+        return button;
+      };
+
+      const aspectRatioX = (this.cameras.main.width / this.cameras.main.height) / (this.map.width / this.map.height);
+      const offsetX = 25;
+      const offsetXLeft = (this.map.width * SQUARE_WIDTH / 2) * (1 - aspectRatioX) + offsetX;
+      const offsetXRight = (this.map.width * SQUARE_WIDTH / 2) * (1 + aspectRatioX) + offsetX;
+      const controlsBottomY = this.map.height * SQUARE_WIDTH - 80;
+      const joystickX = offsetXLeft + 140;
+      const joystickY = controlsBottomY;
+      const shootButtonX = offsetXRight - 140;
+      const shootButtonY = controlsBottomY;
+      const interactButtonX = offsetXRight - 110;
+      const interactButtonY = controlsBottomY - 64;
+
+      this.joystick = new VirtualJoyStick(this, {
+        x: joystickX,
+        y: joystickY,
+        radius: 25,
+        base: this.add
+          .circle(0, 0, 37, 0x000000, 0.6)
+          .setDepth(buttonDepth),
+        thumb: this.add
+          .circle(0, 0, 17, 0xffffff, 0.6)
+          .setDepth(buttonDepth),
+        forceMin: 2,
+      }).setScrollFactor(1);
+
+      createActionButton({
+        x: shootButtonX,
+        y: shootButtonY,
+        texture: "shooting_button",
+        pressedTexture: "shooting_button_pressed",
+        scale: 3,
+        onPress: () => {
+          if (this.mobileButtonState.shoot.isDown) return;
+
+          this.mobileButtonState.shoot.isDown = true;
+          this.mobileButtonState.shoot.justDown = true;
+        },
+        onRelease: () => {
+          if (!this.mobileButtonState.shoot.isDown) return;
+
+          this.mobileButtonState.shoot.isDown = false;
+          this.mobileButtonState.shoot.justUp = true;
+        },
+      });
+
+      this.interactButton = createActionButton({
+        x: interactButtonX,
+        y: interactButtonY,
+        texture: "interact_button",
+        pressedTexture: "interact_button_pressed",
+        scale: 2,
+        onPress: () => {
+          if (this.mobileButtonState.interact.isDown) return;
+
+          this.mobileButtonState.interact.isDown = true;
+          this.mobileButtonState.interact.justDown = true;
+        },
+        onRelease: () => {
+          this.mobileButtonState.interact.isDown = false;
+        },
+      });
+      this.updateInteractButtonAvailability();
 
       this.portalService?.send("SET_JOYSTICK_ACTIVE", {
         isJoystickActive: true,
@@ -621,14 +728,23 @@ export class Scene extends BaseScene {
           // player walked away while not using — clear active side
           if (!this.isUsingCannon) this.activeCannondSide = null;
         }
+
+        this.updateInteractButtonAvailability();
       },
     );
 
     EventBus.on("cannon-dismount", (data: { side: Side }) => {
       if (this.isUsingCannon && this.activeCannondSide === data.side) {
+        const dismountedSide = this.activeCannondSide;
+
         this.resetVelocity();
         this.isUsingCannon = false;
-        EventBus.emit("cannon-aim-stop", { side: this.activeCannondSide });
+        this.isCannonEnabled[data.side] = false;
+        if (this.activeCannondSide === data.side) {
+          this.activeCannondSide = null;
+        }
+        this.updateInteractButtonAvailability();
+        EventBus.emit("cannon-aim-stop", { side: dismountedSide });
       }
     });
 
@@ -707,33 +823,41 @@ export class Scene extends BaseScene {
   private controls() {
     if (!this.cursorKeys || this.currentPlayer?.isHurting) return;
     const spaceKey = this.cursorKeys.space;
+    const interactKey = this.cursorKeys.e;
+    const isShootJustDown =
+      Phaser.Input.Keyboard.JustDown(spaceKey) ||
+      this.mobileButtonState.shoot.justDown;
+    const isShootDown = spaceKey.isDown || this.mobileButtonState.shoot.isDown;
+    const isShootJustUp =
+      Phaser.Input.Keyboard.JustUp(spaceKey) ||
+      this.mobileButtonState.shoot.justUp;
+    const isInteractJustDown =
+      (interactKey ? Phaser.Input.Keyboard.JustDown(interactKey) : false) ||
+      this.mobileButtonState.interact.justDown;
 
     if (this.isUsingCannon) {
       this.currentPlayer?.resetShootCharge();
     } else if (this.isAppleShotUnlocked) {
-      if (
-        Phaser.Input.Keyboard.JustDown(spaceKey) &&
-        this.currentPlayer?.canShoot()
-      ) {
+      if (isShootJustDown && this.currentPlayer?.canShoot()) {
         this.currentPlayer.startShootCharge();
       }
 
-      if (spaceKey.isDown) {
+      if (isShootDown) {
         this.currentPlayer?.updateShootCharge(this.allEnemies);
       }
 
-      if (Phaser.Input.Keyboard.JustUp(spaceKey)) {
+      if (isShootJustUp) {
         if (this.currentPlayer?.isShootCharging()) {
           this.currentPlayer?.shoot(this.allEnemies);
         }
         this.currentPlayer?.resetShootCharge();
       }
-    } else if (Phaser.Input.Keyboard.JustDown(spaceKey)) {
+    } else if (isShootJustDown) {
       this.currentPlayer?.shoot(this.allEnemies);
     }
 
     if (
-      Phaser.Input.Keyboard.JustDown(this.cursorKeys.e!) &&
+      isInteractJustDown &&
       (this.isCannonEnabled.left || this.isCannonEnabled.right)
     ) {
       if (!this.isUsingCannon) {

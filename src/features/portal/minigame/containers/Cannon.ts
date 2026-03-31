@@ -6,6 +6,7 @@ import { Orange } from "./Orange";
 import { TimerBar } from "./TimerBar";
 import { CANNON_COOLDOWN } from "../Constants";
 import { createAnimation, onAnimationComplete } from "../lib/Utils";
+import { isTouchDevice } from "features/world/lib/device";
 
 interface Props {
   x: number;
@@ -23,6 +24,12 @@ const PLAYER_ORBIT_RADIUS = 20;
 const DASH_COUNT = 17;
 const DASH_LENGTH = 6;
 const DASH_GAP = 4;
+
+type MobileButtonState = {
+  shoot?: {
+    justDown?: boolean;
+  };
+};
 
 /**
  * Cannon game object. Sits at a fixed position on the map.
@@ -210,13 +217,18 @@ export class Cannon extends Phaser.GameObjects.Container {
 
       const inRange = distance <= limit && !this.onCooldown;
       const shouldHighlight = inRange && !this.isActive;
+      const canUseGlowHighlight = !isTouchDevice();
 
       if (shouldHighlight && !this.isHighlighted) {
         this.isHighlighted = true;
-        this.sprite.preFX?.addGlow(0xffffff, 2, 0, false, 0.1, 10);
+        if (canUseGlowHighlight) {
+          this.sprite.preFX?.addGlow(0xffffff, 2, 0, false, 0.1, 10);
+        }
       } else if (!shouldHighlight && this.isHighlighted) {
         this.isHighlighted = false;
-        this.sprite.preFX?.clear();
+        if (canUseGlowHighlight) {
+          this.sprite.preFX?.clear();
+        }
       }
 
       if (distance > limit || this.onCooldown) {
@@ -251,46 +263,75 @@ export class Cannon extends Phaser.GameObjects.Container {
     const keys = this.scene.cursorKeys;
     if (!keys) return;
 
-    const leftDown = keys.left.isDown || keys.a?.isDown;
-    const rightDown = keys.right.isDown || keys.d?.isDown;
+    const joystickAngle = this.getJoystickAimAngle();
 
-    if (leftDown) {
-      this.aimAngle -= this.AIM_SPEED;
-    } else if (rightDown) {
-      this.aimAngle += this.AIM_SPEED;
+    if (joystickAngle !== undefined) {
+      this.aimAngle = joystickAngle;
+    } else {
+      const leftDown = keys.left.isDown || keys.a?.isDown;
+      const rightDown = keys.right.isDown || keys.d?.isDown;
+
+      if (leftDown) {
+        this.aimAngle -= this.AIM_SPEED;
+      } else if (rightDown) {
+        this.aimAngle += this.AIM_SPEED;
+      }
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.scene.cursorKeys!.space)) {
-      if (this.onCooldown) return;
-
-      this.scene.sound.add("cannon", { volume: 0.3 }).play();
-
-      const chance = Math.random();
-      if (chance < 0.5) {
-        new Orange({
-          x: this.x + Math.cos(this.aimAngle) * (this.sprite.height / 2),
-          y: this.y + Math.sin(this.aimAngle) * (this.sprite.height / 2),
-          scene: this.scene,
-          angle: this.aimAngle,
-          enemies: this.allEnemies,
-        });
-      }
-
-      this.spawnAnimation(false);
-
-      this.aimAngle = -Math.PI / 2;
-      this.onCooldown = true;
-      this.remainingCooldown = CANNON_COOLDOWN;
-      this.cooldownTimerBar.setTime(this.remainingCooldown);
-      this.textLoading.setAlpha(1);
-
-      EventBus.emit("cannon-dismount", { side: this.side });
+    if (
+      Phaser.Input.Keyboard.JustDown(keys.space) ||
+      this.isMobileShootJustDown()
+    ) {
+      this.fire();
     }
 
     const spriteDegrees = Phaser.Math.RadToDeg(this.aimAngle) + 90;
     this.sprite.setAngle(spriteDegrees);
     this.repositionPlayer();
     this.drawAimLine();
+  }
+
+  private getJoystickAimAngle(): number | undefined {
+    const joystick = this.scene.joystick;
+
+    if (!joystick?.force) return undefined;
+
+    return Phaser.Math.DegToRad(joystick.angle);
+  }
+
+  private isMobileShootJustDown(): boolean {
+    const { mobileButtonState } = this.scene as unknown as {
+      mobileButtonState?: MobileButtonState;
+    };
+
+    return mobileButtonState?.shoot?.justDown === true;
+  }
+
+  private fire(): void {
+    if (this.onCooldown) return;
+
+    this.scene.sound.add("cannon", { volume: 0.3 }).play();
+
+    const chance = Math.random();
+    if (chance < 0.5) {
+      new Orange({
+        x: this.x + Math.cos(this.aimAngle) * (this.sprite.height / 2),
+        y: this.y + Math.sin(this.aimAngle) * (this.sprite.height / 2),
+        scene: this.scene,
+        angle: this.aimAngle,
+        enemies: this.allEnemies,
+      });
+    }
+
+    this.spawnAnimation(false);
+
+    this.aimAngle = -Math.PI / 2;
+    this.onCooldown = true;
+    this.remainingCooldown = CANNON_COOLDOWN;
+    this.cooldownTimerBar.setTime(this.remainingCooldown);
+    this.textLoading.setAlpha(1);
+
+    EventBus.emit("cannon-dismount", { side: this.side });
   }
 
   private spawnAnimation(showSprite = true): void {
@@ -310,12 +351,31 @@ export class Cannon extends Phaser.GameObjects.Container {
    * is created and played. All other sprites are static images.
    */
   private pickRandomSprite(): void {
-    const sprites = ["tree", "rock_1", "rock_2", "flower", "bush", "empty", "bounty", "plant", "jester"];
+    const sprites = [
+      "tree",
+      "rock_1",
+      "rock_2",
+      "flower",
+      "bush",
+      "empty",
+      "bounty",
+      "plant",
+      "jester",
+    ];
     this.spriteName = sprites[Math.floor(Math.random() * sprites.length)];
     this.sprite.setTexture(this.spriteName);
 
     if (this.spriteName === "jester") {
-      createAnimation(this.scene, this.sprite, this.spriteName, "idle", 0, 11, 10, -1);
+      createAnimation(
+        this.scene,
+        this.sprite,
+        this.spriteName,
+        "idle",
+        0,
+        11,
+        10,
+        -1,
+      );
     } else {
       this.sprite.anims.stop();
     }

@@ -49,8 +49,8 @@ export const Phaser: React.FC = () => {
           },
         ],
       },
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: Math.max(window.innerWidth, window.innerHeight),
+      height: Math.min(window.innerWidth, window.innerHeight),
 
       physics: {
         default: "arcade",
@@ -69,6 +69,47 @@ export const Phaser: React.FC = () => {
       ...config,
       parent: "game-content",
     });
+
+    // Fix pointer events mapping for when the container is CSS-rotated
+    const inputManager = game.current.input as any;
+    if (inputManager && typeof inputManager.transformPointer === "function") {
+      const origTransformPointer = inputManager.transformPointer.bind(inputManager);
+      inputManager.transformPointer = function (
+        pointer: any,
+        pageX: number,
+        pageY: number,
+        wasMove: boolean
+      ) {
+        if (window.innerHeight > window.innerWidth) {
+          // Hardware is portrait but CSS rotated 90deg clockwise.
+          const w = window.innerWidth;
+
+          const scaleManager = game.current?.scale as any;
+          if (!scaleManager) {
+            origTransformPointer(pointer, pageY, w - pageX, wasMove);
+            return;
+          }
+
+          const scaleX = scaleManager.displayScale?.x || 1;
+          const scaleY = scaleManager.displayScale?.y || 1;
+          const bounds = scaleManager.canvasBounds || scaleManager.bounds || { left: 0, top: 0 };
+          const boundsLeft = bounds.left || 0;
+          const boundsTop = bounds.top || 0;
+
+          // Target logical coords we want Phaser to end up with:
+          const logicalX = pageY;
+          const logicalY = w - pageX;
+
+          // Inverse map them through Phaser's internal distorted physical scaling matrix
+          const pageXFake = (logicalX / scaleX) + boundsLeft;
+          const pageYFake = (logicalY / scaleY) + boundsTop;
+
+          origTransformPointer(pointer, pageXFake, pageYFake, wasMove);
+        } else {
+          origTransformPointer(pointer, pageX, pageY, wasMove);
+        }
+      };
+    }
 
     game.current.registry.set("initialScene", scene);
     game.current.registry.set("gameState", portalState.context.state);

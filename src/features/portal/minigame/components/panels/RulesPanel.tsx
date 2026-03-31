@@ -35,7 +35,7 @@ export const RulesPanel: React.FC<Props> = ({
 
   return (
     <CloseButtonPanel
-      className="overflow-y-hidden"
+      className="overflow-y-hidden max-h-[calc(100vw)]"
       bumpkinParts={PANEL_NPC_WEARABLES}
       currentTab={tab}
       setCurrentTab={setTab}

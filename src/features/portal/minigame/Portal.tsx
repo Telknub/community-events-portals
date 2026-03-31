@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import { useOrientation } from "lib/utils/hooks/useOrientation";
 
 import { useSelector } from "@xstate/react";
 import { Modal } from "components/ui/Modal";
@@ -38,6 +39,7 @@ const _hasError = (state: PortalMachineState) => state.context.hasError;
 export const Portal: React.FC = () => {
   const { portalService } = useContext(PortalContext);
   const { t } = useAppTranslation();
+  const deviceOrientation = useOrientation();
 
   const hasError = useSelector(portalService, _hasError);
   const sflBalance = useSelector(portalService, _sflBalance);
@@ -64,51 +66,96 @@ export const Portal: React.FC = () => {
     };
   }, []);
 
+  const portraitStyles = deviceOrientation === "portrait" && (
+    <style>{`
+      #hud-container, div[role="dialog"] {
+          width: ${window.innerHeight}px !important;
+          height: ${window.innerWidth}px !important;
+          transform-origin: top left !important;
+          transform: rotate(90deg) translateY(-${window.innerWidth}px) !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+      }
+      #hud-container > div {
+          zoom: 0.85;
+      }
+      div[role="dialog"] > div > div.flex {
+        margin-top: 30px;
+        min-height: ${window.innerWidth}px !important;
+      }
+      div[role="dialog"] .flex.min-h-full > .relative.w-full {
+          transform: scale(0.7) !important;
+          transform-origin: center center !important;
+      }
+      div[role="dialog"] .flex.min-h-full > .relative.w-full > div > div.relative > div {
+          max-height: calc(100vw - 100px) !important;
+      }
+      div[role="dialog"] .flex.min-h-full > .relative.w-full > div > div.relative > div > div {
+          max-height: calc(100vw - 120px) !important;
+      }
+      div[role="dialog"] .flex.min-h-full > .relative.w-full > div > div.relative > div > div > div {
+          max-height: calc(100vw - 120px) !important;
+      }
+    `}</style>
+  );
+
   if (isError) {
     return (
-      <Modal show>
-        <Panel>
-          <div className="p-2">
-            <Label type="danger">{t("error")}</Label>
-            <span className="text-sm my-2">{t("error.wentWrong")}</span>
-          </div>
-          <Button onClick={() => portalService.send("RETRY")}>
-            {t("retry")}
-          </Button>
-        </Panel>
-      </Modal>
+      <>
+        {portraitStyles}
+        <Modal show>
+          <Panel>
+            <div className="p-2">
+              <Label type="danger">{t("error")}</Label>
+              <span className="text-sm my-2">{t("error.wentWrong")}</span>
+            </div>
+            <Button onClick={() => portalService.send("RETRY")}>
+              {t("retry")}
+            </Button>
+          </Panel>
+        </Modal>
+      </>
     );
   }
 
   if (isUnauthorised) {
     return (
-      <Modal show>
-        <Panel>
-          <div className="p-2">
-            <Label type="danger">{t("error")}</Label>
-            <span className="text-sm my-2">{t("session.expired")}</span>
-          </div>
-          <Button onClick={authorisePortal}>{t("welcome.login")}</Button>
-        </Panel>
-      </Modal>
+      <>
+        {portraitStyles}
+        <Modal show>
+          <Panel>
+            <div className="p-2">
+              <Label type="danger">{t("error")}</Label>
+              <span className="text-sm my-2">{t("session.expired")}</span>
+            </div>
+            <Button onClick={authorisePortal}>{t("welcome.login")}</Button>
+          </Panel>
+        </Modal>
+      </>
     );
   }
 
   if (isLoading) {
     return (
-      <Modal show>
-        <Panel>
-          <Loading />
-          <span className="text-xs">
-            {`${t("last.updated")}:${CONFIG.CLIENT_VERSION}`}
-          </span>
-        </Panel>
-      </Modal>
+      <>
+        {portraitStyles}
+        <Modal show>
+          <Panel>
+            <Loading />
+            <span className="text-xs">
+              {`${t("last.updated")}:${CONFIG.CLIENT_VERSION}`}
+            </span>
+          </Panel>
+        </Modal>
+      </>
     );
   }
 
   return (
     <div>
+      {portraitStyles}
+
       {isNoAttempts && (
         <Modal show>
           <NoAttemptsPanel />
@@ -187,10 +234,27 @@ export const Portal: React.FC = () => {
       )}
 
       {sflBalance && (
-        <>
+        <div
+          style={
+            deviceOrientation === "portrait"
+              ? {
+                width: `${window.innerHeight}px`,
+                height: `${window.innerWidth}px`,
+                transformOrigin: "top left",
+                transform: `rotate(90deg) translateY(-${window.innerWidth}px)`,
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }
+              : {
+                width: "100%",
+                height: "100%",
+              }
+          }
+        >
           <Hud />
           <Phaser />
-        </>
+        </div>
       )}
     </div>
   );

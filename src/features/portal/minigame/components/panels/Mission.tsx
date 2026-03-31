@@ -32,6 +32,8 @@ interface Props {
   onTraining?: () => void;
 }
 
+const _isJoystickActive = (state: PortalMachineState) =>
+  state.context.isJoystickActive;
 const _lastScore = (state: PortalMachineState) => state.context.lastScore;
 const _minigame = (state: PortalMachineState) =>
   state.context.state?.minigames.games[PORTAL_NAME];
@@ -127,6 +129,7 @@ export const Mission: React.FC<Props> = ({
 
   const { portalService } = useContext(PortalContext);
 
+  const isJoystickActive = useSelector(portalService, _isJoystickActive);
   const lastScore = useSelector(portalService, _lastScore);
   const minigame = useSelector(portalService, _minigame);
   const jwt = useSelector(portalService, _jwt);
@@ -169,7 +172,7 @@ export const Mission: React.FC<Props> = ({
   return (
     <>
       {page === "main" && (
-        <div className="px-2">
+        <div className="px-2 overflow-y-auto scrollable">
           <div>
             <div className="w-full relative flex justify-between gap-1 items-center pt-1">
               <div
@@ -202,9 +205,12 @@ export const Mission: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="w-full mt-1 mb-3 flex flex-col gap-2">
+            <div className="w-full mt-1 mb-3 flex flex-col gap-2 items-center">
               <p>{t(`${PORTAL_NAME}.intro.description1`)}</p>
               <p>{t(`${PORTAL_NAME}.intro.description2`)}</p>
+              {isJoystickActive && (
+                <Label type="info">{t(`${PORTAL_NAME}.pc.suggestion`)}</Label>
+              )}
             </div>
 
             <div className="w-full flex flex-col gap-1 mb-3">
