@@ -17,21 +17,36 @@ export const Leaderboard: React.FC = () => {
 
   const farmId = decodeToken(jwt as string).farmId;
 
+  const isAccumulatorPhase =
+    Date.now() >= new Date(Date.UTC(2026, 3, 5)).getTime();
+
   return (
     <div className="flex flex-col gap-2 overflow-y-auto scrollable max-h-[75vh]">
       <div className="flex flex-col gap-2 px-2 pt-2">
         <p>{t(`${PORTAL_NAME}.competition.description1`)}</p>
         <p>{t(`${PORTAL_NAME}.competition.description2`)}</p>
+        <p>{t(`${PORTAL_NAME}.competition.description3`)}</p>
       </div>
-      <PortalLeaderboard
-        isAccumulator
-        name={PORTAL_NAME}
-        startDate={new Date(Date.UTC(2026, 3, 5))}
-        endDate={new Date(Date.UTC(2026, 3, 7))}
-        farmId={Number(farmId)}
-        // formatPoints={(points) => {}}
-        jwt={jwt as string}
-      />
+      {isAccumulatorPhase ? (
+        <PortalLeaderboard
+          isAccumulator
+          name={PORTAL_NAME}
+          startDate={new Date(Date.UTC(2026, 3, 5))}
+          endDate={new Date(Date.UTC(2026, 3, 7))}
+          farmId={Number(farmId)}
+          // formatPoints={(points) => {}}
+          jwt={jwt as string}
+        />
+      ) : (
+        <PortalLeaderboard
+          name={PORTAL_NAME}
+          startDate={new Date(Date.UTC(2026, 3, 1))}
+          endDate={new Date(Date.UTC(2026, 3, 4))}
+          farmId={Number(farmId)}
+          // formatPoints={(points) => {}}
+          jwt={jwt as string}
+        />
+      )}
     </div>
   );
 };

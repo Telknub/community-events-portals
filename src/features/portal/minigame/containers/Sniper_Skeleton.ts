@@ -259,16 +259,16 @@ export class Sniper_Skeleton extends Phaser.GameObjects.Container {
 
     const worldX = this.player.getWorldTransformMatrix().tx;
     const worldY = this.player.getWorldTransformMatrix().ty;
-    
+
     if (!shoe) {
       this.scene.isControlInverted = true;
 
       this.debuffIndicator?.destroy();
       this.debuffIndicator = this.scene.add
-          .image(worldX - INDICATOR_OFFSET_X, worldY - INDICATOR_OFFSET_Y, "debuff_indicator")
-          .setScale(INDICATOR_SCALE)
-          .setVisible(true)
-          .setDepth(1000);
+        .image(worldX - INDICATOR_OFFSET_X, worldY - INDICATOR_OFFSET_Y, "debuff_indicator")
+        .setScale(INDICATOR_SCALE)
+        .setVisible(true)
+        .setDepth(1000);
     } else if (SHOES_IMMUNITY.includes(shoe)) {
       this.scene.isControlInverted = false;
     } else {
@@ -276,10 +276,10 @@ export class Sniper_Skeleton extends Phaser.GameObjects.Container {
 
       this.debuffIndicator?.destroy();
       this.debuffIndicator = this.scene.add
-          .image(worldX - INDICATOR_OFFSET_X, worldY - INDICATOR_OFFSET_Y, "debuff_indicator")
-          .setScale(INDICATOR_SCALE)
-          .setVisible(true)
-          .setDepth(1000);
+        .image(worldX - INDICATOR_OFFSET_X, worldY - INDICATOR_OFFSET_Y, "debuff_indicator")
+        .setScale(INDICATOR_SCALE)
+        .setVisible(true)
+        .setDepth(1000);
     }
 
     this.restorePlayer();
@@ -306,13 +306,12 @@ export class Sniper_Skeleton extends Phaser.GameObjects.Container {
     }
   }
 
-  private createDamage() {}
-  private createEvents() {}
+  private createDamage() { }
+  private createEvents() { }
 
   public defeat() {
     if (!this.sprite.visible) return;
     this.isDefeated = true;
-    this.portalService?.send("GAIN_POINTS", { points: 2 });
     this.sprite.setVisible(false);
     this.vege.setVisible(false);
   }
