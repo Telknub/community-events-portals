@@ -15,6 +15,7 @@ import { NPC_WEARABLES } from "lib/npcs";
 import { LEVEL_EXPERIENCE } from "features/game/lib/level";
 
 const API_URL = CONFIG.API_URL;
+const PORTAL_API_URL = "https://api.sunflower-land.com";
 
 type Options = {
   farmId: number;
@@ -184,9 +185,9 @@ export async function getLeaderboard<T>({
   const cache = skipCache
     ? null
     : getCachedLeaderboardData({
-        name: leaderboardName,
-        duration: cacheExpiry,
-      });
+      name: leaderboardName,
+      duration: cacheExpiry,
+    });
 
   if (cache) {
     return cache as T;
@@ -453,7 +454,7 @@ export async function getPortalLeaderboard({
     return cache;
   }
 
-  const url = `${API_URL}/leaderboard/portals/${farmId}?name=${name}&from=${from}&to=${to}`;
+  const url = `${PORTAL_API_URL}/leaderboard/portals/${farmId}?name=${name}&from=${from}&to=${to}`;
 
   const response = await window.fetch(url, {
     method: "GET",
