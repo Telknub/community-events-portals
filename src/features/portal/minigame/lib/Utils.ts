@@ -46,8 +46,6 @@ export const getAttemptsLeft = (minigame?: Minigame, farmId = 0) => {
     attemptsLeft += ATTEMPTS_BETA_TESTERS;
   }
 
-  console.log("farmId", farmId);
-
   // Attempts purchased by mistake
   const purchasedByMistake = ATTEMPTS_PURCHASED_BY_MISTAKE.find(
     (item) => item.id === farmId

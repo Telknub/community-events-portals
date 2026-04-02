@@ -12,6 +12,7 @@ import { useSound } from "lib/utils/hooks/useSound";
 import classNames from "classnames";
 import { isTouchDevice } from "features/world/lib/device";
 import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../Constants";
+import { EventBus } from "../../lib/EventBus";
 
 const _isPlaying = (state: PortalMachineState) => state.matches("playing");
 const _isJoystickActive = (state: PortalMachineState) =>
@@ -89,7 +90,7 @@ export const Travel: React.FC = () => {
         messages={[t(`${PORTAL_NAME}.endGameConfirmation`)]}
         onCancel={() => setShowExitConfirmation(false)}
         onConfirm={() => {
-          portalService.send("END_GAME_EARLY");
+          EventBus.emit("timer-game-over");
           setShowExitConfirmation(false);
         }}
         confirmButtonLabel={t(`${PORTAL_NAME}.endGame`)}

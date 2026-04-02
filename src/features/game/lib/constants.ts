@@ -415,11 +415,11 @@ export const INITIAL_FARM: GameState = {
           //   "highscore": 9,
           //   "prizeClaimedAt": 1774809958435
           // },
-          "2026-03-31": {
-            "attempts": 3,
-            "highscore": 14,
-            "prizeClaimedAt": 1775000603121
-          }
+          // "2026-03-31": {
+          //   "attempts": 1,
+          //   "highscore": 14,
+          //   "prizeClaimedAt": 1775000603121
+          // }
         },
         "highscore": 14,
         "purchases": [
@@ -431,7 +431,18 @@ export const INITIAL_FARM: GameState = {
         ],
       }
     },
-    prizes: {},
+    prizes: {
+      "april-fools": {
+        "coins": 0,
+        "items": {
+          "April Fools Token 2026": 50
+        },
+        "wearables": {},
+        "score": 1,
+        "startAt": 1775001600000,
+        "endAt": 1775088000000
+      }
+    },
   },
 
   bounties: {
