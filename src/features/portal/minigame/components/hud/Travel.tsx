@@ -26,6 +26,7 @@ export const Travel: React.FC = () => {
   const isJoystickActive = useSelector(portalService, _isJoystickActive);
 
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   const button = useSound("button");
 
@@ -35,6 +36,22 @@ export const Travel: React.FC = () => {
 
     setShowExitConfirmation(false);
   }, [isPlaying]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (isPlaying && !showExitConfirmation && !isGameOver) {
+          setShowExitConfirmation(true);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPlaying, showExitConfirmation]);
 
   return (
     <>
@@ -58,7 +75,7 @@ export const Travel: React.FC = () => {
           }}
           onClick={() => {
             button.play();
-            if (isPlaying) {
+            if (isPlaying && !isGameOver) {
               setShowExitConfirmation(true);
             } else {
               goHome();
@@ -90,8 +107,9 @@ export const Travel: React.FC = () => {
         messages={[t(`${PORTAL_NAME}.endGameConfirmation`)]}
         onCancel={() => setShowExitConfirmation(false)}
         onConfirm={() => {
-          EventBus.emit("timer-game-over");
+          setIsGameOver(true);
           setShowExitConfirmation(false);
+          EventBus.emit("timer-game-over");
         }}
         confirmButtonLabel={t(`${PORTAL_NAME}.endGame`)}
       />

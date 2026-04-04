@@ -13,6 +13,7 @@ import { MinigameName } from "features/game/types/minigames";
 import { LeagueId, LeagueName } from "features/leagues/leagues";
 import { NPC_WEARABLES } from "lib/npcs";
 import { LEVEL_EXPERIENCE } from "features/game/lib/level";
+import mockLeaderboard from "features/portal/minigame/Mocks/Leaderboard.json";
 
 const API_URL = CONFIG.API_URL;
 const PORTAL_API_URL = "https://api.sunflower-land.com";
@@ -445,6 +446,10 @@ export async function getPortalLeaderboard({
   from: string;
   to: string;
 }) {
+  if (farmId === 0) {
+    return mockLeaderboard;
+  }
+
   const cache = getCachedLeaderboardData({
     name: `${name}-${from}-${to}portal` as any, // TODO
     duration: 1 * 60 * 1000, // Every 1 minute

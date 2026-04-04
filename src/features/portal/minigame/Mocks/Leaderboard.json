@@ -1,0 +1,1347 @@
+{
+    "player": {
+        "id": 79871,
+        "points": 18,
+        "bumpkin": {
+            "hair": "Two-toned Layered",
+            "shirt": "Crimstone Armor",
+            "pants": "Sunflorian Pants",
+            "background": "Christmas Background",
+            "necklace": "Green Amulet",
+            "body": "Pale Potion",
+            "shoes": "Sunflorian Sabatons",
+            "tool": "Luna's Crescent",
+            "secondaryTool": "Sunflorian Shield",
+            "hat": "Luminous Anglerfish Topper",
+            "wings": "Sweet Devil Wings",
+            "aura": "Paw Aura"
+        },
+        "nftId": 79871,
+        "username": "Grith",
+        "rank": 2690
+    },
+    "lastUpdated": 1775274196515,
+    "leaderboard": [
+        {
+            "id": 5002977981798262,
+            "points": 91,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "Greyed Glory",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "pants": "404 Chic Skirt",
+                "secondaryTool": "Cookie Shield",
+                "hat": "Aether Specs",
+                "wings": "Sweet Devil Wings",
+                "aura": "Wisp Aura",
+                "shirt": "Wise Robes"
+            },
+            "nftId": 244676,
+            "username": "reilie",
+            "rank": 1
+        },
+        {
+            "id": 7965226205774255,
+            "points": 90,
+            "bumpkin": {
+                "background": "Valentine's Field Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Pink Ponytail",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "secondaryTool": "Saw Fish",
+                "hat": "Aether Specs",
+                "coat": "Royal Robe",
+                "dress": "Royal Dress",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 253302,
+            "username": "CryptoJace",
+            "rank": 2
+        },
+        {
+            "id": 259892048822672,
+            "points": 87,
+            "bumpkin": {
+                "pants": "Fish Hook Waders",
+                "background": "Seashore Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hair": "Explorer Hair",
+                "onesie": "Frank Onesie",
+                "hat": "Aether Specs",
+                "shirt": "Fish Hook Vest"
+            },
+            "nftId": 237825,
+            "username": "Takaba",
+            "rank": 3
+        },
+        {
+            "id": 3585678840432819,
+            "points": 84,
+            "bumpkin": {
+                "background": "Faulty Barrier Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Buzz Cut",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Bat Wings",
+                "shirt": "Wise Robes",
+                "hat": "Aether Specs",
+                "pants": "404 Chic Skirt"
+            },
+            "nftId": 241763,
+            "username": "Prx",
+            "rank": 4
+        },
+        {
+            "id": 1456532945362173,
+            "points": 84,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Brown Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Fish Hook Vest",
+                "onesie": "Raccoon Onesie",
+                "wings": "Bionic Drill",
+                "hat": "Aether Specs",
+                "coat": "Fruit Picker Apron",
+                "pants": "Fish Hook Waders",
+                "secondaryTool": "Cookie Shield",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 252344,
+            "username": "ZotePoderoso",
+            "rank": 5
+        },
+        {
+            "id": 3062948469740055,
+            "points": 83,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Sky Island Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Bionic Drill",
+                "beard": "Wise Beard",
+                "aura": "Wisp Aura",
+                "secondaryTool": "Bucket O' Worms",
+                "pants": "404 Chic Skirt",
+                "shirt": "Fruit Picker Shirt",
+                "hat": "Aether Specs"
+            },
+            "nftId": 223571,
+            "username": "Kaehu",
+            "rank": 6
+        },
+        {
+            "id": 618348259520769,
+            "points": 83,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Pirate Potion",
+                "hair": "Greyed Glory",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "pants": "Fish Hook Waders",
+                "hat": "Aether Specs",
+                "onesie": "Raccoon Onesie",
+                "necklace": "Crimstone Amulet",
+                "shirt": "Crimstone Armor"
+            },
+            "nftId": 238792,
+            "username": "FrozenHero",
+            "rank": 7
+        },
+        {
+            "id": 4474220389272578,
+            "points": 83,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "White Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Sunflower Rod",
+                "shirt": "Comfy Xmas Sweater",
+                "hat": "Aether Specs",
+                "pants": "404 Chic Skirt"
+            },
+            "nftId": 258005,
+            "username": "TungAnhPham",
+            "rank": 8
+        },
+        {
+            "id": 4859580385627179,
+            "points": 82,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Trident",
+                "shirt": "Fish Hook Vest",
+                "pants": "Fish Hook Waders",
+                "hat": "Fish Hook Hat",
+                "wings": "Bionic Drill"
+            },
+            "nftId": 252592,
+            "username": "Ragnavolt",
+            "rank": 9
+        },
+        {
+            "id": 5712608081306740,
+            "points": 81,
+            "bumpkin": {
+                "hair": "Frizzy Bob Cut",
+                "background": "Faulty Barrier Background",
+                "body": "Beige Farmer Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Blue Farmer Shirt",
+                "hat": "Aether Specs",
+                "onesie": "Walrus Onesie",
+                "wings": "Bat Wings"
+            },
+            "nftId": 221719,
+            "username": "thomas68",
+            "rank": 10
+        }
+    ],
+    "accumulators": [
+        {
+            "id": 5002977981798262,
+            "points": 299,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "Greyed Glory",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "pants": "404 Chic Skirt",
+                "secondaryTool": "Cookie Shield",
+                "hat": "Aether Specs",
+                "wings": "Sweet Devil Wings",
+                "aura": "Wisp Aura",
+                "shirt": "Wise Robes"
+            },
+            "nftId": 244676,
+            "username": "reilie",
+            "rank": 1
+        },
+        {
+            "id": 3062948469740055,
+            "points": 288,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Sky Island Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Bionic Drill",
+                "beard": "Wise Beard",
+                "aura": "Wisp Aura",
+                "secondaryTool": "Bucket O' Worms",
+                "pants": "404 Chic Skirt",
+                "shirt": "Fruit Picker Shirt",
+                "hat": "Aether Specs"
+            },
+            "nftId": 223571,
+            "username": "Kaehu",
+            "rank": 2
+        },
+        {
+            "id": 7965226205774255,
+            "points": 286,
+            "bumpkin": {
+                "background": "Valentine's Field Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Pink Ponytail",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "secondaryTool": "Saw Fish",
+                "hat": "Aether Specs",
+                "coat": "Royal Robe",
+                "dress": "Royal Dress",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 253302,
+            "username": "CryptoJace",
+            "rank": 3
+        },
+        {
+            "id": 634610167873685,
+            "points": 263,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Fruit Picker Shirt",
+                "pants": "404 Chic Skirt",
+                "secondaryTool": "Bucket O' Worms",
+                "hat": "Aether Specs"
+            },
+            "nftId": 245426,
+            "username": "Bloodfox",
+            "rank": 4
+        },
+        {
+            "id": 618348259520769,
+            "points": 263,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Pirate Potion",
+                "hair": "Greyed Glory",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "pants": "Fish Hook Waders",
+                "hat": "Aether Specs",
+                "onesie": "Raccoon Onesie",
+                "necklace": "Crimstone Amulet",
+                "shirt": "Crimstone Armor"
+            },
+            "nftId": 238792,
+            "username": "FrozenHero",
+            "rank": 5
+        },
+        {
+            "id": 4528122019577492,
+            "points": 262,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "White Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hat": "Aether Specs",
+                "wings": "Bat Wings",
+                "dress": "Royal Dress"
+            },
+            "nftId": 235869,
+            "username": "Kuma04",
+            "rank": 6
+        },
+        {
+            "id": 206176,
+            "points": 255,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Seashore Background",
+                "body": "Pirate Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "secondaryTool": "Bucket O' Worms",
+                "wings": "Bionic Drill",
+                "hat": "Aether Specs",
+                "pants": "404 Chic Skirt",
+                "shirt": "Wise Robes"
+            },
+            "nftId": 206176,
+            "username": "Kuky1",
+            "rank": 7
+        },
+        {
+            "id": 162318,
+            "points": 247,
+            "bumpkin": {
+                "hair": "Two-toned Layered",
+                "background": "Cemetery Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "necklace": "Trick and Treat",
+                "secondaryTool": "Saw Fish",
+                "wings": "Underworld Stimpack",
+                "aura": "Glitch Aura",
+                "hat": "Aether Specs",
+                "pants": "Fish Hook Waders",
+                "shirt": "Fish Hook Vest",
+                "onesie": "Walrus Onesie"
+            },
+            "nftId": 162318,
+            "username": "sTyLz",
+            "rank": 8
+        },
+        {
+            "id": 7130889426653690,
+            "points": 241,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Explorer Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Crimstone Armor",
+                "pants": "Angler Waders",
+                "hat": "Aether Specs",
+                "onesie": "Squirrel Onesie",
+                "secondaryTool": "Oil Gallon",
+                "necklace": "Crimstone Amulet",
+                "wings": "Cardboard Wings",
+                "coat": "Milk Apron",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 233371,
+            "username": "Adrore",
+            "rank": 9
+        },
+        {
+            "id": 259892048822672,
+            "points": 232,
+            "bumpkin": {
+                "pants": "Fish Hook Waders",
+                "background": "Seashore Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hair": "Explorer Hair",
+                "onesie": "Frank Onesie",
+                "hat": "Aether Specs",
+                "shirt": "Fish Hook Vest"
+            },
+            "nftId": 237825,
+            "username": "Takaba",
+            "rank": 10
+        },
+        {
+            "id": 5712608081306740,
+            "points": 231,
+            "bumpkin": {
+                "hair": "Frizzy Bob Cut",
+                "background": "Faulty Barrier Background",
+                "body": "Beige Farmer Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Blue Farmer Shirt",
+                "hat": "Aether Specs",
+                "onesie": "Walrus Onesie",
+                "wings": "Bat Wings"
+            },
+            "nftId": 221719,
+            "username": "thomas68",
+            "rank": 11
+        },
+        {
+            "id": 4859580385627179,
+            "points": 225,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Trident",
+                "shirt": "Fish Hook Vest",
+                "pants": "Fish Hook Waders",
+                "hat": "Fish Hook Hat",
+                "wings": "Bionic Drill"
+            },
+            "nftId": 252592,
+            "username": "Ragnavolt",
+            "rank": 12
+        },
+        {
+            "id": 1456532945362173,
+            "points": 218,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Brown Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Fish Hook Vest",
+                "onesie": "Raccoon Onesie",
+                "wings": "Bionic Drill",
+                "hat": "Aether Specs",
+                "coat": "Fruit Picker Apron",
+                "pants": "Fish Hook Waders",
+                "secondaryTool": "Cookie Shield",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 252344,
+            "username": "ZotePoderoso",
+            "rank": 13
+        },
+        {
+            "id": 41995,
+            "points": 215,
+            "bumpkin": {
+                "hair": "Explorer Hair",
+                "shirt": "Neon Noiz Jacket",
+                "pants": "Neon Noiz Pants",
+                "background": "China Town Background",
+                "body": "Elf Potion",
+                "shoes": "Neon Noiz Shoes",
+                "hat": "Aether Specs",
+                "necklace": "Cowbell Necklace",
+                "aura": "Wisp Aura",
+                "wings": "Crow Wings",
+                "tool": "Infernal Bullwhip",
+                "beard": "Wise Beard",
+                "secondaryTool": "Saw Fish"
+            },
+            "nftId": 41995,
+            "username": "N3on",
+            "rank": 14
+        },
+        {
+            "id": 405,
+            "points": 213,
+            "bumpkin": {
+                "hair": "Buzz Cut",
+                "background": "Seashore Background",
+                "body": "Light Brown Farmer Potion",
+                "shoes": "404 Chic Boots",
+                "aura": "Love Puff Aura",
+                "tool": "Sunflower Rod",
+                "pants": "Fish Hook Waders",
+                "hat": "Fish Hook Hat",
+                "secondaryTool": "Crab Trap",
+                "wings": "Crow Wings",
+                "shirt": "Fish Hook Vest"
+            },
+            "nftId": 405,
+            "username": "LeonAndrew",
+            "rank": 15
+        },
+        {
+            "id": 150668,
+            "points": 212,
+            "bumpkin": {
+                "hair": "Basic Hair",
+                "shirt": "Fruit Picker Shirt",
+                "pants": "Angler Waders",
+                "background": "Farm Background",
+                "suit": "Reindeer Suit",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Trident",
+                "wings": "Bionic Drill",
+                "coat": "Fruit Picker Apron",
+                "secondaryTool": "Bucket O' Worms",
+                "hat": "Deep Sea Helm"
+            },
+            "nftId": 150668,
+            "username": "hurtprocess",
+            "rank": 16
+        },
+        {
+            "id": 3336539392556546,
+            "points": 212,
+            "bumpkin": {
+                "background": "Seashore Background",
+                "body": "Moonseeker Potion",
+                "hair": "Two-toned Layered",
+                "shoes": "Peg Leg",
+                "tool": "Trident",
+                "shirt": "Fish Hook Vest",
+                "hat": "Goblin Helmet",
+                "secondaryTool": "Jack O'Sweets",
+                "pants": "404 Chic Skirt",
+                "suit": "Sweet Devil Dress",
+                "necklace": "Training Whistle",
+                "wings": "Golden Wings"
+            },
+            "nftId": 250516,
+            "username": "Rexkill",
+            "rank": 17
+        },
+        {
+            "id": 179958684894141,
+            "points": 206,
+            "bumpkin": {
+                "background": "Desert Camel Background",
+                "body": "Pirate Potion",
+                "hair": "Greyed Glory",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hat": "Aether Specs",
+                "shirt": "Crimstone Armor",
+                "wings": "Bionic Drill",
+                "pants": "Neon Noiz Pants"
+            },
+            "nftId": 245517,
+            "username": "Medu",
+            "rank": 18
+        },
+        {
+            "id": 41982,
+            "points": 203,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Sky Island Background",
+                "body": "Moonseeker Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Underworld Stimpack",
+                "aura": "Wisp Aura",
+                "beard": "Santa Beard",
+                "necklace": "Green Amulet",
+                "hat": "Aether Specs",
+                "pants": "Neon Noiz Pants"
+            },
+            "nftId": 41982,
+            "username": "CXD",
+            "rank": 19
+        },
+        {
+            "id": 161974,
+            "points": 200,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Forest Background",
+                "necklace": "Green Amulet",
+                "body": "Pirate Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Sickle",
+                "hat": "Fish Hook Hat",
+                "aura": "Wisp Aura",
+                "secondaryTool": "Bumpkin Shield",
+                "beard": "Wise Beard",
+                "pants": "Fish Hook Waders",
+                "shirt": "Fish Hook Vest"
+            },
+            "nftId": 161974,
+            "username": "Sarres",
+            "rank": 20
+        },
+        {
+            "id": 295541916968643,
+            "points": 200,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Dark Brown Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Luna's Crescent",
+                "shirt": "Fish Hook Vest",
+                "hat": "Aether Specs",
+                "onesie": "White Sheep Onesie",
+                "necklace": "Dream Scarf",
+                "pants": "404 Chic Skirt"
+            },
+            "nftId": 261952,
+            "username": "Van1sh",
+            "rank": 21
+        },
+        {
+            "id": 42003,
+            "points": 198,
+            "bumpkin": {
+                "hair": "White Long Hair",
+                "pants": "Neon Noiz Pants",
+                "background": "China Town Background",
+                "hat": "Aether Specs",
+                "body": "Pirate Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Halloween Deathscythe",
+                "coat": "Fruit Picker Apron",
+                "shirt": "Striped Blue Shirt",
+                "suit": "Sweet Devil Dress",
+                "secondaryTool": "Jack O'Sweets",
+                "wings": "Underworld Stimpack"
+            },
+            "nftId": 42003,
+            "username": "HayNako",
+            "rank": 22
+        },
+        {
+            "id": 3228704070507365,
+            "points": 195,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Goblin Potion",
+                "hair": "Greyed Glory",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "hat": "Beekeeper Hat",
+                "secondaryTool": "Bucket O' Worms",
+                "necklace": "Green Amulet",
+                "onesie": "Squirrel Onesie",
+                "shirt": "Goblin Armor",
+                "coat": "Fruit Picker Apron",
+                "pants": "Farmer Overalls",
+                "wings": "Bat Wings"
+            },
+            "nftId": 251589,
+            "username": "rodBetan",
+            "rank": 23
+        },
+        {
+            "id": 8581285172431816,
+            "points": 193,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Moonseeker Potion",
+                "hair": "Two-toned Layered",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "wings": "Sweet Devil Wings",
+                "hat": "Aether Specs",
+                "pants": "Neon Noiz Pants",
+                "shirt": "Neon Noiz Jacket"
+            },
+            "nftId": 254146,
+            "username": "Danneskjold",
+            "rank": 24
+        },
+        {
+            "id": 7305414419203497,
+            "points": 191,
+            "bumpkin": {
+                "background": "Cemetery Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "Sunflorian Sabatons",
+                "tool": "Sunflorian Sword",
+                "shirt": "Sunflorian Armor",
+                "pants": "Sunflorian Pants",
+                "onesie": "Bunny Onesie",
+                "necklace": "Sunflorian Medallion",
+                "wings": "Golden Wings",
+                "aura": "Wisp Aura",
+                "hat": "Sunflorian Helmet",
+                "secondaryTool": "Sunflorian Shield"
+            },
+            "nftId": 248480,
+            "username": "JJTheFarmer",
+            "rank": 25
+        },
+        {
+            "id": 3638656358274523,
+            "points": 191,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Light Brown Farmer Potion",
+                "hair": "Blondie",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Farmer Pitchfork",
+                "shirt": "Blue Farmer Shirt",
+                "pants": "Farmer Overalls",
+                "hat": "Deep Sea Helm",
+                "onesie": "Walrus Onesie"
+            },
+            "nftId": 258834,
+            "username": "Arturosv22",
+            "rank": 26
+        },
+        {
+            "id": 4712736034574053,
+            "points": 185,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Pirate Potion",
+                "hair": "Basic Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hat": "Aether Specs",
+                "wings": "Bat Wings",
+                "necklace": "Carrot Amulet",
+                "shirt": "Crimstone Armor",
+                "pants": "Neon Noiz Pants",
+                "secondaryTool": "Crab Trap"
+            },
+            "nftId": 232615,
+            "username": "TallSea",
+            "rank": 27
+        },
+        {
+            "id": 186283,
+            "points": 182,
+            "bumpkin": {
+                "hair": "Paint Splattered Hair",
+                "background": "Festival of Colors Background",
+                "body": "Goblin Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hat": "Deep Sea Helm",
+                "wings": "Sweet Devil Wings",
+                "necklace": "Green Amulet",
+                "dress": "Adventurer's Suit",
+                "suit": "Bee Suit"
+            },
+            "nftId": 186283,
+            "username": "Fealzen",
+            "rank": 28
+        },
+        {
+            "id": 62015,
+            "points": 180,
+            "bumpkin": {
+                "hair": "Buzz Cut",
+                "shirt": "Blue Farmer Shirt",
+                "pants": "404 Chic Skirt",
+                "background": "Seashore Background",
+                "hat": "Aether Specs",
+                "body": "Beige Farmer Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "onesie": "Walrus Onesie"
+            },
+            "nftId": 62015,
+            "username": "CryptoMiner",
+            "rank": 29
+        },
+        {
+            "id": 1135061487654831,
+            "points": 180,
+            "bumpkin": {
+                "background": "Seashore Background",
+                "body": "Pirate Potion",
+                "hair": "Explorer Hair",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Trident",
+                "shirt": "Tattered Jacket",
+                "hat": "Crab Hat",
+                "coat": "Chef Apron",
+                "onesie": "Banana Onesie",
+                "secondaryTool": "Saw Fish",
+                "necklace": "Beetroot Amulet",
+                "suit": "Sweet Devil Dress",
+                "wings": "Bionic Drill",
+                "beard": "Wise Beard",
+                "pants": "Angler Waders"
+            },
+            "nftId": 252010,
+            "username": "MANGOISME",
+            "rank": 30
+        },
+        {
+            "id": 3585678840432819,
+            "points": 176,
+            "bumpkin": {
+                "background": "Faulty Barrier Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Buzz Cut",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Bat Wings",
+                "shirt": "Wise Robes",
+                "hat": "Aether Specs",
+                "pants": "404 Chic Skirt"
+            },
+            "nftId": 241763,
+            "username": "Prx",
+            "rank": 31
+        },
+        {
+            "id": 91243,
+            "points": 173,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Trident",
+                "shirt": "Striped Blue Shirt",
+                "pants": "Angler Waders",
+                "coat": "Fruit Picker Apron",
+                "hat": "Turd Topper",
+                "onesie": "Camel Onesie",
+                "beard": "Wise Beard",
+                "wings": "Bat Wings",
+                "secondaryTool": "Bucket O' Worms"
+            },
+            "nftId": 91243,
+            "username": "Whew",
+            "rank": 32
+        },
+        {
+            "id": 9609,
+            "points": 172,
+            "bumpkin": {
+                "hair": "Greyed Glory",
+                "secondaryTool": "Goblin Shield",
+                "beard": "Wise Beard",
+                "background": "Dawn Breaker Background",
+                "necklace": "Goblin Medallion",
+                "body": "Infernal Goblin Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "wings": "Crow Wings",
+                "dress": "Cupid Dress",
+                "aura": "Wisp Aura",
+                "hat": "Aether Specs"
+            },
+            "nftId": 9609,
+            "username": "Vitt0c",
+            "rank": 33
+        },
+        {
+            "id": 161865,
+            "points": 165,
+            "bumpkin": {
+                "hair": "White Long Hair",
+                "pants": "Blue Suspenders",
+                "background": "Festival of Colors Background",
+                "body": "Moonseeker Potion",
+                "shoes": "Nightshade Sabatons",
+                "tool": "Halloween Deathscythe",
+                "hat": "Aether Specs",
+                "aura": "Wisp Aura",
+                "necklace": "Trick and Treat",
+                "secondaryTool": "Saw Fish",
+                "wings": "Underworld Stimpack",
+                "shirt": "Crimstone Armor",
+                "suit": "Research Uniform"
+            },
+            "nftId": 161865,
+            "username": "MrLuckyn",
+            "rank": 34
+        },
+        {
+            "id": 1912486660178886,
+            "points": 164,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "Sun Spots",
+                "shoes": "Yellow Boots",
+                "tool": "Sunflower Rod",
+                "hat": "Turd Topper",
+                "coat": "Fruit Picker Apron",
+                "shirt": "Striped Blue Shirt",
+                "pants": "Angler Waders",
+                "onesie": "Red Pepper Onesie"
+            },
+            "nftId": 225053,
+            "username": "aaronreyes18",
+            "rank": 35
+        },
+        {
+            "id": 139148,
+            "points": 159,
+            "bumpkin": {
+                "hair": "Cupid Hair",
+                "shirt": "Neon Noiz Jacket",
+                "background": "Farm Background",
+                "body": "Goblin Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Trident",
+                "hat": "Deep Sea Helm",
+                "pants": "Neon Noiz Pants",
+                "necklace": "Dream Scarf",
+                "secondaryTool": "Frozen Heart"
+            },
+            "nftId": 139148,
+            "username": "Madgosma",
+            "rank": 36
+        },
+        {
+            "id": 4474220389272578,
+            "points": 153,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "White Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Sunflower Rod",
+                "shirt": "Comfy Xmas Sweater",
+                "hat": "Aether Specs",
+                "pants": "404 Chic Skirt"
+            },
+            "nftId": 258005,
+            "username": "TungAnhPham",
+            "rank": 37
+        },
+        {
+            "id": 6787160326029422,
+            "points": 150,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Pink Ponytail",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "hat": "Aether Specs",
+                "secondaryTool": "Lemon Shield",
+                "wings": "Bionic Drill",
+                "necklace": "Sunflower Amulet",
+                "dress": "Royal Dress"
+            },
+            "nftId": 241291,
+            "username": "ThiefRa",
+            "rank": 38
+        },
+        {
+            "id": 5915556333038109,
+            "points": 150,
+            "bumpkin": {
+                "background": "Festival of Colors Background",
+                "body": "Pirate Potion",
+                "hair": "White Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Love Charm Shirt",
+                "pants": "404 Chic Skirt",
+                "secondaryTool": "Bucket O' Worms",
+                "coat": "Fruit Picker Apron",
+                "onesie": "White Sheep Onesie",
+                "hat": "Aether Specs",
+                "wings": "Bat Wings"
+            },
+            "nftId": 234143,
+            "username": "Bao25",
+            "rank": 39
+        },
+        {
+            "id": 41992,
+            "points": 148,
+            "bumpkin": {
+                "hair": "Buzz Cut",
+                "shirt": "Paint Splattered Shirt",
+                "pants": "Angler Waders",
+                "background": "Seashore Background",
+                "body": "Light Brown Farmer Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Sunflower Rod",
+                "hat": "Fishing Hat",
+                "secondaryTool": "Bucket O' Worms"
+            },
+            "nftId": 41992,
+            "username": "RuiReed",
+            "rank": 40
+        },
+        {
+            "id": 853708759616004,
+            "points": 147,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Beige Farmer Potion",
+                "hair": "Sun Spots",
+                "shoes": "Neon Noiz Shoes",
+                "tool": "Admin Fools Tools",
+                "hat": "Aether Specs",
+                "pants": "Neon Noiz Pants",
+                "shirt": "Red Farmer Shirt"
+            },
+            "nftId": 262266,
+            "username": "Suntoshi",
+            "rank": 41
+        },
+        {
+            "id": 8344830628935365,
+            "points": 147,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "hair": "Pink Ponytail",
+                "shoes": "Peg Leg",
+                "tool": "Trident",
+                "shirt": "Fruit Picker Shirt",
+                "pants": "Angler Waders",
+                "hat": "Fish Hook Hat",
+                "secondaryTool": "Bucket O' Worms",
+                "coat": "Fruit Picker Apron",
+                "onesie": "Walrus Onesie",
+                "suit": "Embersteel Suit"
+            },
+            "nftId": 233139,
+            "username": "MrNob0dy",
+            "rank": 42
+        },
+        {
+            "id": 22157,
+            "points": 146,
+            "bumpkin": {
+                "hair": "Corn Silk Hair",
+                "secondaryTool": "Sunflorian Shield",
+                "pants": "Angler Waders",
+                "background": "Forest Background",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Sunflorian Sword",
+                "hat": "Deep Sea Helm",
+                "wings": "Bat Wings",
+                "suit": "Ladybug Suit",
+                "necklace": "Green Amulet"
+            },
+            "nftId": 22157,
+            "username": "Alouhisse",
+            "rank": 43
+        },
+        {
+            "id": 2170735163714206,
+            "points": 145,
+            "bumpkin": {
+                "hair": "Rancher Hair",
+                "pants": "Goblin Pants",
+                "background": "Farm Background",
+                "hat": "Turd Topper",
+                "body": "Pirate Potion",
+                "shoes": "404 Chic Boots",
+                "tool": "Sunflower Rod",
+                "onesie": "Soybean Onesie",
+                "coat": "Fruit Picker Apron",
+                "shirt": "Crimstone Armor",
+                "wings": "Bionic Drill",
+                "secondaryTool": "Bucket O' Worms",
+                "necklace": "Training Whistle",
+                "beard": "Wise Beard"
+            },
+            "nftId": 211877,
+            "username": "ernestoazhz",
+            "rank": 44
+        },
+        {
+            "id": 8113513251048732,
+            "points": 143,
+            "bumpkin": {
+                "background": "Forest Background",
+                "body": "Moonseeker Potion",
+                "hair": "Two-toned Layered",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Neon Noiz Jacket",
+                "secondaryTool": "Saw Fish",
+                "wings": "Sweet Devil Wings",
+                "aura": "Wisp Aura",
+                "hat": "Deep Sea Helm",
+                "pants": "Neon Noiz Pants"
+            },
+            "nftId": 239231,
+            "username": "Hiraphoria",
+            "rank": 45
+        },
+        {
+            "id": 160614,
+            "points": 142,
+            "bumpkin": {
+                "hair": "Buzz Cut",
+                "shirt": "Striped Blue Shirt",
+                "pants": "Angler Waders",
+                "background": "Valentine's Field Background",
+                "hat": "Turd Topper",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Sunflower Rod",
+                "coat": "Fruit Picker Apron",
+                "onesie": "Red Pepper Onesie",
+                "secondaryTool": "Bucket O' Worms",
+                "wings": "Bionic Drill",
+                "necklace": "Cowbell Necklace"
+            },
+            "nftId": 160614,
+            "username": "Nefeles",
+            "rank": 46
+        },
+        {
+            "id": 2313898634547160,
+            "points": 141,
+            "bumpkin": {
+                "background": "Farm Background",
+                "body": "Pirate Potion",
+                "hair": "White Long Hair",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "Neon Noiz Jacket",
+                "pants": "Neon Noiz Pants",
+                "secondaryTool": "Bucket O' Worms",
+                "necklace": "Beetroot Amulet",
+                "onesie": "Camel Onesie",
+                "hat": "Fish Hook Hat",
+                "aura": "Glitch Aura",
+                "wings": "Cardboard Wings"
+            },
+            "nftId": 252331,
+            "username": "ZoomXmooZ",
+            "rank": 47
+        },
+        {
+            "id": 151067,
+            "points": 139,
+            "bumpkin": {
+                "hair": "Brown Rancher Hair",
+                "secondaryTool": "Goblin Shield",
+                "background": "Desert Camel Background",
+                "necklace": "Goblin Medallion",
+                "body": "Goblin Potion",
+                "shoes": "Goblin Sabatons",
+                "tool": "Master Chef's Cleaver",
+                "wings": "Devil Wings",
+                "pants": "Goblin Pants",
+                "shirt": "Goblin Armor",
+                "beard": "Wise Beard",
+                "hat": "Goblin Crown"
+            },
+            "nftId": 151067,
+            "username": "FlySly",
+            "rank": 48
+        },
+        {
+            "id": 3874450615665206,
+            "points": 139,
+            "bumpkin": {
+                "background": "Sky Island Background",
+                "body": "Light Brown Farmer Potion",
+                "hair": "Basic Hair",
+                "shoes": "Yellow Boots",
+                "tool": "Trident",
+                "shirt": "Crimstone Armor",
+                "pants": "Angler Waders",
+                "hat": "Fish Hook Hat",
+                "secondaryTool": "Bucket O' Worms",
+                "wings": "Bionic Drill",
+                "suit": "Amberfall Suit",
+                "onesie": "Camel Onesie"
+            },
+            "nftId": 242804,
+            "username": "Abbader",
+            "rank": 49
+        },
+        {
+            "id": 3569463996746291,
+            "points": 139,
+            "bumpkin": {
+                "background": "Valentine's Field Background",
+                "body": "Pirate Potion",
+                "hair": "Two-toned Layered",
+                "shoes": "404 Chic Boots",
+                "tool": "Admin Fools Tools",
+                "shirt": "404 Chic Top",
+                "pants": "404 Chic Skirt",
+                "necklace": "Trick and Treat",
+                "hat": "Aether Specs",
+                "wings": "Sweet Devil Wings",
+                "beard": "Santa Beard",
+                "aura": "Glitch Aura"
+            },
+            "nftId": 231311,
+            "username": "Artsie",
+            "rank": 50
+        }
+    ],
+    "miniboard": [
+        {
+            "id": 72910,
+            "points": 18,
+            "bumpkin": {
+                "coat": "Fruit Picker Apron",
+                "hair": "Buzz Cut",
+                "shirt": "Fruit Picker Shirt",
+                "pants": "Angler Waders",
+                "beard": "Santa Beard",
+                "background": "Seashore Background",
+                "necklace": "Beetroot Amulet",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Sunflower Rod",
+                "onesie": "Camel Onesie",
+                "hat": "Turd Topper",
+                "wings": "Bionic Drill",
+                "secondaryTool": "Saw Fish"
+            },
+            "nftId": 72910,
+            "username": "Maestro",
+            "rank": 2689
+        },
+        {
+            "id": 79871,
+            "points": 18,
+            "bumpkin": {
+                "hair": "Two-toned Layered",
+                "shirt": "Crimstone Armor",
+                "pants": "Sunflorian Pants",
+                "background": "Christmas Background",
+                "necklace": "Green Amulet",
+                "body": "Pale Potion",
+                "shoes": "Sunflorian Sabatons",
+                "tool": "Luna's Crescent",
+                "secondaryTool": "Sunflorian Shield",
+                "hat": "Luminous Anglerfish Topper",
+                "wings": "Sweet Devil Wings",
+                "aura": "Paw Aura"
+            },
+            "nftId": 79871,
+            "username": "Grith",
+            "rank": 2690
+        },
+        {
+            "id": 87140,
+            "points": 18,
+            "bumpkin": {
+                "coat": "Fruit Picker Apron",
+                "hair": "Cupid Hair",
+                "shirt": "Striped Blue Shirt",
+                "pants": "Farmer Pants",
+                "background": "Forest Background",
+                "necklace": "Carrot Amulet",
+                "body": "Pirate Potion",
+                "shoes": "Peg Leg",
+                "tool": "Farmer Pitchfork",
+                "hat": "Companion Cap"
+            },
+            "nftId": 87140,
+            "username": "REDONE",
+            "rank": 2691
+        }
+    ],
+    "accumulatorMiniboard": [
+        {
+            "id": 75768,
+            "points": 42,
+            "bumpkin": {
+                "hair": "Sun Spots",
+                "shirt": "Yellow Farmer Shirt",
+                "pants": "Farmer Pants",
+                "beard": "Santa Beard",
+                "background": "Farm Background",
+                "hat": "Fish Hook Hat",
+                "body": "Light Brown Farmer Potion",
+                "shoes": "Black Farmer Boots",
+                "tool": "Axe",
+                "suit": "Embersteel Suit"
+            },
+            "nftId": 75768,
+            "username": "Teryaki",
+            "rank": 1606
+        },
+        {
+            "id": 79871,
+            "points": 42,
+            "bumpkin": {
+                "hair": "Two-toned Layered",
+                "shirt": "Crimstone Armor",
+                "pants": "Sunflorian Pants",
+                "background": "Christmas Background",
+                "necklace": "Green Amulet",
+                "body": "Pale Potion",
+                "shoes": "Sunflorian Sabatons",
+                "tool": "Luna's Crescent",
+                "secondaryTool": "Sunflorian Shield",
+                "hat": "Luminous Anglerfish Topper",
+                "wings": "Sweet Devil Wings",
+                "aura": "Paw Aura"
+            },
+            "nftId": 79871,
+            "username": "Grith",
+            "rank": 1607
+        },
+        {
+            "id": 109655,
+            "points": 42,
+            "bumpkin": {
+                "hair": "Corn Silk Hair",
+                "shirt": "Fish Hook Vest",
+                "pants": "Angler Waders",
+                "background": "Seashore Background",
+                "body": "Goblin Potion",
+                "shoes": "Brown Boots",
+                "tool": "Sunflower Rod",
+                "coat": "Fruit Picker Apron",
+                "hat": "Deep Sea Helm",
+                "wings": "Bionic Drill",
+                "beard": "Wise Beard"
+            },
+            "nftId": 109655,
+            "username": "Mellstroy",
+            "rank": 1608
+        }
+    ]
+}

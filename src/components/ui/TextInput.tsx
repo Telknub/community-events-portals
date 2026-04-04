@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, HTMLInputTypeAttribute, useState } from "react";
 import classNames from "classnames";
 
 import bg from "assets/ui/input_box_border.png";
@@ -15,6 +15,9 @@ type Props = {
   icon?: string;
   placeholder?: string;
   maxLength?: number;
+  type?: HTMLInputTypeAttribute;
+  min?: string;
+  max?: string;
 };
 
 export const TextInput: React.FC<Props> = ({
@@ -25,6 +28,9 @@ export const TextInput: React.FC<Props> = ({
   placeholder,
   onCancel,
   maxLength,
+  type,
+  min,
+  max,
 }) => {
   const { t } = useAppTranslation();
 
@@ -53,10 +59,12 @@ export const TextInput: React.FC<Props> = ({
           borderWidth: `10px 10px 10px 10px`,
           borderImageSlice: isFocused ? "4 fill" : "4 4 4 4 fill",
         }}
-        type="text"
+        type={type ?? "text"}
         placeholder={placeholder ?? t("searchHere")}
         value={value}
         maxLength={maxLength}
+        min={min}
+        max={max}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           onValueChange(e.target.value);
         }}

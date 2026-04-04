@@ -20,6 +20,7 @@ export class Orange extends Phaser.GameObjects.Container {
     scene: Scene;
     private sprite: Phaser.GameObjects.Sprite;
     private enemies: Enemy[];
+    private isDefeating: boolean = false;
 
     /**
      * Creates a new Orange projectile instance.
@@ -58,7 +59,9 @@ export class Orange extends Phaser.GameObjects.Container {
     private createOverlaps() {
         this.enemies.forEach(enemy => {
             this.scene.physics.add.overlap(this, enemy, () => {
-                enemy.defeat();
+                if (this.isDefeating) return;
+                this.isDefeating = true;
+                if (!enemy.isDefeated) enemy.defeat();
             })
         })
     }

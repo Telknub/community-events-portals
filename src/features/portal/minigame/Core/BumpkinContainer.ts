@@ -229,7 +229,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     EventBus.once("timer-game-over", onGameOver);
 
     const onNewPower = ({ power }: { power: string }) => {
-      if (this.active) this.showPower(power);
+      if (this.active && !isNPC) this.showPower(power);
     };
     EventBus.on("new-power", onNewPower);
 
@@ -1412,7 +1412,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     const progress = Phaser.Math.Clamp(
       (this.scene.time.now - this.shootChargeStartedAt) /
-        PLAYER_CANNON_CHARGE_DURATION,
+      PLAYER_CANNON_CHARGE_DURATION,
       0,
       1,
     );
@@ -1588,6 +1588,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   }
 
   public updates() {
+    if (!this.powerImage && !this.powerText) return;
     const worldX = this.getWorldTransformMatrix().tx;
     const worldY = this.getWorldTransformMatrix().ty;
 
