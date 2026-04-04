@@ -14,6 +14,7 @@ interface Props {
 const MENACE_MIN_CREATE = 4000;
 const MENACE_MAX_CREATE = 8000;
 const DEBUFF_DURATION = 4000;
+const RESPAWN_DELAY = 3000;
 const INDICATOR_OFFSET_X = -15;
 const INDICATOR_OFFSET_Y = 20;
 const INDICATOR_SCALE = 0.8;
@@ -316,7 +317,7 @@ export class Menace_Skeleton extends Phaser.GameObjects.Container {
     })
   }
 
-  private respawn(delay: number = 10000) {
+  private respawn(delay: number = RESPAWN_DELAY) {
     this.scene.time.delayedCall(delay, () => {
       this.isDefeated = false;
 
