@@ -19,13 +19,7 @@ const ACCUMULATOR_END_DATE = "2026-04-07";
 
 type LeaderboardMode = "accumulate" | "highscore";
 
-const padDateNumber = (value: number) => value.toString().padStart(2, "0");
-
-const getCurrentDateString = () => {
-  const today = new Date();
-
-  return `${today.getFullYear()}-${padDateNumber(today.getMonth() + 1)}-${padDateNumber(today.getDate())}`;
-};
+const getCurrentUtcDateString = () => new Date().toISOString().substring(0, 10);
 
 const toUtcDate = (value: string) => {
   const [year, month, day] = value.split("-").map(Number);
@@ -45,7 +39,7 @@ export const Leaderboard: React.FC = () => {
 
   const jwt = useSelector(portalService, _jwt);
   const farmId = !getUrl() ? 0 : decodeToken(jwt as string).farmId;
-  const today = getCurrentDateString();
+  const today = getCurrentUtcDateString();
   const hasAccumulatorStarted = today >= ACCUMULATOR_START_DATE;
 
   const [mode, setMode] = useState<LeaderboardMode>(() =>
