@@ -93,6 +93,7 @@ export type AprilFoolsShopCollectibleName = Extract<
   | "Fake Mouse"
   | "Pet Tree"
   | "Definitely not a Flower"
+  | "Frozen Meat"
 >;
 
 export type EasterShopWearableName = Extract<
@@ -919,6 +920,12 @@ export const APRIL_FOOLS_STORE: MinigameShop<AprilFoolsShopItemName> = {
     max: 1,
     type: "wearable",
     name: "Glitch Aura",
+  },
+  "Frozen Meat": {
+    cost: { sfl: 0, items: { "April Fools Token 2026": 50 } },
+    max: 1,
+    type: "collectible",
+    name: "Frozen Meat",
   },
 };
 

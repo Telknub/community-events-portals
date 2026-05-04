@@ -89,6 +89,7 @@ export const EventStore: React.FC<Props> = ({ readonly, state }) => {
   const rareAllItems = EVENTMEGASTORE.rare.items;
   const epicAllItems = EVENTMEGASTORE.epic.items;
   const megaItems = EVENTMEGASTORE.mega.items;
+  const rewardItems = EVENTMEGASTORE.reward.items;
 
   return (
     <>
@@ -142,6 +143,12 @@ export const EventStore: React.FC<Props> = ({ readonly, state }) => {
           itemsLabel={"Mega Items"}
           tier="mega"
           items={megaItems}
+          onItemClick={handleClickItem}
+        />
+        <ItemsList
+          itemsLabel={"Reward Items"}
+          tier="reward"
+          items={rewardItems}
           onItemClick={handleClickItem}
         />
       </div>

@@ -19,7 +19,8 @@ export type EventCollectibleName =
   | "Fake Treasure"
   | "Fake Mouse"
   | "Pet Tree"
-  | "Definitely not a Flower";
+  | "Definitely not a Flower"
+  | "Frozen Meat";
 
 export type EventWearableName = Extract<
   BumpkinItem,
@@ -69,6 +70,10 @@ export type EventStore = {
     requirement: number;
   };
   mega: {
+    items: EventStoreItem[];
+    requirement: number;
+  };
+  reward: {
     items: EventStoreItem[];
     requirement: number;
   };
@@ -170,5 +175,14 @@ export const APRIL_FOOLS_EVENT_ITEMS: EventStore = {
       },
     ],
     requirement: 12,
+  },
+  reward: {
+    items: [
+      {
+        collectible: "Frozen Meat",
+        cost: APRIL_FOOLS_STORE["Frozen Meat"].cost,
+      },
+    ],
+    requirement: 21,
   },
 };

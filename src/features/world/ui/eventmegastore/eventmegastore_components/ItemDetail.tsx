@@ -41,7 +41,7 @@ interface ItemOverlayProps {
   image: string;
   isWearable: boolean;
   buff?: BuffLabel[];
-  tier?: "basic" | "rare" | "epic" | "mega";
+  tier?: "basic" | "rare" | "epic" | "mega" | "reward";
   isVisible: boolean;
   onClose: () => void;
   readonly?: boolean;
@@ -84,7 +84,9 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
           ? "epic"
           : tier === "mega"
             ? "mega"
-            : "basic";
+            : tier === "reward"
+              ? "reward"
+              : "basic";
 
   const shop =
     gameService.getSnapshot().context.state.minigames.games["april-fools"]
@@ -107,6 +109,8 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
     tiers === "epic" && eventItemsCrafted >= eventStore.epic.requirement;
   const isMegaUnlocked =
     tier === "mega" && eventItemsCrafted >= eventStore.mega.requirement;
+  const isRewardUnlocked =
+    tier === "reward" && eventItemsCrafted >= eventStore.reward.requirement;
 
   const itemsCrafted = isWearable
     ? (state.minigames.games["april-fools"]?.shop?.wearables?.[
@@ -150,6 +154,7 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
       if (tier === "rare" && !isRareUnlocked) return false;
       if (tier === "epic" && !isEpicUnlocked) return false;
       if (tier === "mega" && !isMegaUnlocked) return false;
+      if (tier === "reward" && !isRewardUnlocked) return false;
     }
 
     if (!canCraftMore) {

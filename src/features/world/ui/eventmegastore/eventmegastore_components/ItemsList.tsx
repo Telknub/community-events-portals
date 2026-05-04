@@ -158,6 +158,9 @@ export const ItemsList: React.FC<Props> = ({
   const isMegaUnlocked =
     tier === "mega" &&
     eventItemsCrafted >= APRIL_FOOLS_EVENT_ITEMS.mega.requirement;
+  const isRewardUnlocked =
+    tier === "reward" &&
+    eventItemsCrafted >= APRIL_FOOLS_EVENT_ITEMS.reward.requirement;
 
   const tierpercentage = eventItemsCrafted;
 
@@ -185,7 +188,9 @@ export const ItemsList: React.FC<Props> = ({
                       ? lock
                       : !isMegaUnlocked && tier === "mega"
                         ? lock
-                        : ""
+                        : !isRewardUnlocked && tier === "reward"
+                          ? lock
+                          : ""
                 }
                 type={
                   tier === "basic"
@@ -196,7 +201,9 @@ export const ItemsList: React.FC<Props> = ({
                         ? "vibrant"
                         : tier === "mega" && isMegaUnlocked
                           ? "warning"
-                          : "danger"
+                          : tier === "reward" && isRewardUnlocked
+                            ? "success"
+                            : "danger"
                 }
               >
                 {itemsLabel}
@@ -204,7 +211,10 @@ export const ItemsList: React.FC<Props> = ({
             )}
           </div>
           <div className="w-1/10">
-            {(tier === "rare" || tier === "epic" || tier === "mega") && (
+            {(tier === "rare" ||
+              tier === "epic" ||
+              tier === "mega" ||
+              tier === "reward") && (
               <ResizableBar
                 percentage={percentage}
                 type={"progress"}
@@ -238,6 +248,15 @@ export const ItemsList: React.FC<Props> = ({
       {tier === "mega" && !isMegaUnlocked && (
         <span className="text-xs py-1">
           {t("megaStore.tier.mega.requirements", {
+            requirements: requirements - tierpercentage,
+            tier: tier,
+          })}
+        </span>
+      )}
+
+      {tier === "reward" && !isRewardUnlocked && (
+        <span className="text-xs py-1">
+          {t("megaStore.tier.reward.requirements", {
             requirements: requirements - tierpercentage,
             tier: tier,
           })}
@@ -291,18 +310,19 @@ export const ItemsList: React.FC<Props> = ({
                       />
                     )}
 
-                    {((tier === "rare" && !isRareUnlocked) ||
+                    {(tier === "rare" && !isRareUnlocked) ||
                       (tier === "epic" && !isEpicUnlocked) ||
-                      (tier === "mega" && !isMegaUnlocked)) && (
-                      <img
-                        src={lock}
-                        className="absolute -right-2 -top-2"
-                        style={{
-                          width: `${PIXEL_SCALE * 7}px`,
-                        }}
-                        alt="crop"
-                      />
-                    )}
+                      (tier === "mega" && !isMegaUnlocked) ||
+                      (tier === "reward" && !isRewardUnlocked && (
+                        <img
+                          src={lock}
+                          className="absolute -right-2 -top-2"
+                          style={{
+                            width: `${PIXEL_SCALE * 7}px`,
+                          }}
+                          alt="crop"
+                        />
+                      ))}
                     {/* Price */}
                     <div className="absolute px-4 bottom-3 -left-4 object-contain">
                       <Label
