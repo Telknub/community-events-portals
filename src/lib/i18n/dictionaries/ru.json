@@ -8803,9 +8803,7 @@
   "description.skillResetTicketWarning": "Counts as a gem reset; free timer unchanged.",
   "skillReset.ticket": "Ticket Reset",
   "skillReset.ticketDescription": "Use a Skill Reset Ticket to reset all your skills.",
-  "description.obsidianShrine.buff": "Bulk harvest, plant and fertilise your crops and fruit",
   "obsidianShrine.fertilise": "Fertilise All",
-  "obsidianShrine.fertiliseAll": "Apply fertiliser to all eligible plots and patches",
   "obsidianShrine.selectFertiliser": "Select a fertiliser",
   "obsidianShrine.noFertilisers": "No fertilisers available",
   "obsidianShrine.noEligiblePlots": "No plots to fertilise",
@@ -8895,5 +8893,8 @@
   "vip.benefit.bonusSaltYield": "+2 Salt per Rake during Salt Awakening Chapter",
   "statements.blacklist.discord": "Talk to us on Discord, open a ticket.",
   "statements.blacklist.noDiscord": "Don't have Discord? Contact us here.",
-  "description.spaSheep.boost": "+5 Sheep XP from Animal Affection tools"
+  "description.spaSheep.boost": "+5 Sheep XP from Animal Affection tools",
+  "description.obsidianShrine.buff": "Bulk harvest, plant and fertilise your crops, fruit and greenhouse",
+  "obsidianShrine.fertiliseAll": "Apply fertiliser to all eligible plots, patches and greenhouse pots",
+  "obsidianShrine.noEligiblePots": "No greenhouse pots to fertilise"
 }

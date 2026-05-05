@@ -8803,9 +8803,7 @@
   "description.skillResetTicketWarning": "Compte comme une réinitialisation de la gemme ; le temps libre est inchangé.",
   "skillReset.ticket": "Réinitialisation du ticket",
   "skillReset.ticketDescription": "Utilisez un ticket de réinitialisation des compétences pour réinitialiser toutes vos compétences.",
-  "description.obsidianShrine.buff": "Récoltez en vrac, plantez et fertilisez vos cultures et vos fruits",
   "obsidianShrine.fertilise": "Fertilisez tout",
-  "obsidianShrine.fertiliseAll": "Appliquez de l'engrais sur toutes les parcelles et parcelles éligibles",
   "obsidianShrine.selectFertiliser": "Sélectionnez un engrais",
   "obsidianShrine.noFertilisers": "Aucun engrais disponible",
   "obsidianShrine.noEligiblePlots": "Aucune parcelle à fertiliser",
@@ -8895,5 +8893,8 @@
   "vip.benefit.bonusSaltYield": "+2 points de sel par râteau pendant le chapitre Salt Awakening",
   "statements.blacklist.discord": "Discutez avec nous sur Discord, ouvrez un ticket.",
   "statements.blacklist.noDiscord": "Vous n'avez pas Discord ? Contactez-nous ici.",
-  "description.spaSheep.boost": "+5 points d'expérience pour les moutons grâce aux outils Animal Affection"
+  "description.spaSheep.boost": "+5 points d'expérience pour les moutons grâce aux outils Animal Affection",
+  "description.obsidianShrine.buff": "Récoltez, plantez et fertilisez en vrac vos cultures, vos fruits et vos serres",
+  "obsidianShrine.fertiliseAll": "Appliquez de l'engrais sur toutes les parcelles, parcelles et pots de serre éligibles",
+  "obsidianShrine.noEligiblePots": "Pas de pots de serre à fertiliser"
 }
