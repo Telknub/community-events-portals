@@ -8781,7 +8781,6 @@
   "description.saltAwakeningBanner": "Rally the flag — the Salt Awakening has begun.",
   "description.saltDinoEgg": "A fossilized egg cracked from the salt flats. Who laid this?",
   "description.flamingoChicken.boost": "-2.5% Chicken Sleep Time",
-  "description.spaSheep.boost": "+5 Animal XP from Animal Affection",
   "description.spaCow.boost": "+0.1 Milk",
   "description.deepSeaSlug.boost.2": "+1 Worm from Composting",
   "referral.share": "Share on:",
@@ -8893,5 +8892,8 @@
   "description.shrimpOnesie.boost": "+1 random fish every 15th reel",
   "description.clamShellHat": "A polished clam shell perched atop your head.",
   "description.shrimpOnesie": "Snug, salty, and a little bit pinchy.",
-  "vip.benefit.bonusSaltYield": "+2 Salt per Rake during Salt Awakening Chapter"
+  "vip.benefit.bonusSaltYield": "+2 Salt per Rake during Salt Awakening Chapter",
+  "statements.blacklist.discord": "Talk to us on Discord, open a ticket.",
+  "statements.blacklist.noDiscord": "Don't have Discord? Contact us here.",
+  "description.spaSheep.boost": "+5 Sheep XP from Animal Affection tools"
 }
