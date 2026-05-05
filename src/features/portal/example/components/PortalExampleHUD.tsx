@@ -21,11 +21,11 @@ export const PortalExampleHUD: React.FC = () => {
   return (
     <>
       <HudContainer>
-        <Balances
+        {/* <Balances
           sfl={portalState.context.state.balance}
           coins={portalState.context.state.coins}
           gems={portalState.context.state.inventory["Gem"] ?? new Decimal(0)}
-        />
+        /> */}
         <Inventory
           state={portalState.context.state}
           isFarming={false}

@@ -1,0 +1,50 @@
+import React, { useEffect, useState } from "react";
+import { Modal } from "components/ui/Modal";
+
+type InteractableName = "";
+
+class InteractableModalManager {
+  private listener?: (
+    name: InteractableName,
+    isOpen: boolean,
+    data: any,
+  ) => void;
+
+  public open(name: InteractableName, data = {}) {
+    if (this.listener) {
+      this.listener(name, true, data);
+    }
+  }
+
+  public listen(
+    cb: (name: InteractableName, isOpen: boolean, data: any) => void,
+  ) {
+    this.listener = cb;
+  }
+}
+
+export const interactableModalManager = new InteractableModalManager();
+
+export const InteractableModals = () => {
+  const [interactable, setInteractable] = useState<InteractableName>();
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    interactableModalManager.listen((interactable, open, data) => {
+      setInteractable(interactable);
+      setData(data);
+    });
+  }, []);
+
+  const closeModal = () => {
+    setInteractable(undefined);
+  };
+
+  return (
+    <>
+      <Modal show={!!interactable} onHide={closeModal}>
+        {/* {interactable === "weekly_faction_prize" && <FactionWeeklyPrize onClose={closeModal} data={data} />} */}
+      </Modal>
+    </>
+  );
+};

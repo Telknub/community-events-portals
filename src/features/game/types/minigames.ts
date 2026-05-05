@@ -16,7 +16,7 @@ export type MinigameName =
   | "christmas-delivery"
   | "easter-eggstravaganza"
   | "mine-whack"
-  | "festival-of-colors-2025"
+  | "festival-of-colors"
   | "holiday-puzzle-2025"
   | "april-fools"
   | "memory"
@@ -39,7 +39,7 @@ export const SUPPORTED_MINIGAMES: MinigameName[] = [
   "christmas-delivery",
   "easter-eggstravaganza",
   "mine-whack",
-  "festival-of-colors-2025",
+  "festival-of-colors",
   "holiday-puzzle-2025",
   "nightshade-arcade",
   "april-fools",
