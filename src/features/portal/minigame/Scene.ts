@@ -1,4 +1,4 @@
-import mapJson from "assets/map/emptyMap2.json";
+import mapJson from "assets/map/emptyMap.json";
 // import tilesetconfig from "assets/map/tileset.json";
 import { SceneId } from "features/world/mmoMachine";
 import { BaseScene } from "./Core/BaseScene";
@@ -7,6 +7,10 @@ import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import { PORTAL_NAME, WALKING_SPEED } from "./Constants";
 import { EventBus } from "./lib/EventBus";
+import { SUNNYSIDE } from "assets/sunnyside";
+import { BoundingBox } from "./lib/collisionDetection";
+import { addStaticObstacle } from "./containers/ObstaclesContainer";
+import { OBSTACLES_LAYOUT } from "./Constants";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -16,9 +20,11 @@ import { EventBus } from "./lib/EventBus";
 //     npc: "portaller",
 //   },
 // ];
-
 export class Scene extends BaseScene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
+  private obstacles: BoundingBox[] = [];
+  private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
+  waterGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -48,6 +54,11 @@ export class Scene extends BaseScene {
     super.preload();
 
     // Minigame assets
+    this.load.image("rock", SUNNYSIDE.resource.stone_rock);
+    this.load.image("tree", SUNNYSIDE.resource.tree);
+    this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
+    this.load.image("water", SUNNYSIDE.decorations.ocean);
+
     // Music
     // Background
     // this.load.audio(
@@ -73,7 +84,41 @@ export class Scene extends BaseScene {
 
     // Config
     this.input.addPointer(3);
+
+    this.obstacleGroup = this.physics.add.staticGroup();
+    this.waterGroup = this.physics.add.staticGroup();
+
+    this.handlePlayerInWater();
+    OBSTACLES_LAYOUT.obstacle1.forEach((o) =>
+      addStaticObstacle({
+        ...o,
+        scene: this,
+        obstacleGroup: this.obstacleGroup,
+        waterGroup: this.waterGroup,
+        currentPlayer: this.currentPlayer as Phaser.GameObjects.GameObject,
+        obstacles: this.obstacles,
+      }),
+    );
+
+    // DEBUG
     this.physics.world.drawDebug = false;
+    if (this.physics.world.drawDebug) {
+      const GRID_SIZE = 16;
+      // Draw coordinates at each grid position
+      for (let x = 0; x < this.map.widthInPixels; x += GRID_SIZE) {
+        for (let y = 0; y < this.map.heightInPixels; y += GRID_SIZE) {
+          const name = this.add.bitmapText(
+            x,
+            y,
+            "Teeny Tiny Pixls",
+            `${x / GRID_SIZE},${y / GRID_SIZE}`,
+            7,
+          );
+          name.setScale(0.5);
+          name.setDepth(10000000000000);
+        }
+      }
+    }
 
     // Background music
     // this.backgroundMusic = this.sound.add("backgroundMusic", {
@@ -87,6 +132,7 @@ export class Scene extends BaseScene {
     if (this.isGamePlaying) {
       // The game has started
       this.loadBumpkinAnimations();
+      this.handlePlayerOutOfWater();
     } else if (this.isGameReady) {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
@@ -216,8 +262,43 @@ export class Scene extends BaseScene {
     if (!this.currentPlayer) return;
     if (!this.cursorKeys) return;
 
+    if (this.currentPlayer.isSwimming) {
+      this.currentPlayer.swim?.();
+      return;
+    }
+
     const animation = this.isMoving ? "walk" : "idle";
 
     this.currentPlayer[animation]?.();
+  }
+
+  private handlePlayerInWater() {
+    this.physics.add.overlap(
+      this.currentPlayer as Phaser.GameObjects.GameObject,
+      this.waterGroup,
+      () => {
+        const player = this.currentPlayer;
+        if (!player) return;
+
+        if (!player.isSwimming) {
+          player.isSwimming = true;
+          player.swim?.();
+          this.velocity = 30;
+        }
+      },
+    );
+  }
+
+  private handlePlayerOutOfWater() {
+    const player = this.currentPlayer;
+    if (!player) return;
+
+    const isInWater = this.physics.overlap(player as any, this.waterGroup);
+
+    if (!isInWater && player.isSwimming) {
+      player.isSwimming = false;
+      player.walk?.();
+      this.velocity = WALKING_SPEED;
+    }
   }
 }
