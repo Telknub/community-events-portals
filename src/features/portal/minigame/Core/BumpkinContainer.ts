@@ -73,11 +73,14 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   private walkingAnimationKey: string | undefined;
   private digAnimationKey: string | undefined;
   private drillAnimationKey: string | undefined;
+  private swimmingAnimationKey: string | undefined;
   private backAuraKey: string | undefined;
   private frontAuraKey: string | undefined;
   private frontAuraAnimationKey: string | undefined;
   private backAuraAnimationKey: string | undefined;
   private direction: "left" | "right" = "right";
+
+  isSwimming = false;
 
   constructor({
     scene,
@@ -224,6 +227,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.idleAnimationKey = `${this.spriteKey}-bumpkin-idle`;
     this.walkingAnimationKey = `${this.spriteKey}-bumpkin-walking`;
     this.digAnimationKey = `${this.spriteKey}-bumpkin-dig`;
+    this.swimmingAnimationKey = `${this.spriteKey}-bumpkin-swim`;
 
     await buildNPCSheets({
       parts: this.clothing,
@@ -294,6 +298,24 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         if (this.silhouette?.active) {
           this.silhouette?.destroy();
         }
+      });
+    }
+
+    if (scene.textures.exists(this.swimmingAnimationKey)) {
+      this.createSwimAnimation();
+    } else {
+      const url = getAnimationUrl(this.clothing, ["swimming"]);
+      const swimLoader = scene.load.spritesheet(
+        this.swimmingAnimationKey,
+        url,
+        {
+          frameWidth: 96,
+          frameHeight: 64,
+        },
+      );
+      swimLoader.once(Phaser.Loader.Events.COMPLETE, () => {
+        this.createSwimAnimation();
+        swimLoader.removeAllListeners();
       });
     }
 
@@ -387,6 +409,19 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
       }),
       repeat: -1,
       frameRate: 10,
+    });
+  }
+
+  private createSwimAnimation() {
+    if (!this.scene || !this.scene.anims) return;
+
+    this.scene.anims.create({
+      key: this.swimmingAnimationKey,
+      frames: this.scene.anims.generateFrameNumbers(
+        this.swimmingAnimationKey as string,
+      ),
+      frameRate: 20,
+      repeat: -1,
     });
   }
 
@@ -945,6 +980,22 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     if (this.backParticles?.active) {
       this.backParticles.emitting = false;
+    }
+  }
+
+  public swim() {
+    if (
+      this.sprite?.anims &&
+      this.scene?.anims.exists(this.swimmingAnimationKey as string) &&
+      this.sprite?.anims.getName() !== this.swimmingAnimationKey
+    ) {
+      try {
+        this.sprite.anims.play(this.swimmingAnimationKey as string, true);
+        // this.scene.sound.play("swimming", { volume: 0.1 });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log("Bumpkin Container: Error playing dig animation: ", e);
+      }
     }
   }
 

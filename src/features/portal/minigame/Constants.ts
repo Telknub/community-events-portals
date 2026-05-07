@@ -2,6 +2,7 @@ import { Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import { ITEM_DETAILS } from "features/game/types/images";
+import { Obstacle } from "./Types";
 
 export const PORTAL_NAME = "festival-of-colors";
 export const PORTAL_TOKEN = "Festival of Colors Token 2025";
@@ -89,3 +90,75 @@ export const ENEMIES_TABLE: {
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
+
+export const OBSTACLES_LAYOUT = {
+  obstacle1: [
+    // trees
+    { name: "tree", x: 11, y: 10 },
+    { name: "tree", x: 30, y: 30 },
+    { name: "tree", x: 15, y: 35 },
+    { name: "tree", x: 5, y: 28 },
+    { name: "tree", x: 12, y: 15 },
+    { name: "tree", x: 18, y: 43 },
+    { name: "tree", x: 35, y: 30 },
+    { name: "tree", x: 30, y: 42 },
+    { name: "tree", x: 45, y: 12 },
+    { name: "tree", x: 50, y: 25 },
+    { name: "tree", x: 22, y: 50 },
+    { name: "tree", x: 8, y: 45 },
+    { name: "tree", x: 40, y: 48 },
+    { name: "tree", x: 55, y: 10 },
+    { name: "tree", x: 48, y: 35 },
+
+    // tree stumps
+    { name: "tree_stump", x: 13, y: 10 },
+    { name: "tree_stump", x: 28, y: 30 },
+    { name: "tree_stump", x: 16, y: 33 },
+    { name: "tree_stump", x: 6, y: 26 },
+    { name: "tree_stump", x: 20, y: 45 },
+    { name: "tree_stump", x: 42, y: 12 },
+    { name: "tree_stump", x: 48, y: 25 },
+    { name: "tree_stump", x: 25, y: 48 },
+    { name: "tree_stump", x: 10, y: 42 },
+    { name: "tree_stump", x: 52, y: 12 },
+
+    // rocks
+    { name: "rock", x: 20, y: 5 },
+    { name: "rock", x: 29, y: 13 },
+    { name: "rock", x: 10, y: 9 },
+    { name: "rock", x: 38, y: 4 },
+    { name: "rock", x: 10, y: 2 },
+    { name: "rock", x: 35, y: 22 },
+    { name: "rock", x: 35, y: 10 },
+    { name: "rock", x: 40, y: 2 },
+    { name: "rock", x: 50, y: 5 },
+    { name: "rock", x: 52, y: 18 },
+    { name: "rock", x: 18, y: 20 },
+    { name: "rock", x: 5, y: 5 },
+    { name: "rock", x: 12, y: 40 },
+    { name: "rock", x: 45, y: 45 },
+    // water
+    { name: "water", x: 1, y: 21 },
+    { name: "water", x: 5, y: 21 },
+    { name: "water", x: 9, y: 21 },
+    { name: "water", x: 17, y: 21 },
+    { name: "water", x: 13, y: 21 },
+    { name: "water", x: 13, y: 25 },
+    { name: "water", x: 17, y: 25 },
+    // { name: "water", x: 21, y: 25 },
+    // { name: "water", x: 25, y: 25 },
+    // { name: "water", x: 29, y: 25 },
+    // { name: "water", x: 29, y: 21 },
+    // { name: "water", x: 29, y: 17 },
+    // { name: "water", x: 33, y: 17 },
+    { name: "water", x: 37, y: 17 },
+    { name: "water", x: 41, y: 17 },
+    { name: "water", x: 45, y: 17 },
+    { name: "water", x: 49, y: 17 },
+    // { name: "water", x: 53, y: 17 },
+    // { name: "water", x: 57, y: 17 },
+    // { name: "water", x: 61, y: 17 },
+    { name: "water", x: 31, y: 50 },
+    { name: "water", x: 35, y: 50 },
+  ] as Obstacle[],
+};
