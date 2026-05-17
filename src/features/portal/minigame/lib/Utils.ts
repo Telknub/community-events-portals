@@ -6,7 +6,7 @@ import {
   BETA_TESTERS,
   INITIAL_DATE,
   ATTEMPTS_BETA_TESTERS,
-} from "../Constants";
+} from "../constants";
 
 /**
  * Gets the number of attempts left for the minigame.

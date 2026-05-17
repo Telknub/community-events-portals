@@ -51,7 +51,7 @@ import { STREAM_REWARD_COOLDOWN } from "features/world/ui/player/StreamReward";
 import { hasVipAccess } from "features/game/lib/vipAccess";
 import { playerModalManager } from "features/social/lib/playerModalManager";
 import { rewardModalManager } from "features/social/lib/rewardModalManager";
-import { WALKING_SPEED } from "../Constants";
+import { WALKING_SPEED } from "../constants";
 
 export type NPCBumpkin = {
   x: number;

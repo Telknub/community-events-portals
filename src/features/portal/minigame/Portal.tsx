@@ -14,7 +14,7 @@ import { CONFIG } from "lib/config";
 import { authorisePortal, claimPrize } from "../lib/portalUtil";
 import { RulesPanel } from "./components/panels/RulesPanel";
 import { NoAttemptsPanel } from "./components/panels/NoAttemptsPanel";
-import { PORTAL_NAME } from "./Constants";
+import { PORTAL_NAME } from "./constants";
 import { Hud } from "./components/hud/Hud";
 import { Phaser } from "./Phaser";
 

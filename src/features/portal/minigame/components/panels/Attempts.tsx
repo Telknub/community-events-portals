@@ -2,7 +2,7 @@ import React from "react";
 
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Label } from "components/ui/Label";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 interface Props {
   attemptsLeft: number;

@@ -7,7 +7,7 @@ import useUiRefresher from "lib/utils/hooks/useUiRefresher";
 import { Label } from "components/ui/Label";
 import { PortalMachineState } from "../../lib/Machine";
 import { secondsToString } from "lib/utils/time";
-import { GAME_SECONDS } from "../../Constants";
+import { GAME_SECONDS } from "../../constants";
 
 const _endAt = (state: PortalMachineState) => state.context.endAt;
 

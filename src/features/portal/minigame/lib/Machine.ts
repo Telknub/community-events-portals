@@ -8,7 +8,7 @@ import {
   GAME_SECONDS,
   GAME_LIVES,
   PORTAL_NAME,
-} from "../Constants";
+} from "../constants";
 import { GameState } from "features/game/types/game";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
 import { startMinigameAttempt } from "features/game/events/minigames/startMinigameAttempt";

@@ -7,7 +7,7 @@ import { PIXEL_SCALE } from "features/game/lib/constants";
 import { useSound } from "lib/utils/hooks/useSound";
 import { OuterPanel } from "components/ui/Panel";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 import moveControls1 from "public/world/minigame/base/move_controls_1.png";
 import moveControls2 from "public/world/minigame/base/move_controls_2.png";

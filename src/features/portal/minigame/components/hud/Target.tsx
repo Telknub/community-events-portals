@@ -6,7 +6,7 @@ import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PortalMachineState } from "../../lib/Machine";
 import { millisecondsToString } from "lib/utils/time";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 const _target = (state: PortalMachineState) =>
   state.context.state?.minigames.prizes[PORTAL_NAME]?.score ?? 0;

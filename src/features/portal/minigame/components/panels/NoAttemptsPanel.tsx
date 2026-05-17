@@ -13,7 +13,7 @@ import {
   PORTAL_NAME,
   RESTOCK_ATTEMPTS,
   UNLIMITED_ATTEMPTS_SFL,
-} from "../../Constants";
+} from "../../constants";
 import { purchase } from "features/portal/lib/portalUtil";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { setPrecision } from "lib/utils/formatNumber";

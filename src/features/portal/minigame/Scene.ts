@@ -5,12 +5,14 @@ import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME, WALKING_SPEED } from "./Constants";
+import { PORTAL_NAME, WALKING_SPEED } from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { BoundingBox } from "./lib/collisionDetection";
 import { addStaticObstacle } from "./containers/ObstaclesContainer";
-import { OBSTACLES_LAYOUT } from "./Constants";
+import { OBSTACLES_LAYOUT } from "./constants/DecorationConstants";
+import { WeaponManager } from "./lib/combat/WeaponManager";
+import { BumpkinContainer } from "./Core/BumpkinContainer";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -24,6 +26,8 @@ export class Scene extends BaseScene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
   private obstacles: BoundingBox[] = [];
   private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
+  private enemyGroup!: Phaser.Physics.Arcade.Group;
+  private weaponManager?: WeaponManager;
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   sceneId: SceneId = PORTAL_NAME;
@@ -59,6 +63,30 @@ export class Scene extends BaseScene {
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
 
+    // this.load.image("weapon_hoe", "/world/portal/images/weapons/hoe.png");
+    // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
+    // this.load.image(
+    //   "weapon_water_drop",
+    //   "/world/portal/images/weapons/water_drop.png",
+    // );
+    // this.load.image("weapon_corn", "/world/portal/images/weapons/corn.png");
+    // this.load.image("weapon_tomato", "/world/portal/images/weapons/tomato.png");
+    // this.load.image("weapon_light", "/world/portal/images/weapons/light.png");
+    // this.load.image(
+    //   "weapon_pumpkin",
+    //   "/world/portal/images/weapons/pumpkin.png",
+    // );
+    // this.load.image(
+    //   "weapon_sunflower",
+    //   "/world/portal/images/weapons/sunflower.png",
+    // );
+    // this.load.image("weapon_wheat", "/world/portal/images/weapons/wheat.png");
+    // this.load.image("weapon_bee", "/world/portal/images/weapons/bee.png");
+    // this.load.image(
+    //   "weapon_explosion",
+    //   "/world/portal/images/weapons/explosion.png",
+    // );
+
     // Music
     // Background
     // this.load.audio(
@@ -87,6 +115,7 @@ export class Scene extends BaseScene {
 
     this.obstacleGroup = this.physics.add.staticGroup();
     this.waterGroup = this.physics.add.staticGroup();
+    this.enemyGroup = this.physics.add.group({ runChildUpdate: false });
 
     this.handlePlayerInWater();
     OBSTACLES_LAYOUT.obstacle1.forEach((o) =>
@@ -99,6 +128,7 @@ export class Scene extends BaseScene {
         obstacles: this.obstacles,
       }),
     );
+    this.initialiseCombat();
 
     // DEBUG
     this.physics.world.drawDebug = false;
@@ -128,11 +158,12 @@ export class Scene extends BaseScene {
     // this.backgroundMusic.play();
   }
 
-  update() {
+  update(time = this.time.now, delta = this.game.loop.delta) {
     if (this.isGamePlaying) {
       // The game has started
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
+      this.weaponManager?.update(time, delta);
     } else if (this.isGameReady) {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
@@ -248,6 +279,23 @@ export class Scene extends BaseScene {
     this.portalService?.onEvent(onContinueTraining);
   }
 
+  private initialiseCombat() {
+    if (!this.currentPlayer) return;
+
+    this.weaponManager = new WeaponManager({
+      scene: this,
+      player: this.currentPlayer,
+      enemyGroup: this.enemyGroup,
+      portalService: this.portalService,
+    });
+
+    this.events.once("shutdown", () => {
+      this.weaponManager?.shutdown();
+      this.weaponManager = undefined;
+      this.enemyGroup?.destroy(true);
+    });
+  }
+
   private initialiseFontFamily() {
     this.add
       .text(0, 0, ".", {
@@ -293,7 +341,10 @@ export class Scene extends BaseScene {
     const player = this.currentPlayer;
     if (!player) return;
 
-    const isInWater = this.physics.overlap(player as any, this.waterGroup);
+    const isInWater = this.physics.overlap(
+      player as BumpkinContainer,
+      this.waterGroup,
+    );
 
     if (!isInWater && player.isSwimming) {
       player.isSwimming = false;

@@ -9,7 +9,7 @@ import { ITEM_DETAILS } from "features/game/types/images";
 import { NumberInput } from "components/ui/NumberInput";
 import Decimal from "decimal.js-light";
 import { donate } from "features/portal/lib/portalUtil";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 const CONTRIBUTORS = [""];
 

@@ -11,7 +11,7 @@ import { PortalMachineState } from "../../lib/Machine";
 import { useSound } from "lib/utils/hooks/useSound";
 import classNames from "classnames";
 import { isTouchDevice } from "features/world/lib/device";
-import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../Constants";
+import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../constants";
 
 const _isPlaying = (state: PortalMachineState) => state.matches("playing");
 const _isJoystickActive = (state: PortalMachineState) =>

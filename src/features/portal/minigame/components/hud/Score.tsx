@@ -3,7 +3,7 @@ import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
 import { PortalMachineState } from "../../lib/Machine";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 const _score = (state: PortalMachineState) => state.context.score;
 

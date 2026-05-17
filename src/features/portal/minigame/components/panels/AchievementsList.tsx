@@ -11,7 +11,7 @@ import { PIXEL_SCALE } from "features/game/lib/constants";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Label } from "components/ui/Label";
 import { useSound } from "lib/utils/hooks/useSound";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 
 const _achievements = (state: PortalMachineState) =>
   state.context.state?.minigames.games[PORTAL_NAME]?.achievements ?? {};

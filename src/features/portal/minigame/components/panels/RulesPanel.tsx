@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { Mission } from "./Mission";
-import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../Constants";
+import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../constants";
 import { Guide } from "./Guide";
 import { Leaderboard } from "./Leaderboard";
 

@@ -9,7 +9,7 @@ import { useActor } from "@xstate/react";
 import { Scene } from "./Scene";
 // import { NPCModals } from "./components/npcs/NPCModals";
 // import { InteractableModals } from "./components/interactables/InteractableModals";
-import { PORTAL_NAME } from "./Constants";
+import { PORTAL_NAME } from "./constants";
 
 export const Phaser: React.FC = () => {
   const { portalService } = useContext(PortalContext);

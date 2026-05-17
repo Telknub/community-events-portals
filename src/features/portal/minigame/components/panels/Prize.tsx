@@ -8,7 +8,7 @@ import { PortalMachineState } from "../../lib/Machine";
 import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
 import { secondsToString } from "lib/utils/time";
-import { PORTAL_NAME, PORTAL_TOKEN } from "../../Constants";
+import { PORTAL_NAME, PORTAL_TOKEN } from "../../constants";
 
 import tokenIcon from "assets/icons/coins.webp";
 

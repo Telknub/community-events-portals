@@ -8,7 +8,7 @@ import {
   ENEMIES_TABLE,
   PORTAL_NAME,
   INSTRUCTIONS,
-} from "../../Constants";
+} from "../../constants";
 
 export const Guide = () => {
   const { t } = useAppTranslation();

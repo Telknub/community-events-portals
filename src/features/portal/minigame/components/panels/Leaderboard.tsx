@@ -4,7 +4,7 @@ import { PortalMachineState } from "../../lib/Machine";
 import { PortalContext } from "../../lib/PortalProvider";
 import { decodeToken } from "features/auth/actions/login";
 import { useSelector } from "@xstate/react";
-import { PORTAL_NAME } from "../../Constants";
+import { PORTAL_NAME } from "../../constants";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 const _jwt = (state: PortalMachineState) => state.context.jwt;

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useInterpret } from "@xstate/react";
 import { MachineInterpreter, portalMachine } from "./Machine";
-import { RESTOCK_ATTEMPTS, UNLIMITED_ATTEMPTS_SFL } from "../Constants";
+import { RESTOCK_ATTEMPTS, UNLIMITED_ATTEMPTS_SFL } from "../constants";
 
 interface PortalContext {
   portalService: MachineInterpreter;
