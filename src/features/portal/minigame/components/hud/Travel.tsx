@@ -89,7 +89,7 @@ export const Travel: React.FC = () => {
         messages={[t(`${PORTAL_NAME}.endGameConfirmation`)]}
         onCancel={() => setShowExitConfirmation(false)}
         onConfirm={() => {
-          portalService.send("END_GAME_EARLY");
+          portalService.send("GAME_OVER");
           setShowExitConfirmation(false);
         }}
         confirmButtonLabel={t(`${PORTAL_NAME}.endGame`)}

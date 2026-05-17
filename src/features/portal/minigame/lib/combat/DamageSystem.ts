@@ -42,6 +42,7 @@ export class DamageSystem {
 
     if (enemy.isDead || enemy.hp === 0) {
       enemy.setActive(false);
+      enemy.onDeath?.();
       EventBus.emit("enemy:killed", {
         enemy,
         sourceWeaponId: payload.sourceWeaponId,

@@ -1,6 +1,7 @@
 import { Scene } from "../Scene";
 import { BumpkinContainer } from "../Core/BumpkinContainer";
 import { MachineInterpreter } from "../lib/Machine";
+import { DamagePayload } from "../Types";
 
 interface Props {
   x: number;
@@ -16,10 +17,14 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   private enemyBody!: Phaser.Physics.Arcade.Body;
   private mobKey: string;
   swarmMove: boolean = false;
+  public hp = 1;
+  public maxHp = 1;
+  public isDead = false;
 
   private avoidX = 0;
   private avoidY = 0;
   private avoidTimer = 0;
+  private deathHandled = false;
 
   constructor({ scene, x, y, player }: Props) {
     super(scene, x, y);
@@ -55,6 +60,9 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.createAnim();
     this.handleMovement();
     this.handleCollider();
+    this.once("destroy", () => {
+      this.scene.events.off("update", this.handleSceneUpdate);
+    });
   }
 
   private createAnim() {
@@ -72,6 +80,52 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.sprite.play(animKey);
   }
 
+  private readonly handleSceneUpdate = () => {
+    if (!this.player || !this.active || this.isDead) return;
+
+    if (!this.swarmMove) {
+      this.enemyBody.setVelocity(0, 0);
+      return;
+    }
+
+    const speed = 30;
+
+    const dx = this.player.x - this.x;
+    const dy = this.player.y - this.y;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < 5) {
+      this.enemyBody.setVelocity(0, 0);
+      return;
+    }
+
+    let moveX = dx / distance;
+    let moveY = dy / distance;
+
+    if (this.avoidTimer > 0) {
+      moveX += this.avoidX * 2;
+      moveY += this.avoidY * 2;
+      this.avoidTimer--;
+    }
+
+    const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY) || 1;
+
+    moveX /= moveDistance;
+    moveY /= moveDistance;
+
+    const velocityX = moveX * speed;
+    const velocityY = moveY * speed;
+
+    this.enemyBody.setVelocity(velocityX, velocityY);
+
+    if (velocityX < 0) {
+      this.sprite.setFlipX(true);
+    } else if (velocityX > 0) {
+      this.sprite.setFlipX(false);
+    }
+  };
+
   setSwarmMove(value: boolean) {
     this.swarmMove = value;
     if (!value) this.enemyBody.setVelocity(0, 0);
@@ -80,52 +134,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   handleMovement() {
     if (!this.player) return;
 
-    this.scene.events.on("update", () => {
-      if (!this.player) return;
-
-      if (!this.swarmMove) {
-        this.enemyBody.setVelocity(0, 0);
-        return;
-      }
-
-      const speed = 30;
-
-      const dx = this.player.x - this.x;
-      const dy = this.player.y - this.y;
-
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      // Stop if very close to player
-      if (distance < 5) {
-        this.enemyBody.setVelocity(0, 0);
-        return;
-      }
-
-      let moveX = dx / distance;
-      let moveY = dy / distance;
-
-      if (this.avoidTimer > 0) {
-        moveX += this.avoidX * 2;
-        moveY += this.avoidY * 2;
-        this.avoidTimer--;
-      }
-
-      const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY) || 1;
-
-      moveX /= moveDistance;
-      moveY /= moveDistance;
-
-      const velocityX = moveX * speed;
-      const velocityY = moveY * speed;
-
-      this.enemyBody.setVelocity(velocityX, velocityY);
-
-      if (velocityX < 0) {
-        this.sprite.setFlipX(true);
-      } else if (velocityX > 0) {
-        this.sprite.setFlipX(false);
-      }
-    });
+    this.scene.events.on("update", this.handleSceneUpdate);
   }
 
   separateFrom(enemy: SwarmMob) {
@@ -160,5 +169,23 @@ export class SwarmMob extends Phaser.GameObjects.Container {
       undefined,
       this,
     );
+  }
+
+  public takeDamage(damage: number, _payload: DamagePayload) {
+    if (this.isDead) return;
+
+    this.hp = Math.max(0, this.hp - damage);
+    this.isDead = this.hp <= 0;
+
+    if (this.isDead) {
+      this.setSwarmMove(false);
+    }
+  }
+
+  public onDeath() {
+    if (this.deathHandled) return;
+
+    this.deathHandled = true;
+    this.scene.handleSwarmMobDefeat(this);
   }
 }

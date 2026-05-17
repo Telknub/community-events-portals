@@ -1013,15 +1013,12 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     if (this.isHurting) return;
     this.isHurting = true;
     this.portalService?.send("LOSE_LIFE");
+    if (this.isGameOver) return;
     this.hitPlayer();
 
     this.scene.time.delayedCall(2500, () => {
       this.isHurting = false;
     });
-
-    if (this.portalService?.state.context.lives === 0) {
-      this.destroy();
-    }
   }
 
   public hitPlayer() {
@@ -1138,5 +1135,13 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         }
       },
     );
+  }
+
+  // Portal
+  private get isGameOver() {
+    const lives = this.portalService?.state.context.lives ?? 0;
+    if (lives > 0) return false;
+    this.portalService?.send("GAME_OVER");
+    return true;
   }
 }

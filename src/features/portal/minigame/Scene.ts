@@ -15,8 +15,8 @@ import { BumpkinContainer } from "./Core/BumpkinContainer";
 import { OBSTACLES_LAYOUT } from "./constants";
 import { SwarmMob } from "./containers/SwarmMobContainer";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
-import { Weapons } from "./containers/WeaponsContainer";
 import { DropItem } from "./containers/DropItemsContainer";
+import { WeaponId, WeaponLoadoutItem } from "./Types";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -35,9 +35,6 @@ export class Scene extends BaseScene {
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
   swarmEnemies: SwarmMob[] = [];
   swarmGroup!: Phaser.Physics.Arcade.Group;
-  weaponSprite: string = "power";
-  weaponsGroup!: Phaser.Physics.Arcade.Group;
-  weapons: Weapons[] = [];
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -83,10 +80,9 @@ export class Scene extends BaseScene {
     this.load.image("tree", SUNNYSIDE.resource.tree);
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
-    this.load.image("power", "world/moon_crystal.webp");
     this.load.image("swarmMob_dropItem", "world/pearl.webp");
 
-    // this.load.image("weapon_hoe", "/world/portal/images/weapons/hoe.png");
+    this.load.image("weapon_hoe", "world/portal/images/hoe.webp");
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
     // this.load.image(
     //   "weapon_water_drop",
@@ -140,7 +136,6 @@ export class Scene extends BaseScene {
     this.groupCollision();
 
     this.handlePlayerInWater();
-    this.createWeapon();
     this.createObstacles();
     this.initialiseCombat();
     for (let i = 0; i < 50; i++) {
@@ -299,23 +294,6 @@ export class Scene extends BaseScene {
     this.portalService?.onEvent(onContinueTraining);
   }
 
-  private initialiseCombat() {
-    if (!this.currentPlayer) return;
-
-    this.weaponManager = new WeaponManager({
-      scene: this,
-      player: this.currentPlayer,
-      enemyGroup: this.enemyGroup,
-      portalService: this.portalService,
-    });
-
-    this.events.once("shutdown", () => {
-      this.weaponManager?.shutdown();
-      this.weaponManager = undefined;
-      this.enemyGroup?.destroy(true);
-    });
-  }
-
   private initialiseFontFamily() {
     this.add
       .text(0, 0, ".", {
@@ -324,6 +302,37 @@ export class Scene extends BaseScene {
         color: "#000000",
       })
       .setAlpha(0);
+  }
+
+  private initialiseCombat() {
+    if (!this.currentPlayer) return;
+
+    const portalService = this.portalService;
+    let selectedWeapon = portalService?.state.context.selectedWeapon ?? "hoe";
+
+    this.weaponManager = new WeaponManager({
+      scene: this,
+      player: this.currentPlayer,
+      enemyGroup: this.enemyGroup,
+      portalService,
+      loadout: this.createWeaponLoadout(selectedWeapon),
+    });
+
+    const subscription = portalService?.subscribe((state) => {
+      const nextSelectedWeapon = state.context.selectedWeapon;
+      if (nextSelectedWeapon === selectedWeapon) return;
+
+      selectedWeapon = nextSelectedWeapon;
+      this.weaponManager?.reset(this.createWeaponLoadout(nextSelectedWeapon));
+    });
+
+    this.events.once("shutdown", () => {
+      subscription?.unsubscribe();
+      this.weaponManager?.shutdown();
+      this.weaponManager = undefined;
+      this.enemyGroup?.destroy(false);
+      this.swarmGroup?.destroy(false);
+    });
   }
 
   private loadBumpkinAnimations() {
@@ -340,11 +349,15 @@ export class Scene extends BaseScene {
     this.currentPlayer[animation]?.();
   }
 
+  private createWeaponLoadout(selectedWeapon: WeaponId): WeaponLoadoutItem[] {
+    return [{ id: selectedWeapon, level: 1 }];
+  }
+
   private groupPhysics() {
     this.obstacleGroup = this.physics.add.staticGroup();
     this.waterGroup = this.physics.add.staticGroup();
     this.swarmGroup = this.physics.add.group();
-    this.weaponsGroup = this.physics.add.group();
+    this.enemyGroup = this.physics.add.group();
   }
 
   private groupCollision() {
@@ -452,6 +465,10 @@ export class Scene extends BaseScene {
 
     this.swarmEnemies.push(mob);
     this.swarmGroup.add(mob);
+    this.enemyGroup.add(mob);
+    mob.once("destroy", () => {
+      this.unregisterSwarmMob(mob);
+    });
   }
 
   public createDropItems({ x, y }: { x: number; y: number }) {
@@ -464,24 +481,16 @@ export class Scene extends BaseScene {
     });
   }
 
-  // For testing
-  private createWeapon() {
-    if (!this.currentPlayer) return;
+  public handleSwarmMobDefeat(mob: SwarmMob) {
+    this.createDropItems({ x: mob.x, y: mob.y });
+    this.unregisterSwarmMob(mob);
+    mob.destroy();
+    this.createSwarmEnemies();
+  }
 
-    const rotatingWeapon = 3;
-
-    for (let i = 0; i < rotatingWeapon; i++) {
-      const weapon = new Weapons({
-        x: this.currentPlayer.x,
-        y: this.currentPlayer.y,
-        scene: this,
-        player: this.currentPlayer,
-      });
-
-      weapon.angleOffset = (Math.PI * 2 * i) / rotatingWeapon;
-
-      this.weapons.push(weapon);
-      this.weaponsGroup.add(weapon);
-    }
+  private unregisterSwarmMob(mob: SwarmMob) {
+    this.swarmEnemies = this.swarmEnemies.filter((enemy) => enemy !== mob);
+    this.swarmGroup?.remove(mob, false, false);
+    this.enemyGroup?.remove(mob, false, false);
   }
 }

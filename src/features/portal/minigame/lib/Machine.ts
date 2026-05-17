@@ -16,6 +16,7 @@ import { submitMinigameScore } from "features/game/events/minigames/submitMiniga
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
+import { WeaponId } from "../Types";
 
 const getJWT = () => {
   const code = new URLSearchParams(window.location.search).get("jwt");
@@ -35,6 +36,8 @@ export interface Context {
   lives: number;
   validations: Record<string, boolean>;
   isTraining: boolean;
+
+  selectedWeapon: WeaponId;
 }
 
 // type UnlockAchievementsEvent = {
@@ -71,6 +74,11 @@ type SetValidationsEvent = {
   validation: string;
 };
 
+type SetSelectedWeaponEvent = {
+  type: "SET_SELECTED_WEAPON";
+  weapon: WeaponId;
+};
+
 export type PortalEvent =
   | SetJoystickActiveEvent
   | { type: "START" }
@@ -86,7 +94,8 @@ export type PortalEvent =
   | GainPointsEvent
   | LoseLifeEvent
   | SetValidationsEvent
-  | CollectItemEvent;
+  | CollectItemEvent
+  | SetSelectedWeaponEvent;
 
 export type PortalState = {
   value:
@@ -124,6 +133,7 @@ const resetGameTransition = {
       score: () => 0,
       lives: () => GAME_LIVES,
       endAt: () => 0,
+      selectedWeapon: () => "hoe",
       validations: () => structuredClone(VALIDATIONS),
     }) as any,
   },
@@ -148,6 +158,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     endAt: 0,
     isTraining: false,
     validations: structuredClone(VALIDATIONS),
+    selectedWeapon: "hoe",
 
     // Portal minigame
   },
@@ -156,6 +167,13 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
       actions: assign({
         isJoystickActive: (_: Context, event: SetJoystickActiveEvent) => {
           return event.isJoystickActive;
+        },
+      }),
+    },
+    SET_SELECTED_WEAPON: {
+      actions: assign({
+        selectedWeapon: (_: Context, event: SetSelectedWeaponEvent) => {
+          return event.weapon;
         },
       }),
     },
@@ -310,6 +328,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             endAt: () => Date.now() + GAME_SECONDS * 1000,
             score: 0,
             lives: GAME_LIVES,
+            selectedWeapon: "hoe",
             validations: structuredClone(VALIDATIONS),
             state: (context: Context) => {
               if (context.isTraining) return context.state;

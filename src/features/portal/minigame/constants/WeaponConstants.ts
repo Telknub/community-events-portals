@@ -447,15 +447,5 @@ export const COMBAT_CONFIG: CombatConfig = {
   beePoolSize: 32,
   targetScanMs: 150,
   defaultEnemyScore: 1,
-  defaultWeaponLoadout: [
-    { id: "hoe", level: 1 },
-    { id: "broomScythe", level: 1 },
-    { id: "wateringCan", level: 1 },
-    { id: "corn", level: 1 },
-    { id: "tomato", level: 1 },
-    { id: "sunflower", level: 1 },
-    { id: "wheat", level: 1 },
-    { id: "pumpkin", level: 1 },
-    { id: "beehive", level: 1 },
-  ],
+  defaultWeaponLoadout: [{ id: "hoe", level: 1 }],
 };

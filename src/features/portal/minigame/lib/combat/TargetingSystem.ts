@@ -19,9 +19,9 @@ export class TargetingSystem {
   public update(time: number) {
     if (time < this.nextScanAt) return;
 
-    this.enemies = this.enemyGroup
-      .getChildren()
-      .filter((enemy): enemy is EnemyLike => isEnemyAlive(enemy as EnemyLike));
+    this.enemies = this.getSafeGroupChildren().filter(
+      (enemy): enemy is EnemyLike => isEnemyAlive(enemy as EnemyLike),
+    );
     this.nextScanAt = time + this.targetScanMs;
   }
 
@@ -99,5 +99,17 @@ export class TargetingSystem {
 
   public shutdown() {
     this.enemies = [];
+  }
+
+  private getSafeGroupChildren() {
+    if (!this.enemyGroup || !(this.enemyGroup as any).scene) {
+      return [] as Phaser.GameObjects.GameObject[];
+    }
+
+    try {
+      return this.enemyGroup.getChildren();
+    } catch {
+      return [];
+    }
   }
 }

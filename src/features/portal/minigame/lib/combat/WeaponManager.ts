@@ -904,17 +904,17 @@ export class WeaponManager {
       graphics.generateTexture(key, width, height);
     };
 
-    // circleTexture("weapon_projectile", 0xffffff, 8);
+    circleTexture("weapon_projectile", 0xffffff, 8);
     circleTexture("weapon_water_drop", 0x5bbcff, 8);
-    // circleTexture("weapon_corn", 0xffd447, 10);
-    // circleTexture("weapon_tomato", 0xe14242, 10);
-    // circleTexture("weapon_light", 0xfff6a3, 8);
+    circleTexture("weapon_corn", 0xffd447, 10);
+    circleTexture("weapon_tomato", 0xe14242, 10);
+    circleTexture("weapon_light", 0xfff6a3, 8);
     circleTexture("weapon_pumpkin", 0xf28c28, 14);
     circleTexture("weapon_sunflower", 0xffd447, 14);
-    // circleTexture("weapon_wheat", 0xd8b35a, 20);
-    // circleTexture("weapon_bee", 0xf4c430, 10);
-    // circleTexture("weapon_explosion", 0xff8f3a, 42);
-    // circleTexture("weapon_hitbox", 0xffffff, 32);
+    circleTexture("weapon_wheat", 0xd8b35a, 20);
+    circleTexture("weapon_bee", 0xf4c430, 10);
+    circleTexture("weapon_explosion", 0xff8f3a, 42);
+    circleTexture("weapon_hitbox", 0xffffff, 32);
     rectTexture("weapon_hoe", 0xcfd7e6, 18, 6);
     rectTexture("weapon_slash", 0xe8f2ff, 42, 14);
 

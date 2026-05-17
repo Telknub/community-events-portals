@@ -133,6 +133,7 @@ export type EnemyLike = Phaser.GameObjects.GameObject & {
   isDead?: boolean;
   statusEffects?: Partial<Record<StatusEffectId, number>>;
   takeDamage?: (damage: number, payload: DamagePayload) => void;
+  onDeath?: () => void;
   setMovementMultiplier?: (multiplier: number) => void;
 };
 
