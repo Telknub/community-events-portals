@@ -114,7 +114,7 @@ export class Scene extends BaseScene {
     this.handlePlayerInWater();
     this.createWeapon();
     this.createObstacles();
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
       this.createSwarmEnemies();
     }
 
