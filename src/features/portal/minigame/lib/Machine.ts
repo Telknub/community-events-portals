@@ -28,6 +28,7 @@ export interface Context {
   isJoystickActive: boolean;
   state: GameState | undefined;
   score: number;
+  collected: number;
   lastScore: number;
   endAt: number;
   attemptsLeft: number;
@@ -60,6 +61,11 @@ type LoseLifeEvent = {
   type: "LOSE_LIFE";
 };
 
+type CollectItemEvent = {
+  type: "COLLECT_ITEM";
+  points: number;
+};
+
 type SetValidationsEvent = {
   type: "SET_VALIDATIONS";
   validation: string;
@@ -79,7 +85,8 @@ export type PortalEvent =
   | { type: "GAME_OVER" }
   | GainPointsEvent
   | LoseLifeEvent
-  | SetValidationsEvent;
+  | SetValidationsEvent
+  | CollectItemEvent;
 
 export type PortalState = {
   value:
@@ -134,6 +141,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     state: CONFIG.API_URL ? undefined : OFFLINE_FARM,
 
     score: 0,
+    collected: 0,
     lastScore: 0,
     lives: GAME_LIVES,
     attemptsLeft: 0,
@@ -330,6 +338,14 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             score: (context: Context, event: GainPointsEvent) => {
               const { points = 1 } = event;
               return context.score + points;
+            },
+          }),
+        },
+        COLLECT_ITEM: {
+          actions: assign({
+            collected: (context: Context, event: CollectItemEvent) => {
+              const { points = 1 } = event;
+              return context.collected + points;
             },
           }),
         },

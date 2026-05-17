@@ -5,14 +5,18 @@ import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME, WALKING_SPEED } from "./constants";
+import { DROP_ITEM, PORTAL_NAME, WALKING_SPEED } from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { BoundingBox } from "./lib/collisionDetection";
 import { addStaticObstacle } from "./containers/ObstaclesContainer";
-import { OBSTACLES_LAYOUT } from "./constants/DecorationConstants";
 import { WeaponManager } from "./lib/combat/WeaponManager";
 import { BumpkinContainer } from "./Core/BumpkinContainer";
+import { OBSTACLES_LAYOUT } from "./constants";
+import { SwarmMob } from "./containers/SwarmMobContainer";
+import { SQUARE_WIDTH } from "features/game/lib/constants";
+import { Weapons } from "./containers/WeaponsContainer";
+import { DropItem } from "./containers/DropItemsContainer";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -29,6 +33,11 @@ export class Scene extends BaseScene {
   private enemyGroup!: Phaser.Physics.Arcade.Group;
   private weaponManager?: WeaponManager;
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
+  swarmEnemies: SwarmMob[] = [];
+  swarmGroup!: Phaser.Physics.Arcade.Group;
+  weaponSprite: string = "power";
+  weaponsGroup!: Phaser.Physics.Arcade.Group;
+  weapons: Weapons[] = [];
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -58,10 +67,24 @@ export class Scene extends BaseScene {
     super.preload();
 
     // Minigame assets
+    // Swarm Mobs
+    this.load.spritesheet("swarmMob1", "world/portal/images/mob1.webp", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+
+    this.load.spritesheet("swarmMob2", "world/portal/images/mob2.webp", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+
+    // Obstacles
     this.load.image("rock", SUNNYSIDE.resource.stone_rock);
     this.load.image("tree", SUNNYSIDE.resource.tree);
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
+    this.load.image("power", "world/moon_crystal.webp");
+    this.load.image("swarmMob_dropItem", "world/pearl.webp");
 
     // this.load.image("weapon_hoe", "/world/portal/images/weapons/hoe.png");
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
@@ -113,22 +136,16 @@ export class Scene extends BaseScene {
     // Config
     this.input.addPointer(3);
 
-    this.obstacleGroup = this.physics.add.staticGroup();
-    this.waterGroup = this.physics.add.staticGroup();
-    this.enemyGroup = this.physics.add.group({ runChildUpdate: false });
+    this.groupPhysics();
+    this.groupCollision();
 
     this.handlePlayerInWater();
-    OBSTACLES_LAYOUT.obstacle1.forEach((o) =>
-      addStaticObstacle({
-        ...o,
-        scene: this,
-        obstacleGroup: this.obstacleGroup,
-        waterGroup: this.waterGroup,
-        currentPlayer: this.currentPlayer as Phaser.GameObjects.GameObject,
-        obstacles: this.obstacles,
-      }),
-    );
+    this.createWeapon();
+    this.createObstacles();
     this.initialiseCombat();
+    for (let i = 0; i < 50; i++) {
+      this.createSwarmEnemies();
+    }
 
     // DEBUG
     this.physics.world.drawDebug = false;
@@ -164,6 +181,9 @@ export class Scene extends BaseScene {
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
       this.weaponManager?.update(time, delta);
+      this.swarmEnemies.forEach((mob) => {
+        mob.setSwarmMove(true);
+      });
     } else if (this.isGameReady) {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
@@ -320,6 +340,50 @@ export class Scene extends BaseScene {
     this.currentPlayer[animation]?.();
   }
 
+  private groupPhysics() {
+    this.obstacleGroup = this.physics.add.staticGroup();
+    this.waterGroup = this.physics.add.staticGroup();
+    this.swarmGroup = this.physics.add.group();
+    this.weaponsGroup = this.physics.add.group();
+  }
+
+  private groupCollision() {
+    this.physics.add.collider(
+      this.swarmGroup,
+      this.swarmGroup,
+      (obj1, obj2) => {
+        const enemy1 = obj1 as SwarmMob;
+        const enemy2 = obj2 as SwarmMob;
+
+        enemy1.separateFrom(enemy2);
+        enemy2.separateFrom(enemy1);
+      },
+    );
+
+    this.physics.add.collider(
+      this.obstacleGroup,
+      this.swarmGroup,
+      (_obstacle, enemyObj) => {
+        const enemy = enemyObj as SwarmMob;
+
+        enemy.changeDirection();
+      },
+    );
+  }
+
+  private createObstacles() {
+    OBSTACLES_LAYOUT.obstacle1.forEach((o) =>
+      addStaticObstacle({
+        ...o,
+        scene: this,
+        obstacleGroup: this.obstacleGroup,
+        waterGroup: this.waterGroup,
+        currentPlayer: this.currentPlayer as Phaser.GameObjects.GameObject,
+        obstacles: this.obstacles,
+      }),
+    );
+  }
+
   private handlePlayerInWater() {
     this.physics.add.overlap(
       this.currentPlayer as Phaser.GameObjects.GameObject,
@@ -350,6 +414,74 @@ export class Scene extends BaseScene {
       player.isSwimming = false;
       player.walk?.();
       this.velocity = WALKING_SPEED;
+    }
+  }
+
+  createSwarmEnemies() {
+    const maxAttempts = 20;
+    const minDistance = 20;
+
+    let x = 0;
+    let y = 0;
+
+    let placed = false;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      x = Phaser.Utils.Array.GetRandom([0, 60]) * SQUARE_WIDTH;
+      y = Phaser.Math.Between(0, 60) * SQUARE_WIDTH;
+
+      const tooClose = this.swarmEnemies.some((enemy) => {
+        const dist = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
+        return dist < minDistance;
+      });
+
+      if (!tooClose) {
+        placed = true;
+        break;
+      }
+    }
+
+    const mob = new SwarmMob({
+      x,
+      y,
+      scene: this,
+      player: this.currentPlayer,
+    });
+
+    mob.setDepth(10000);
+
+    this.swarmEnemies.push(mob);
+    this.swarmGroup.add(mob);
+  }
+
+  public createDropItems({ x, y }: { x: number; y: number }) {
+    new DropItem({
+      x,
+      y,
+      scene: this,
+      player: this.currentPlayer,
+      itemKey: DROP_ITEM,
+    });
+  }
+
+  // For testing
+  private createWeapon() {
+    if (!this.currentPlayer) return;
+
+    const rotatingWeapon = 3;
+
+    for (let i = 0; i < rotatingWeapon; i++) {
+      const weapon = new Weapons({
+        x: this.currentPlayer.x,
+        y: this.currentPlayer.y,
+        scene: this,
+        player: this.currentPlayer,
+      });
+
+      weapon.angleOffset = (Math.PI * 2 * i) / rotatingWeapon;
+
+      this.weapons.push(weapon);
+      this.weaponsGroup.add(weapon);
     }
   }
 }

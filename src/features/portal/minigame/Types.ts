@@ -158,3 +158,5 @@ export type CombatConfig = {
   defaultEnemyScore: number;
   defaultWeaponLoadout: WeaponLoadoutItem[];
 };
+
+export type DropItemType = "swarmMob_dropItem";

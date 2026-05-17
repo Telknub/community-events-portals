@@ -18,6 +18,7 @@ import { CONFIG } from "lib/config";
 import { formatNumber } from "lib/utils/formatNumber";
 import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
+import { MachineInterpreter } from "../lib/Machine";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {
   "pumpkin' pete": "pete",
@@ -80,7 +81,9 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   private backAuraAnimationKey: string | undefined;
   private direction: "left" | "right" = "right";
 
+  // Festival of Colors
   isSwimming = false;
+  isHurting = false;
 
   constructor({
     scene,
@@ -220,6 +223,12 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
   get directionFacing() {
     return this.direction;
+  }
+
+  get portalService() {
+    return this.scene.registry.get("portalService") as
+      | MachineInterpreter
+      | undefined;
   }
 
   private async loadSprites(scene: Phaser.Scene) {
@@ -996,6 +1005,22 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         // eslint-disable-next-line no-console
         console.log("Bumpkin Container: Error playing dig animation: ", e);
       }
+    }
+  }
+
+  // For testing
+  public hurt() {
+    if (this.isHurting) return;
+    this.isHurting = true;
+    this.portalService?.send("LOSE_LIFE");
+    this.hitPlayer();
+
+    this.scene.time.delayedCall(2500, () => {
+      this.isHurting = false;
+    });
+
+    if (this.portalService?.state.context.lives === 0) {
+      this.destroy();
     }
   }
 

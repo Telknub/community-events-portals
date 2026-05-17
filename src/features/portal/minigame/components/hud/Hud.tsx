@@ -8,8 +8,8 @@ import { Score } from "./Score";
 import { Settings } from "./Settings";
 import { Travel } from "./Travel";
 import { Timer } from "./Timer";
-import { Target } from "./Target";
 import { Lives } from "./Lives";
+import { ColletedItems } from "./CollectedItems";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -58,6 +58,7 @@ export const Hud: React.FC = () => {
               <Timer />
               <Lives />
               <Score />
+              <ColletedItems />
             </>
           )}
         </div>
