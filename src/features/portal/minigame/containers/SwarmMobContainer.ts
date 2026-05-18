@@ -2,6 +2,8 @@ import { Scene } from "../Scene";
 import { BumpkinContainer } from "../Core/BumpkinContainer";
 import { MachineInterpreter } from "../lib/Machine";
 import { DamagePayload } from "../Types";
+import { EnemyConfig } from "../Types";
+import { ENEMY_CONFIGS } from "../constants/EnemyConstants";
 
 interface Props {
   x: number;
@@ -15,11 +17,12 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   private player?: BumpkinContainer;
   private sprite!: Phaser.GameObjects.Sprite;
   private enemyBody!: Phaser.Physics.Arcade.Body;
-  private mobKey: string;
   swarmMove: boolean = false;
-  public hp = 1;
-  public maxHp = 1;
+  public hp: number;
+  public maxHp: number;
   public isDead = false;
+  public config: EnemyConfig;
+  private isHurting = false;
 
   private avoidX = 0;
   private avoidY = 0;
@@ -33,8 +36,10 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
     scene.physics.add.existing(this);
 
-    const swarmMobs = ["swarmMob1", "swarmMob2"];
-    this.mobKey = Phaser.Utils.Array.GetRandom(swarmMobs);
+    this.config = Phaser.Utils.Array.GetRandom(ENEMY_CONFIGS);
+
+    this.hp = this.config.hp;
+    this.maxHp = this.config.maxHp;
 
     this.createEnemy();
   }
@@ -46,15 +51,15 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   }
 
   createEnemy() {
-    this.sprite = this.scene.add.sprite(0, 0, this.mobKey);
+    this.sprite = this.scene.add.sprite(0, 0, this.config.key);
     this.add(this.sprite);
     this.scene.add.existing(this);
-    this.setScale(0.8);
+    this.setScale(this.config.scale);
     this.setDepth(1000);
 
     this.enemyBody = this.body as Phaser.Physics.Arcade.Body;
-    this.enemyBody.setSize(this.sprite.width, this.sprite.height);
-    this.enemyBody.setOffset(-this.sprite.width / 2, -this.sprite.height / 2);
+    this.enemyBody.setSize(this.config.bodyWidth, this.config.bodyHeight);
+    this.enemyBody.setOffset(this.config.offsetX, this.config.offsetY);
     this.enemyBody.setImmovable(true);
 
     this.createAnim();
@@ -66,12 +71,12 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   }
 
   private createAnim() {
-    const animKey = `${this.mobKey}_anim`;
+    const animKey = `${this.config.key}_anim`;
     this.scene.anims.create({
       key: animKey,
-      frames: this.scene.anims.generateFrameNumbers(this.mobKey, {
-        start: 0,
-        end: 8,
+      frames: this.scene.anims.generateFrameNumbers(this.config.key, {
+        start: this.config.frameStart,
+        end: this.config.frameEnd,
       }),
       frameRate: 10,
       repeat: -1,
@@ -88,7 +93,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
       return;
     }
 
-    const speed = 30;
+    const speed = this.config.speed;
 
     const dx = this.player.x - this.x;
     const dy = this.player.y - this.y;
@@ -171,9 +176,27 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     );
   }
 
+  public isHurt() {
+    if (this.isHurting || this.isDead) return;
+
+    this.isHurting = true;
+
+    this.scene.tweens.add({
+      targets: this.sprite,
+      alpha: 0.3,
+      duration: 100,
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => {
+        this.sprite.setAlpha(1);
+        this.isHurting = false;
+      },
+    });
+  }
+
   public takeDamage(damage: number, _payload: DamagePayload) {
     if (this.isDead) return;
-
+    this.isHurt();
     this.hp = Math.max(0, this.hp - damage);
     this.isDead = this.hp <= 0;
 

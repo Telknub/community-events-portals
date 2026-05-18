@@ -8,6 +8,7 @@ import {
   GAME_SECONDS,
   GAME_LIVES,
   PORTAL_NAME,
+  DROP_ITEM_VALUES,
 } from "../constants";
 import { GameState } from "features/game/types/game";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
@@ -16,7 +17,7 @@ import { submitMinigameScore } from "features/game/events/minigames/submitMiniga
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
-import { WeaponId } from "../Types";
+import { DropItemType, WeaponId } from "../Types";
 
 const getJWT = () => {
   const code = new URLSearchParams(window.location.search).get("jwt");
@@ -66,7 +67,7 @@ type LoseLifeEvent = {
 
 type CollectItemEvent = {
   type: "COLLECT_ITEM";
-  points: number;
+  itemKey: DropItemType;
 };
 
 type SetValidationsEvent = {
@@ -363,8 +364,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         COLLECT_ITEM: {
           actions: assign({
             collected: (context: Context, event: CollectItemEvent) => {
-              const { points = 1 } = event;
-              return context.collected + points;
+              return context.collected + (DROP_ITEM_VALUES[event.itemKey] ?? 1);
             },
           }),
         },

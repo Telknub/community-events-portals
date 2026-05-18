@@ -37,7 +37,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
       this.player,
       () => {
         this.destroy();
-        scene.portalService?.send("COLLECT_ITEM", { points: 1 });
+        scene.portalService?.send("COLLECT_ITEM", { itemKey: this.dropItem! });
       },
       undefined,
       this,

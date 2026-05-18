@@ -5,7 +5,7 @@ import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
-import { DROP_ITEM, PORTAL_NAME, WALKING_SPEED } from "./constants";
+import { PORTAL_NAME, WALKING_SPEED } from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { BoundingBox } from "./lib/collisionDetection";
@@ -16,7 +16,7 @@ import { OBSTACLES_LAYOUT } from "./constants";
 import { SwarmMob } from "./containers/SwarmMobContainer";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import { DropItem } from "./containers/DropItemsContainer";
-import { WeaponId, WeaponLoadoutItem } from "./Types";
+import { WeaponId, WeaponLoadoutItem, DropItemType } from "./Types";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -69,10 +69,17 @@ export class Scene extends BaseScene {
       frameWidth: 32,
       frameHeight: 32,
     });
-
     this.load.spritesheet("swarmMob2", "world/portal/images/mob2.webp", {
       frameWidth: 32,
       frameHeight: 48,
+    });
+    this.load.spritesheet("swarmMob3", "world/portal/images/mob3.webp", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+    this.load.spritesheet("swarmMob4", "world/portal/images/mob4.webp", {
+      frameWidth: 32,
+      frameHeight: 32,
     });
 
     // Obstacles
@@ -80,7 +87,8 @@ export class Scene extends BaseScene {
     this.load.image("tree", SUNNYSIDE.resource.tree);
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
-    this.load.image("swarmMob_dropItem", "world/pearl.webp");
+    this.load.image("swarmMob_dropItem1", "world/pearl.webp");
+    this.load.image("swarmMob_dropItem2", "world/candy_icon.png");
 
     this.load.image("weapon_hoe", "world/portal/images/hoe.webp");
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
@@ -138,7 +146,7 @@ export class Scene extends BaseScene {
     this.handlePlayerInWater();
     this.createObstacles();
     this.initialiseCombat();
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 20; i++) {
       this.createSwarmEnemies();
     }
 
@@ -471,18 +479,26 @@ export class Scene extends BaseScene {
     });
   }
 
-  public createDropItems({ x, y }: { x: number; y: number }) {
+  public createDropItems({
+    x,
+    y,
+    itemKey,
+  }: {
+    x: number;
+    y: number;
+    itemKey: DropItemType;
+  }) {
     new DropItem({
       x,
       y,
       scene: this,
       player: this.currentPlayer,
-      itemKey: DROP_ITEM,
+      itemKey,
     });
   }
 
   public handleSwarmMobDefeat(mob: SwarmMob) {
-    this.createDropItems({ x: mob.x, y: mob.y });
+    this.createDropItems({ x: mob.x, y: mob.y, itemKey: mob.config.dropItem });
     this.unregisterSwarmMob(mob);
     mob.destroy();
     this.createSwarmEnemies();
