@@ -108,7 +108,7 @@ export const ENEMY_CONFIGS: EnemyConfig[] = [
     offsetY: -8,
     frameStart: 0,
     frameEnd: 4,
-    frameRate: 20,
+    frameRate: 5,
     speed: MOB_BALANCE_STATS.mob5.SPEED,
     hp: MOB_BALANCE_STATS.mob5.HP,
     maxHp: MOB_BALANCE_STATS.mob5.HP,
