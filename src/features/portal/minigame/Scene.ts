@@ -81,14 +81,23 @@ export class Scene extends BaseScene {
       frameWidth: 32,
       frameHeight: 32,
     });
+    this.load.spritesheet("swarmMob5", "world/portal/images/mob5.webp", {
+      frameWidth: 16,
+      frameHeight: 32,
+    });
+
+    // Swarm Mob drop items
+    this.load.image("swarmMob_dropItem1", "world/portal/images/dropItem1.webp");
+    this.load.image("swarmMob_dropItem2", "world/portal/images/dropItem2.webp");
+    this.load.image("swarmMob_dropItem3", "world/portal/images/dropItem3.webp");
+    this.load.image("swarmMob_dropItem4", "world/portal/images/dropItem4.webp");
+    this.load.image("swarmMob_dropItem5", "world/portal/images/dropItem5.webp");
 
     // Obstacles
     this.load.image("rock", SUNNYSIDE.resource.stone_rock);
     this.load.image("tree", SUNNYSIDE.resource.tree);
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
-    this.load.image("swarmMob_dropItem1", "world/pearl.webp");
-    this.load.image("swarmMob_dropItem2", "world/candy_icon.png");
 
     this.load.image("weapon_hoe", "world/portal/images/hoe.webp");
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");

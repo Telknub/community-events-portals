@@ -4,7 +4,7 @@ export const OBSTACLES_LAYOUT = {
   obstacle1: [
     // trees
     { name: "tree", x: 11, y: 10 },
-    { name: "tree", x: 30, y: 30 },
+    { name: "tree", x: 32, y: 37 },
     { name: "tree", x: 15, y: 35 },
     { name: "tree", x: 5, y: 28 },
     { name: "tree", x: 12, y: 15 },

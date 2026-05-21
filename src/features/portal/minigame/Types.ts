@@ -160,7 +160,12 @@ export type CombatConfig = {
   defaultWeaponLoadout: WeaponLoadoutItem[];
 };
 
-export type DropItemType = "swarmMob_dropItem1" | "swarmMob_dropItem2";
+export type DropItemType =
+  | "swarmMob_dropItem1"
+  | "swarmMob_dropItem2"
+  | "swarmMob_dropItem3"
+  | "swarmMob_dropItem4"
+  | "swarmMob_dropItem5";
 
 export type EnemyConfig = {
   key: string;
@@ -171,6 +176,7 @@ export type EnemyConfig = {
   offsetY: number;
   frameStart: number;
   frameEnd: number;
+  frameRate: number;
   speed: number;
   hp: number;
   maxHp: number;
