@@ -78,7 +78,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
         start: this.config.frameStart,
         end: this.config.frameEnd,
       }),
-      frameRate: 10,
+      frameRate: this.config.frameRate,
       repeat: -1,
     });
 

@@ -14,7 +14,7 @@ export const SPAWNS: () => SpawnLocation = () => ({
   "festival-of-colors": {
     default: {
       x: 30 * SQUARE_WIDTH,
-      y: 58 * SQUARE_WIDTH,
+      y: 30 * SQUARE_WIDTH,
     },
   },
   love_island: {
