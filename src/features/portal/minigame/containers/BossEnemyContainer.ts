@@ -1,18 +1,20 @@
 import { Scene } from "../Scene";
 import { BumpkinContainer } from "../Core/BumpkinContainer";
 import { MachineInterpreter } from "../lib/Machine";
-import { DamagePayload } from "../Types";
+import { BossTypes, DamagePayload } from "../Types";
 import { EnemyConfig } from "../Types";
-import { MOB_CONFIGS } from "../constants/EnemyConstants";
+import { BOSS_CONFIGS } from "../constants/EnemyConstants";
+import { LifeBar } from "./LifeBar";
 
 interface Props {
   x: number;
   y: number;
   scene: Scene;
   player?: BumpkinContainer;
+  bossType: BossTypes;
 }
 
-export class SwarmMob extends Phaser.GameObjects.Container {
+export class BossEnemy extends Phaser.GameObjects.Container {
   scene: Scene;
   private player?: BumpkinContainer;
   private sprite!: Phaser.GameObjects.Sprite;
@@ -23,24 +25,36 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   public isDead = false;
   public config: EnemyConfig;
   private isHurting = false;
+  private lifeBar: LifeBar;
+  private bossType: BossTypes;
 
   private avoidX = 0;
   private avoidY = 0;
   private avoidTimer = 0;
   private deathHandled = false;
 
-  constructor({ scene, x, y, player }: Props) {
+  constructor({ scene, x, y, player, bossType }: Props) {
     super(scene, x, y);
     this.scene = scene;
     this.player = player;
+    this.bossType = bossType;
 
     scene.physics.add.existing(this);
 
-    this.config = Phaser.Utils.Array.GetRandom(MOB_CONFIGS);
+    this.config = BOSS_CONFIGS[bossType];
 
     this.hp = this.config.hp;
     this.maxHp = this.config.maxHp;
 
+    this.lifeBar = new LifeBar({
+      x: 0,
+      y: -40,
+      scene,
+      width: 50,
+      maxHealth: this.maxHp,
+    });
+
+    this.lifeBar.setVisible(true);
     this.createEnemy();
   }
 
@@ -52,7 +66,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
   createEnemy() {
     this.sprite = this.scene.add.sprite(0, 0, this.config.key);
-    this.add(this.sprite);
+    this.add([this.sprite, this.lifeBar]);
     this.scene.add.existing(this);
     this.setScale(this.config.scale);
     this.setDepth(1000);
@@ -131,7 +145,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     }
   };
 
-  setSwarmMove(value: boolean) {
+  setMove(value: boolean) {
     this.swarmMove = value;
     if (!value) this.enemyBody.setVelocity(0, 0);
   }
@@ -142,7 +156,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.scene.events.on("update", this.handleSceneUpdate);
   }
 
-  separateFrom(enemy: SwarmMob) {
+  separateFrom(enemy: BossEnemy) {
     const dx = this.x - enemy.x;
     const dy = this.y - enemy.y;
 
@@ -200,8 +214,10 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.hp = Math.max(0, this.hp - damage);
     this.isDead = this.hp <= 0;
 
+    this.lifeBar.setHealth(this.hp);
+
     if (this.isDead) {
-      this.setSwarmMove(false);
+      this.setMove(false);
     }
   }
 
@@ -209,6 +225,6 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     if (this.deathHandled) return;
 
     this.deathHandled = true;
-    this.scene.handleSwarmMobDefeat(this);
+    this.scene.handleBossDefeat(this);
   }
 }

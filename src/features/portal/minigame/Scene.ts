@@ -16,7 +16,9 @@ import { OBSTACLES_LAYOUT } from "./constants";
 import { SwarmMob } from "./containers/SwarmMobContainer";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import { DropItem } from "./containers/DropItemsContainer";
-import { WeaponId, WeaponLoadoutItem, DropItemType } from "./Types";
+import { WeaponId, WeaponLoadoutItem, DropItemType, BossTypes } from "./Types";
+import { BossEnemy } from "./containers/BossEnemyContainer";
+import { BOSS_WAVE_XP_THRESHOLDS } from "./constants/EnemyConstants";
 
 // export const NPCS: NPCBumpkin[] = [
 //   {
@@ -32,9 +34,14 @@ export class Scene extends BaseScene {
   private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
   private enemyGroup!: Phaser.Physics.Arcade.Group;
   private weaponManager?: WeaponManager;
+  private boss1Spawned = false;
+  private boss2Spawned = false;
+  private finalBossSpawned = false;
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
   swarmEnemies: SwarmMob[] = [];
   swarmGroup!: Phaser.Physics.Arcade.Group;
+  bossEnemies: BossEnemy[] = [];
+  bossGroup!: Phaser.Physics.Arcade.Group;
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -86,12 +93,24 @@ export class Scene extends BaseScene {
       frameHeight: 32,
     });
 
-    // Swarm Mob drop items
+    // Boss enemy
+    this.load.spritesheet("boss1", "world/portal/images/BossEnemy1.webp", {
+      frameWidth: 55,
+      frameHeight: 71,
+    });
+    this.load.spritesheet("boss2", "world/portal/images/BossEnemy2.webp", {
+      frameWidth: 71,
+      frameHeight: 64,
+    });
+
+    // Drop items
     this.load.image("swarmMob_dropItem1", "world/portal/images/dropItem1.webp");
     this.load.image("swarmMob_dropItem2", "world/portal/images/dropItem2.webp");
     this.load.image("swarmMob_dropItem3", "world/portal/images/dropItem3.webp");
     this.load.image("swarmMob_dropItem4", "world/portal/images/dropItem4.webp");
     this.load.image("swarmMob_dropItem5", "world/portal/images/dropItem5.webp");
+    this.load.image("boss_dropItem1", SUNNYSIDE.icons.lightning);
+    this.load.image("boss_dropItem2", SUNNYSIDE.icons.happy);
 
     // Obstacles
     this.load.image("rock", SUNNYSIDE.resource.stone_rock);
@@ -158,6 +177,7 @@ export class Scene extends BaseScene {
     for (let i = 0; i < 20; i++) {
       this.createSwarmEnemies();
     }
+    this.setupPortalListener();
 
     // DEBUG
     this.physics.world.drawDebug = false;
@@ -195,6 +215,9 @@ export class Scene extends BaseScene {
       this.weaponManager?.update(time, delta);
       this.swarmEnemies.forEach((mob) => {
         mob.setSwarmMove(true);
+      });
+      this.bossEnemies.forEach((boss) => {
+        boss.setMove(true);
       });
     } else if (this.isGameReady) {
       this.portalService?.send("START");
@@ -375,6 +398,7 @@ export class Scene extends BaseScene {
     this.waterGroup = this.physics.add.staticGroup();
     this.swarmGroup = this.physics.add.group();
     this.enemyGroup = this.physics.add.group();
+    this.bossGroup = this.physics.add.group();
   }
 
   private groupCollision() {
@@ -399,6 +423,49 @@ export class Scene extends BaseScene {
         enemy.changeDirection();
       },
     );
+
+    this.physics.add.collider(
+      this.bossEnemies,
+      this.bossEnemies,
+      (obj1, obj2) => {
+        const enemy1 = obj1 as BossEnemy;
+        const enemy2 = obj2 as BossEnemy;
+
+        enemy1.separateFrom(enemy2);
+        enemy2.separateFrom(enemy1);
+      },
+    );
+
+    this.physics.add.collider(
+      this.obstacleGroup,
+      this.bossGroup,
+      (_obstacle, enemyObj) => {
+        const boss = enemyObj as BossEnemy;
+
+        boss.changeDirection();
+      },
+    );
+
+    // this.physics.add.collider(
+    //   this.bossGroup,
+    //   this.swarmGroup,
+    //   (bossObj, swarmObj) => {
+    //     const boss = bossObj as BossEnemy;
+    //     const swarmMob = swarmObj as SwarmMob;
+
+    //     boss.changeDirection();
+    //     swarmMob.changeDirection();
+    //   },
+    // );
+  }
+
+  private setupPortalListener() {
+    this.portalService?.onTransition((state) => {
+      if (!state.changed) return;
+
+      const xp = state.context.collected;
+      this.spawnBossEnemy(xp);
+    });
   }
 
   private createObstacles() {
@@ -447,6 +514,48 @@ export class Scene extends BaseScene {
     }
   }
 
+  private createBossEnemy(x: number, y: number, bossType: BossTypes) {
+    const boss = new BossEnemy({
+      x,
+      y,
+      scene: this,
+      player: this.currentPlayer,
+      bossType,
+    });
+    boss.setDepth(1000);
+
+    this.enemyGroup.add(boss);
+    this.bossEnemies.push(boss);
+    this.bossGroup.add(boss);
+    boss.once("destroy", () => {
+      this.unregisterBossEnemy(boss);
+    });
+  }
+
+  private spawnBossEnemy(xp: number) {
+    if (!this.currentPlayer) return;
+
+    const { x, y } = this.currentPlayer;
+
+    if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss1 && !this.boss1Spawned) {
+      this.boss1Spawned = true;
+      this.createBossEnemy(x - 5 * SQUARE_WIDTH, y - 5 * SQUARE_WIDTH, "boss1");
+    }
+
+    if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss2 && !this.boss2Spawned) {
+      this.boss2Spawned = true;
+      this.createBossEnemy(x - 6 * SQUARE_WIDTH, y - 6 * SQUARE_WIDTH, "boss2");
+    }
+
+    if (xp >= BOSS_WAVE_XP_THRESHOLDS.finalBoss && !this.finalBossSpawned) {
+      this.finalBossSpawned = true;
+
+      this.createBossEnemy(x - 4 * SQUARE_WIDTH, y - 4 * SQUARE_WIDTH, "boss1");
+
+      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 3 * SQUARE_WIDTH, "boss2");
+    }
+  }
+
   createSwarmEnemies() {
     const maxAttempts = 20;
     const minDistance = 20;
@@ -477,8 +586,7 @@ export class Scene extends BaseScene {
       scene: this,
       player: this.currentPlayer,
     });
-
-    mob.setDepth(10000);
+    mob.setDepth(950);
 
     this.swarmEnemies.push(mob);
     this.swarmGroup.add(mob);
@@ -517,5 +625,21 @@ export class Scene extends BaseScene {
     this.swarmEnemies = this.swarmEnemies.filter((enemy) => enemy !== mob);
     this.swarmGroup?.remove(mob, false, false);
     this.enemyGroup?.remove(mob, false, false);
+  }
+
+  public handleBossDefeat(boss: BossEnemy) {
+    this.createDropItems({
+      x: boss.x,
+      y: boss.y,
+      itemKey: boss.config.dropItem,
+    });
+    this.unregisterBossEnemy(boss);
+    boss.destroy();
+  }
+
+  private unregisterBossEnemy(boss: BossEnemy) {
+    this.bossEnemies = this.bossEnemies.filter((enemy) => enemy !== boss);
+    this.bossGroup?.remove(boss, false, false);
+    this.enemyGroup?.remove(boss, false, false);
   }
 }

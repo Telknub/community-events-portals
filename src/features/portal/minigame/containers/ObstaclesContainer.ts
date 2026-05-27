@@ -81,7 +81,7 @@ export function addStaticObstacle({
   const { width, height, destructible, hp, hasHitbox } = obstacleConfig[name];
 
   const WATER_DEPTH = 5;
-  const OBSTACLES_DEPTH = 10;
+  const OBSTACLES_DEPTH = 900;
   const CLOUDS_DEPTH = 1000;
 
   const coordinates = {

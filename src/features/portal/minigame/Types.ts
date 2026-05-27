@@ -165,7 +165,11 @@ export type DropItemType =
   | "swarmMob_dropItem2"
   | "swarmMob_dropItem3"
   | "swarmMob_dropItem4"
-  | "swarmMob_dropItem5";
+  | "swarmMob_dropItem5"
+  | "boss_dropItem1"
+  | "boss_dropItem2";
+
+export type BossTypes = "boss1" | "boss2";
 
 export type EnemyConfig = {
   key: string;
