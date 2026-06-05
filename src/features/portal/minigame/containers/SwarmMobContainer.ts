@@ -36,7 +36,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
     scene.physics.add.existing(this);
 
-    this.config = Phaser.Utils.Array.GetRandom(MOB_CONFIGS);
+    this.config = Phaser.Utils.Array.GetRandom(Object.values(MOB_CONFIGS));
 
     this.hp = this.config.hp;
     this.maxHp = this.config.maxHp;
