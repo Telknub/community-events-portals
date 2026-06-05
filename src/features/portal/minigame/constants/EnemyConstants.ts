@@ -1,14 +1,14 @@
-import { BossTypes, EnemyConfig } from "../Types";
+import { BossTypes, EnemyConfig, MobTypes } from "../Types";
 
 // XP thresholds for boss spawns
 export const BOSS_WAVE_XP_THRESHOLDS = {
-  boss1: 50,
+  boss1: 2,
   boss2: 240,
   finalBoss: 360,
 };
 
 // Balance stats for each boss type
-const BOSS_BALANCE_STATS = {
+export const BOSS_BALANCE_STATS = {
   boss1: {
     HP: 20,
     XP: 80,
@@ -19,10 +19,15 @@ const BOSS_BALANCE_STATS = {
     XP: 100,
     SPEED: 20,
   },
+  boss3: {
+    HP: 40,
+    XP: 150,
+    SPEED: 25,
+  },
 };
 
 // Balance stats for each mob type
-const MOB_BALANCE_STATS = {
+export const MOB_BALANCE_STATS = {
   mob1: {
     HP: 1,
     XP: 1,
@@ -61,9 +66,9 @@ export const DROP_ITEM_VALUES = {
 };
 
 // Mob configurations
-export const MOB_CONFIGS: EnemyConfig[] = [
-  {
-    key: "swarmMob1",
+export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
+  swarmMob1: {
+    key: "Mob1",
     scale: 1,
     bodyWidth: 16,
     bodyHeight: 16,
@@ -77,8 +82,8 @@ export const MOB_CONFIGS: EnemyConfig[] = [
     maxHp: MOB_BALANCE_STATS.mob1.HP,
     dropItem: "swarmMob_dropItem1",
   },
-  {
-    key: "swarmMob2",
+  swarmMob2: {
+    key: "Mob2",
     scale: 1,
     bodyWidth: 16,
     bodyHeight: 16,
@@ -92,8 +97,8 @@ export const MOB_CONFIGS: EnemyConfig[] = [
     maxHp: MOB_BALANCE_STATS.mob2.HP,
     dropItem: "swarmMob_dropItem2",
   },
-  {
-    key: "swarmMob3",
+  swarmMob3: {
+    key: "Mob3",
     scale: 1,
     bodyWidth: 16,
     bodyHeight: 16,
@@ -107,8 +112,8 @@ export const MOB_CONFIGS: EnemyConfig[] = [
     maxHp: MOB_BALANCE_STATS.mob3.HP,
     dropItem: "swarmMob_dropItem3",
   },
-  {
-    key: "swarmMob4",
+  swarmMob4: {
+    key: "Mob4",
     scale: 1,
     bodyWidth: 16,
     bodyHeight: 16,
@@ -122,8 +127,8 @@ export const MOB_CONFIGS: EnemyConfig[] = [
     maxHp: MOB_BALANCE_STATS.mob4.HP,
     dropItem: "swarmMob_dropItem4",
   },
-  {
-    key: "swarmMob5",
+  swarmMob5: {
+    key: "Mob5",
     scale: 1,
     bodyWidth: 8,
     bodyHeight: 16,
@@ -137,19 +142,19 @@ export const MOB_CONFIGS: EnemyConfig[] = [
     maxHp: MOB_BALANCE_STATS.mob5.HP,
     dropItem: "swarmMob_dropItem5",
   },
-];
+};
 
 // Boss enemy configurations
 export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
   boss1: {
-    key: "boss1",
+    key: "Boss1",
     scale: 0.8,
     bodyWidth: 55,
     bodyHeight: 68,
     offsetX: -27.5,
     offsetY: -34,
     frameStart: 0,
-    frameEnd: 15,
+    frameEnd: 7,
     frameRate: 10,
     speed: BOSS_BALANCE_STATS.boss1.SPEED,
     hp: BOSS_BALANCE_STATS.boss1.HP,
@@ -157,18 +162,33 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     dropItem: "boss_dropItem1",
   },
   boss2: {
-    key: "boss2",
+    key: "Boss2",
     scale: 0.8,
     bodyWidth: 58,
     bodyHeight: 56,
     offsetX: -28,
     offsetY: -28,
     frameStart: 0,
-    frameEnd: 15,
+    frameEnd: 7,
     frameRate: 10,
     speed: BOSS_BALANCE_STATS.boss2.SPEED,
     hp: BOSS_BALANCE_STATS.boss2.HP,
     maxHp: BOSS_BALANCE_STATS.boss2.HP,
+    dropItem: "boss_dropItem2",
+  },
+  boss3: {
+    key: "Boss3",
+    scale: 0.8,
+    bodyWidth: 50,
+    bodyHeight: 55,
+    offsetX: -25,
+    offsetY: -27.5,
+    frameStart: 0,
+    frameEnd: 8,
+    frameRate: 10,
+    speed: BOSS_BALANCE_STATS.boss3.SPEED,
+    hp: BOSS_BALANCE_STATS.boss3.HP,
+    maxHp: BOSS_BALANCE_STATS.boss3.HP,
     dropItem: "boss_dropItem2",
   },
 };

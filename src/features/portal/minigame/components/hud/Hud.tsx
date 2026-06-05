@@ -10,6 +10,7 @@ import { Travel } from "./Travel";
 import { Timer } from "./Timer";
 import { Lives } from "./Lives";
 import { ColletedItems } from "./CollectedItems";
+import { Codex } from "./Codex";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -59,10 +60,10 @@ export const Hud: React.FC = () => {
               <Lives />
               <Score />
               <ColletedItems />
+              <Codex />
             </>
           )}
         </div>
-
         {!isJoystickActive && (
           <>
             <Travel />

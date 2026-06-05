@@ -169,7 +169,14 @@ export type DropItemType =
   | "boss_dropItem1"
   | "boss_dropItem2";
 
-export type BossTypes = "boss1" | "boss2";
+export type BossTypes = "boss1" | "boss2" | "boss3";
+export type MobTypes =
+  | "swarmMob1"
+  | "swarmMob2"
+  | "swarmMob3"
+  | "swarmMob4"
+  | "swarmMob5";
+export type CodexCategoryName = "Skills" | "Enemies" | "DropItems";
 
 export type EnemyConfig = {
   key: string;

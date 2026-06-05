@@ -26,7 +26,7 @@ export class BossEnemy extends Phaser.GameObjects.Container {
   public config: EnemyConfig;
   private isHurting = false;
   private lifeBar: LifeBar;
-  private bossType: BossTypes;
+  public bossType: BossTypes;
 
   private avoidX = 0;
   private avoidY = 0;

@@ -37,6 +37,7 @@ export class Scene extends BaseScene {
   private boss1Spawned = false;
   private boss2Spawned = false;
   private finalBossSpawned = false;
+  private seaBeastDefeated = false;
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
   swarmEnemies: SwarmMob[] = [];
   swarmGroup!: Phaser.Physics.Arcade.Group;
@@ -72,35 +73,39 @@ export class Scene extends BaseScene {
 
     // Minigame assets
     // Swarm Mobs
-    this.load.spritesheet("swarmMob1", "world/portal/images/mob1.webp", {
+    this.load.spritesheet("Mob1", "world/portal/images/mob1.webp", {
       frameWidth: 32,
       frameHeight: 32,
     });
-    this.load.spritesheet("swarmMob2", "world/portal/images/mob2.webp", {
+    this.load.spritesheet("Mob2", "world/portal/images/mob2.webp", {
       frameWidth: 32,
       frameHeight: 48,
     });
-    this.load.spritesheet("swarmMob3", "world/portal/images/mob3.webp", {
+    this.load.spritesheet("Mob3", "world/portal/images/mob3.webp", {
       frameWidth: 32,
       frameHeight: 32,
     });
-    this.load.spritesheet("swarmMob4", "world/portal/images/mob4.webp", {
+    this.load.spritesheet("Mob4", "world/portal/images/mob4.webp", {
       frameWidth: 32,
       frameHeight: 32,
     });
-    this.load.spritesheet("swarmMob5", "world/portal/images/mob5.webp", {
+    this.load.spritesheet("Mob5", "world/portal/images/mob5.webp", {
       frameWidth: 16,
       frameHeight: 32,
     });
 
     // Boss enemy
-    this.load.spritesheet("boss1", "world/portal/images/BossEnemy1.webp", {
+    this.load.spritesheet("Boss1", "world/portal/images/BossEnemy1.webp", {
       frameWidth: 55,
       frameHeight: 71,
     });
-    this.load.spritesheet("boss2", "world/portal/images/BossEnemy2.webp", {
+    this.load.spritesheet("Boss2", "world/portal/images/BossEnemy2.webp", {
       frameWidth: 71,
       frameHeight: 64,
+    });
+    this.load.spritesheet("Boss3", "world/portal/images/BossEnemy3.webp", {
+      frameWidth: 55,
+      frameHeight: 50,
     });
 
     // Drop items
@@ -493,6 +498,13 @@ export class Scene extends BaseScene {
           player.isSwimming = true;
           player.swim?.();
           this.velocity = 30;
+          if (!this.seaBeastDefeated) {
+            this.createBossEnemy(
+              player.x - 4 * SQUARE_WIDTH,
+              player.y - 1 * SQUARE_WIDTH,
+              "boss3",
+            );
+          }
         }
       },
     );
@@ -511,6 +523,10 @@ export class Scene extends BaseScene {
       player.isSwimming = false;
       player.walk?.();
       this.velocity = WALKING_SPEED;
+      const boss = this.bossEnemies.find((b) => b.bossType === "boss3");
+      if (boss) {
+        this.dismissBoss(boss);
+      }
     }
   }
 
@@ -628,11 +644,21 @@ export class Scene extends BaseScene {
   }
 
   public handleBossDefeat(boss: BossEnemy) {
+    if (boss.bossType === "boss3") {
+      this.seaBeastDefeated = true;
+    }
+
     this.createDropItems({
       x: boss.x,
       y: boss.y,
       itemKey: boss.config.dropItem,
     });
+    this.unregisterBossEnemy(boss);
+    boss.destroy();
+  }
+
+  private dismissBoss(boss: BossEnemy) {
+    if (!boss || !boss.active) return;
     this.unregisterBossEnemy(boss);
     boss.destroy();
   }
