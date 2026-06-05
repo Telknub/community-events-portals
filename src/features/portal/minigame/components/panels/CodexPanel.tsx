@@ -44,7 +44,7 @@ export const CodexPanel: React.FC<Props> = ({ onHide }) => {
         <div className="flex items-center pl-1 mb-2">
           <div className="flex items-center grow">
             <img src={SUNNYSIDE.icons.search} className="h-6 mr-3 ml-1" />
-            <p>{"festival-of-colors.codex"}</p>
+            <p>{t("festival-of-colors.codex")}</p>
           </div>
           <img
             src={SUNNYSIDE.icons.close}
