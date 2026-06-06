@@ -8,7 +8,7 @@ import {
   GAME_SECONDS,
   GAME_LIVES,
   PORTAL_NAME,
-  DROP_ITEM_VALUES,
+  DROP_ITEM_XP_VALUES,
 } from "../constants";
 import { GameState } from "features/game/types/game";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
@@ -364,7 +364,9 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         COLLECT_ITEM: {
           actions: assign({
             collected: (context: Context, event: CollectItemEvent) => {
-              return context.collected + (DROP_ITEM_VALUES[event.itemKey] ?? 1);
+              return (
+                context.collected + (DROP_ITEM_XP_VALUES[event.itemKey] ?? 1)
+              );
             },
           }),
         },

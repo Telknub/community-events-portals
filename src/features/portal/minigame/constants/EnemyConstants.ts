@@ -1,27 +1,36 @@
-import { BossTypes, EnemyConfig, MobTypes } from "../Types";
+import { BossTypes, DropItemType, EnemyConfig, MobTypes } from "../Types";
 
 // XP thresholds for boss spawns
 export const BOSS_WAVE_XP_THRESHOLDS = {
-  boss1: 2,
+  boss1: 70,
   boss2: 240,
   finalBoss: 360,
 };
 
+// XP values for each drop item type
+export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
+  blueOrb: 2,
+  greenOrb: 3,
+  grayOrb: 4,
+  yellowOrb: 100,
+  purpleOrb: 150,
+};
+
 // Balance stats for each boss type
-export const BOSS_BALANCE_STATS = {
+export const BOSS_BALANCE_STATS: Record<
+  BossTypes,
+  { HP: number; SPEED: number }
+> = {
   boss1: {
     HP: 20,
-    XP: 80,
     SPEED: 15,
   },
   boss2: {
     HP: 30,
-    XP: 100,
     SPEED: 20,
   },
   boss3: {
     HP: 40,
-    XP: 150,
     SPEED: 25,
   },
 };
@@ -30,44 +39,29 @@ export const BOSS_BALANCE_STATS = {
 export const MOB_BALANCE_STATS = {
   mob1: {
     HP: 1,
-    XP: 1,
     SPEED: 30,
   },
   mob2: {
     HP: 1,
-    XP: 2,
     SPEED: 25,
   },
   mob3: {
     HP: 2,
-    XP: 3,
     SPEED: 20,
   },
   mob4: {
     HP: 3,
-    XP: 4,
     SPEED: 15,
   },
   mob5: {
     HP: 4,
-    XP: 5,
-    SPEED: 15,
+    SPEED: 10,
   },
-};
-
-export const DROP_ITEM_VALUES = {
-  swarmMob_dropItem1: MOB_BALANCE_STATS.mob1.XP,
-  swarmMob_dropItem2: MOB_BALANCE_STATS.mob2.XP,
-  swarmMob_dropItem3: MOB_BALANCE_STATS.mob3.XP,
-  swarmMob_dropItem4: MOB_BALANCE_STATS.mob4.XP,
-  swarmMob_dropItem5: MOB_BALANCE_STATS.mob5.XP,
-  boss_dropItem1: BOSS_BALANCE_STATS.boss1.XP,
-  boss_dropItem2: BOSS_BALANCE_STATS.boss2.XP,
 };
 
 // Mob configurations
 export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
-  swarmMob1: {
+  mob1: {
     key: "Mob1",
     scale: 1,
     bodyWidth: 16,
@@ -80,9 +74,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     speed: MOB_BALANCE_STATS.mob1.SPEED,
     hp: MOB_BALANCE_STATS.mob1.HP,
     maxHp: MOB_BALANCE_STATS.mob1.HP,
-    dropItem: "swarmMob_dropItem1",
+    dropItem: "blueOrb",
   },
-  swarmMob2: {
+  mob2: {
     key: "Mob2",
     scale: 1,
     bodyWidth: 16,
@@ -95,9 +89,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     speed: MOB_BALANCE_STATS.mob2.SPEED,
     hp: MOB_BALANCE_STATS.mob2.HP,
     maxHp: MOB_BALANCE_STATS.mob2.HP,
-    dropItem: "swarmMob_dropItem2",
+    dropItem: "blueOrb",
   },
-  swarmMob3: {
+  mob3: {
     key: "Mob3",
     scale: 1,
     bodyWidth: 16,
@@ -110,9 +104,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     speed: MOB_BALANCE_STATS.mob3.SPEED,
     hp: MOB_BALANCE_STATS.mob3.HP,
     maxHp: MOB_BALANCE_STATS.mob3.HP,
-    dropItem: "swarmMob_dropItem3",
+    dropItem: "greenOrb",
   },
-  swarmMob4: {
+  mob4: {
     key: "Mob4",
     scale: 1,
     bodyWidth: 16,
@@ -125,9 +119,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     speed: MOB_BALANCE_STATS.mob4.SPEED,
     hp: MOB_BALANCE_STATS.mob4.HP,
     maxHp: MOB_BALANCE_STATS.mob4.HP,
-    dropItem: "swarmMob_dropItem4",
+    dropItem: "grayOrb",
   },
-  swarmMob5: {
+  mob5: {
     key: "Mob5",
     scale: 1,
     bodyWidth: 8,
@@ -140,7 +134,7 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     speed: MOB_BALANCE_STATS.mob5.SPEED,
     hp: MOB_BALANCE_STATS.mob5.HP,
     maxHp: MOB_BALANCE_STATS.mob5.HP,
-    dropItem: "swarmMob_dropItem5",
+    dropItem: "grayOrb",
   },
 };
 
@@ -159,7 +153,7 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     speed: BOSS_BALANCE_STATS.boss1.SPEED,
     hp: BOSS_BALANCE_STATS.boss1.HP,
     maxHp: BOSS_BALANCE_STATS.boss1.HP,
-    dropItem: "boss_dropItem1",
+    dropItem: "yellowOrb",
   },
   boss2: {
     key: "Boss2",
@@ -174,7 +168,7 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     speed: BOSS_BALANCE_STATS.boss2.SPEED,
     hp: BOSS_BALANCE_STATS.boss2.HP,
     maxHp: BOSS_BALANCE_STATS.boss2.HP,
-    dropItem: "boss_dropItem2",
+    dropItem: "purpleOrb",
   },
   boss3: {
     key: "Boss3",
@@ -189,6 +183,6 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     speed: BOSS_BALANCE_STATS.boss3.SPEED,
     hp: BOSS_BALANCE_STATS.boss3.HP,
     maxHp: BOSS_BALANCE_STATS.boss3.HP,
-    dropItem: "boss_dropItem2",
+    dropItem: "purpleOrb",
   },
 };

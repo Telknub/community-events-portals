@@ -109,11 +109,11 @@ export class Scene extends BaseScene {
     });
 
     // Drop items
-    this.load.image("swarmMob_dropItem1", "world/portal/images/dropItem1.webp");
-    this.load.image("swarmMob_dropItem2", "world/portal/images/dropItem2.webp");
-    this.load.image("swarmMob_dropItem3", "world/portal/images/dropItem3.webp");
-    this.load.image("swarmMob_dropItem4", "world/portal/images/dropItem4.webp");
-    this.load.image("swarmMob_dropItem5", "world/portal/images/dropItem5.webp");
+    this.load.image("blueOrb", "world/portal/images/dropItem1.webp");
+    this.load.image("greenOrb", "world/portal/images/dropItem2.webp");
+    this.load.image("grayOrb", "world/portal/images/dropItem3.webp");
+    this.load.image("yellowOrb", "world/portal/images/dropItem4.webp");
+    this.load.image("purpleOrb", "world/portal/images/dropItem5.webp");
     this.load.image("boss_dropItem1", SUNNYSIDE.icons.lightning);
     this.load.image("boss_dropItem2", SUNNYSIDE.icons.happy);
 
@@ -646,6 +646,12 @@ export class Scene extends BaseScene {
   public handleBossDefeat(boss: BossEnemy) {
     if (boss.bossType === "boss3") {
       this.seaBeastDefeated = true;
+      this.bossEnemies.forEach((boss) => {
+        boss.setMove(false);
+      });
+      this.swarmEnemies.forEach((mob) => {
+        mob.setSwarmMove(false);
+      });
     }
 
     this.createDropItems({

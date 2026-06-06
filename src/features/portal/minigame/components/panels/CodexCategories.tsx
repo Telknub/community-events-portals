@@ -16,7 +16,7 @@ export const Skills: React.FC = () => {
         <p className="text-sm mb-1">{t(`${PORTAL_NAME}.skills`)}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3  w-full mt-1 gap-1">
           {SKILLS_TABLE.map((skill, index) => (
-            <WeaponCard
+            <SkillsCard
               key={index}
               icon={skill.image}
               weaponName={skill.skillName}
@@ -70,7 +70,7 @@ export const Enemies: React.FC = () => {
   );
 };
 
-export const WeaponCard: React.FC<{
+export const SkillsCard: React.FC<{
   icon: string;
   weaponName: string;
   damage: number;

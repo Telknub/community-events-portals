@@ -161,21 +161,14 @@ export type CombatConfig = {
 };
 
 export type DropItemType =
-  | "swarmMob_dropItem1"
-  | "swarmMob_dropItem2"
-  | "swarmMob_dropItem3"
-  | "swarmMob_dropItem4"
-  | "swarmMob_dropItem5"
-  | "boss_dropItem1"
-  | "boss_dropItem2";
+  | "blueOrb"
+  | "greenOrb"
+  | "grayOrb"
+  | "yellowOrb"
+  | "purpleOrb";
 
 export type BossTypes = "boss1" | "boss2" | "boss3";
-export type MobTypes =
-  | "swarmMob1"
-  | "swarmMob2"
-  | "swarmMob3"
-  | "swarmMob4"
-  | "swarmMob5";
+export type MobTypes = "mob1" | "mob2" | "mob3" | "mob4" | "mob5";
 export type CodexCategoryName = "Skills" | "Enemies" | "DropItems";
 
 export type EnemyConfig = {
