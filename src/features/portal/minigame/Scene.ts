@@ -499,8 +499,12 @@ export class Scene extends BaseScene {
           player.swim?.();
           this.velocity = 30;
           if (!this.seaBeastDefeated) {
+            const faceDirection =
+              Math.random() < 0.5
+                ? player.x - 4 * SQUARE_WIDTH
+                : player.x + 4 * SQUARE_WIDTH;
             this.createBossEnemy(
-              player.x - 4 * SQUARE_WIDTH,
+              faceDirection,
               player.y - 1 * SQUARE_WIDTH,
               "boss3",
             );

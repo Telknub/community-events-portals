@@ -3,15 +3,15 @@ import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import { ITEM_DETAILS } from "features/game/types/images";
 import {
-  MOB_BALANCE_STATS,
   MOB_CONFIGS,
   BOSS_CONFIGS,
   DROP_ITEM_XP_VALUES,
 } from "./EnemyConstants";
-import skill1 from "public/world/portal/images/skill_water_pistol_icon.webp";
-import skill2 from "public/world/portal/images/skill_windBlade_skill_icon.webp";
-import skill3 from "public/world/portal/images/skill_summon_bees_icon.webp";
-import skill4 from "public/world/portal/images/skill_corn_bomb_icon.webp";
+import { WEAPON_CONFIGS } from "./WeaponConstants";
+import water_pistol from "public/world/portal/images/skill_water_pistol_icon.webp";
+import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
+import summon_bees from "public/world/portal/images/skill_summon_bees_icon.webp";
+import corn_bomb from "public/world/portal/images/skill_corn_bomb_icon.webp";
 import blueOrb from "public/world/portal/images/dropItem1.webp";
 import greenOrb from "public/world/portal/images/dropItem2.webp";
 import grayOrb from "public/world/portal/images/dropItem3.webp";
@@ -19,6 +19,7 @@ import yellowOrb from "public/world/portal/images/dropItem4.webp";
 import purpleOrb from "public/world/portal/images/dropItem5.webp";
 import icon_mob4 from "public/world/portal/images/icon_mob_4.webp";
 import icon_mob5 from "public/world/portal/images/icon_mob_2.webp";
+import icon_boss1 from "public/world/portal/images/icon_boss_1.webp";
 import icon_boss2 from "public/world/portal/images/icon_boss_2.webp";
 import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
 
@@ -59,16 +60,16 @@ export const INSTRUCTIONS: {
   width?: number;
 }[] = [
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource1`),
+    image: icon_boss3,
+    description: t(`${PORTAL_NAME}.instructions1`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource2`),
+    image: purpleOrb,
+    description: t(`${PORTAL_NAME}.instructions2`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    description: t(`${PORTAL_NAME}.resource3`),
+    image: water_pistol,
+    description: t(`${PORTAL_NAME}.instructions3`),
   },
 ];
 
@@ -91,9 +92,9 @@ export const RESOURCES_TABLE: {
   },
 ];
 
-const mob_stat = MOB_BALANCE_STATS;
 const mob_config = MOB_CONFIGS;
 const boss_config = BOSS_CONFIGS;
+const skill_config = WEAPON_CONFIGS;
 
 export const DROP_ITEM_ASSETS: Record<string, string> = {
   blueOrb,
@@ -109,6 +110,24 @@ export const ENEMIES_TABLE: {
   hp: number;
   itemIcon: string;
 }[] = [
+  {
+    image: icon_boss1,
+    type: boss_config.boss1.key,
+    hp: boss_config.boss1.hp,
+    itemIcon: DROP_ITEM_ASSETS[boss_config.boss1.dropItem],
+  },
+  {
+    image: icon_boss2,
+    type: boss_config.boss2.key,
+    hp: boss_config.boss2.hp,
+    itemIcon: DROP_ITEM_ASSETS[boss_config.boss2.dropItem],
+  },
+  {
+    image: icon_boss3,
+    type: boss_config.boss3.key,
+    hp: boss_config.boss3.hp,
+    itemIcon: DROP_ITEM_ASSETS[boss_config.boss3.dropItem],
+  },
   {
     image: ITEM_DETAILS["Abandoned Bear"].image,
     type: mob_config.mob1.key,
@@ -139,24 +158,6 @@ export const ENEMIES_TABLE: {
     hp: mob_config.mob5.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob5.dropItem],
   },
-  {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
-    type: boss_config.boss1.key,
-    hp: boss_config.boss1.hp,
-    itemIcon: DROP_ITEM_ASSETS[boss_config.boss1.dropItem],
-  },
-  {
-    image: icon_boss2,
-    type: boss_config.boss2.key,
-    hp: boss_config.boss2.hp,
-    itemIcon: DROP_ITEM_ASSETS[boss_config.boss2.dropItem],
-  },
-  {
-    image: icon_boss3,
-    type: boss_config.boss3.key,
-    hp: boss_config.boss3.hp,
-    itemIcon: DROP_ITEM_ASSETS[boss_config.boss3.dropItem],
-  },
 ];
 
 export const SKILLS_TABLE: {
@@ -166,28 +167,28 @@ export const SKILLS_TABLE: {
   damage: number;
 }[] = [
   {
-    image: skill1,
+    image: water_pistol,
     skillName: t(`${PORTAL_NAME}.skill1`),
     description: t(`${PORTAL_NAME}.enemy1`),
-    damage: 15,
+    damage: skill_config.wateringCan.baseStats.damage,
   },
   {
-    image: skill2,
+    image: wind_blade,
     skillName: t(`${PORTAL_NAME}.skill2`),
     description: t(`${PORTAL_NAME}.enemy2`),
-    damage: 20,
+    damage: skill_config.hoe.baseStats.damage,
   },
   {
-    image: skill3,
+    image: summon_bees,
     skillName: t(`${PORTAL_NAME}.skill3`),
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: 25,
+    damage: skill_config.beehive.baseStats.damage,
   },
   {
-    image: skill4,
+    image: corn_bomb,
     skillName: t(`${PORTAL_NAME}.skill4`),
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: 30,
+    damage: skill_config.corn.baseStats.damage,
   },
 ];
 
