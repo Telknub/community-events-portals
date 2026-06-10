@@ -3,12 +3,9 @@ import React from "react";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { Label } from "components/ui/Label";
-import {
-  RESOURCES_TABLE,
-  ENEMIES_TABLE,
-  PORTAL_NAME,
-  INSTRUCTIONS,
-} from "../../constants";
+import { RESOURCES_TABLE, PORTAL_NAME, INSTRUCTIONS } from "../../constants";
+import { Enemies, Skills } from "./CodexCategories";
+import { DropItemsXP } from "./CodexCategories";
 
 export const Guide = () => {
   const { t } = useAppTranslation();
@@ -66,32 +63,12 @@ export const Guide = () => {
             )}
           </tbody>
         </table>
+        {/* Skills */}
+        <Skills />
         {/* Enemies */}
-        <Label type="default">{t(`${PORTAL_NAME}.enemies`)}</Label>
-        <table className="w-full text-xs table-fixed border-collapse">
-          <tbody>
-            {ENEMIES_TABLE.map(({ image, description, width = 13 }, index) => (
-              <tr key={index}>
-                <td
-                  style={{ border: "1px solid #b96f50" }}
-                  className="p-1.5 w-1/6"
-                >
-                  <div className="flex items-center justify-center">
-                    {<SquareIcon icon={image} width={width} />}
-                  </div>
-                </td>
-                <td
-                  style={{ border: "1px solid #b96f50" }}
-                  className="p-1.5 w-5/6"
-                >
-                  {t(`${PORTAL_NAME}.guideDescription`, {
-                    description: description,
-                  })}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Enemies />
+        {/* Drop Items XP */}
+        <DropItemsXP />
       </div>
     </div>
   );
