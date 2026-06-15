@@ -34,49 +34,41 @@ export const Codex: React.FC = () => {
   return (
     <>
       <div
-        className="fixed z-50 flex flex-col justify-between"
+        className={classNames(
+          "flex relative z-50 justify-center cursor-pointer",
+          {
+            "hover:img-highlight": !isJoystickActive && !isTouchDevice(),
+          },
+        )}
         style={{
-          right: `${PIXEL_SCALE * 3}px`,
-          top: `${PIXEL_SCALE * 3}px`,
+          width: `${PIXEL_SCALE * 22}px`,
+          height: `${PIXEL_SCALE * 23}px`,
+        }}
+        onClick={() => {
+          button.play();
+          if (isPlaying) {
+            onExit(true);
+          } else {
+            goHome();
+          }
         }}
       >
-        <div
-          className={classNames(
-            "flex relative z-50 justify-center cursor-pointer",
-            {
-              "hover:img-highlight": !isJoystickActive && !isTouchDevice(),
-            },
-          )}
+        <img
+          src={SUNNYSIDE.ui.round_button}
+          className="absolute"
           style={{
             width: `${PIXEL_SCALE * 22}px`,
-            height: `${PIXEL_SCALE * 23}px`,
           }}
-          onClick={() => {
-            button.play();
-            if (isPlaying) {
-              onExit(true);
-            } else {
-              goHome();
-            }
+        />
+        <img
+          src={SUNNYSIDE.icons.search}
+          style={{
+            width: `${PIXEL_SCALE * 12}px`,
+            left: `${PIXEL_SCALE * 5}px`,
+            top: `${PIXEL_SCALE * 4}px`,
           }}
-        >
-          <img
-            src={SUNNYSIDE.ui.round_button}
-            className="absolute"
-            style={{
-              width: `${PIXEL_SCALE * 22}px`,
-            }}
-          />
-          <img
-            src={SUNNYSIDE.icons.search}
-            style={{
-              width: `${PIXEL_SCALE * 12}px`,
-              left: `${PIXEL_SCALE * 5}px`,
-              top: `${PIXEL_SCALE * 4}px`,
-            }}
-            className="absolute"
-          />
-        </div>
+          className="absolute"
+        />
       </div>
       <Modal show={show} onHide={() => onExit(false)}>
         <CodexPanel show={show} onHide={() => onExit(false)} />

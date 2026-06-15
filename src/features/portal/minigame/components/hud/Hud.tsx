@@ -8,9 +8,10 @@ import { Score } from "./Score";
 import { Settings } from "./Settings";
 import { Travel } from "./Travel";
 import { Timer } from "./Timer";
-import { Lives } from "./Lives";
 import { ColletedItems } from "./CollectedItems";
 import { Codex } from "./Codex";
+import { BumpkinProfile } from "./BumpkinProfile";
+import { Weapons } from "./Weapons";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -47,7 +48,7 @@ export const Hud: React.FC = () => {
     <HudContainer>
       <div>
         <div
-          className="absolute"
+          className="absolute pointer-events-none"
           style={{
             top: `${PIXEL_SCALE * 4}px`,
             left: `${PIXEL_SCALE * 6}px`,
@@ -57,10 +58,24 @@ export const Hud: React.FC = () => {
             <>
               {/* <Target /> */}
               <Timer />
-              <Lives />
+              {/* <Lives /> */}
               <Score />
               <ColletedItems />
+            </>
+          )}
+        </div>
+        <div
+          className="absolute flex flex-col items-end gap-4"
+          style={{
+            right: `${PIXEL_SCALE * 3}px`,
+            top: `${PIXEL_SCALE * 3}px`,
+          }}
+        >
+          {isPlaying && (
+            <>
+              <BumpkinProfile />
               <Codex />
+              <Weapons />
             </>
           )}
         </div>

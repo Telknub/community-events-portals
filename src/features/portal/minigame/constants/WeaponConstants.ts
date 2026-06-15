@@ -4,6 +4,7 @@ import {
   StatusEffectConfig,
   WeaponConfig,
   WeaponId,
+  WeaponLevel,
   WeaponUpgrade,
 } from "../Types";
 
@@ -29,6 +30,18 @@ const BASE_WEAPON_STATS = {
   homingSpeed: 90,
   hitCooldownMs: 450,
   angularSpeed: 0.003,
+};
+
+export const WEAPON_UPGRADE_XP_COSTS: Record<WeaponLevel, number | null> = {
+  0: null,
+  1: 20,
+  2: 20,
+  3: 50,
+  4: 90,
+  5: 140,
+  6: 200,
+  7: 270,
+  8: 350,
 };
 
 export const PROJECTILE_CONFIGS: Record<string, ProjectileConfig> = {

@@ -17,7 +17,8 @@ import { submitMinigameScore } from "features/game/events/minigames/submitMiniga
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
-import { DropItemType, WeaponId } from "../Types";
+import { DropItemType, WeaponId, WeaponLevel } from "../Types";
+import { WEAPON_UPGRADE_XP_COSTS } from "../constants/WeaponConstants";
 
 const getJWT = () => {
   const code = new URLSearchParams(window.location.search).get("jwt");
@@ -35,11 +36,53 @@ export interface Context {
   endAt: number;
   attemptsLeft: number;
   lives: number;
+  maxLives: number;
   validations: Record<string, boolean>;
   isTraining: boolean;
 
   selectedWeapon: WeaponId;
+  weaponLevels: Record<WeaponId, WeaponLevel>;
+  hudWeapons: WeaponId[];
 }
+
+const WEAPON_IDS: WeaponId[] = [
+  "hoe",
+  "broomScythe",
+  "wateringCan",
+  "corn",
+  "tomato",
+  "sunflower",
+  "wheat",
+  "pumpkin",
+  "beehive",
+];
+
+const DEFAULT_WEAPON_LEVELS: Record<WeaponId, WeaponLevel> = WEAPON_IDS.reduce(
+  (levels, weaponId) => ({
+    ...levels,
+    [weaponId]: weaponId === "hoe" ? 1 : 0,
+  }),
+  {} as Record<WeaponId, WeaponLevel>,
+);
+
+const DEFAULT_HUD_WEAPONS: WeaponId[] = ["hoe"];
+
+const addWeaponToHud = (hudWeapons: WeaponId[], weapon: WeaponId) => {
+  const nextHudWeapons = hudWeapons.filter((id) => id !== weapon);
+  nextHudWeapons.push(weapon);
+
+  return nextHudWeapons.slice(-3);
+};
+
+const getNextWeaponLevel = (level: WeaponLevel) => {
+  if (level >= 8) return undefined;
+
+  return (level + 1) as WeaponLevel;
+};
+
+const canUseWeapon = (context: Context, weapon: WeaponId) => {
+  return context.weaponLevels[weapon] > 0;
+};
 
 // type UnlockAchievementsEvent = {
 //   type: "UNLOCKED_ACHIEVEMENTS";
@@ -80,6 +123,11 @@ type SetSelectedWeaponEvent = {
   weapon: WeaponId;
 };
 
+type UpgradeWeaponEvent = {
+  type: "UPGRADE_WEAPON";
+  weapon: WeaponId;
+};
+
 export type PortalEvent =
   | SetJoystickActiveEvent
   | { type: "START" }
@@ -96,7 +144,8 @@ export type PortalEvent =
   | LoseLifeEvent
   | SetValidationsEvent
   | CollectItemEvent
-  | SetSelectedWeaponEvent;
+  | SetSelectedWeaponEvent
+  | UpgradeWeaponEvent;
 
 export type PortalState = {
   value:
@@ -133,8 +182,11 @@ const resetGameTransition = {
     actions: assign({
       score: () => 0,
       lives: () => GAME_LIVES,
+      maxLives: () => GAME_LIVES,
       endAt: () => 0,
       selectedWeapon: () => "hoe",
+      weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
+      hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
       validations: () => structuredClone(VALIDATIONS),
     }) as any,
   },
@@ -155,11 +207,14 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     collected: 0,
     lastScore: 0,
     lives: GAME_LIVES,
+    maxLives: GAME_LIVES,
     attemptsLeft: 0,
     endAt: 0,
     isTraining: false,
     validations: structuredClone(VALIDATIONS),
     selectedWeapon: "hoe",
+    weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
+    hudWeapons: [...DEFAULT_HUD_WEAPONS],
 
     // Portal minigame
   },
@@ -173,8 +228,64 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     },
     SET_SELECTED_WEAPON: {
       actions: assign({
-        selectedWeapon: (_: Context, event: SetSelectedWeaponEvent) => {
+        selectedWeapon: (context: Context, event: SetSelectedWeaponEvent) => {
+          if (!canUseWeapon(context, event.weapon)) {
+            return context.selectedWeapon;
+          }
+
           return event.weapon;
+        },
+        hudWeapons: (context: Context, event: SetSelectedWeaponEvent) => {
+          if (!canUseWeapon(context, event.weapon)) return context.hudWeapons;
+
+          return addWeaponToHud(context.hudWeapons, event.weapon);
+        },
+      }),
+    },
+    UPGRADE_WEAPON: {
+      actions: assign({
+        collected: (context: Context, event: UpgradeWeaponEvent) => {
+          const currentLevel = context.weaponLevels[event.weapon];
+          const nextLevel = getNextWeaponLevel(currentLevel);
+          if (!nextLevel) return context.collected;
+
+          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
+          if (context.collected < cost) return context.collected;
+
+          return context.collected - cost;
+        },
+        weaponLevels: (context: Context, event: UpgradeWeaponEvent) => {
+          const currentLevel = context.weaponLevels[event.weapon];
+          const nextLevel = getNextWeaponLevel(currentLevel);
+          if (!nextLevel) return context.weaponLevels;
+
+          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
+          if (context.collected < cost) return context.weaponLevels;
+
+          return {
+            ...context.weaponLevels,
+            [event.weapon]: nextLevel,
+          };
+        },
+        selectedWeapon: (context: Context, event: UpgradeWeaponEvent) => {
+          const currentLevel = context.weaponLevels[event.weapon];
+          const nextLevel = getNextWeaponLevel(currentLevel);
+          if (!nextLevel) return context.selectedWeapon;
+
+          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
+          if (context.collected < cost) return context.selectedWeapon;
+
+          return event.weapon;
+        },
+        hudWeapons: (context: Context, event: UpgradeWeaponEvent) => {
+          const currentLevel = context.weaponLevels[event.weapon];
+          const nextLevel = getNextWeaponLevel(currentLevel);
+          if (!nextLevel) return context.hudWeapons;
+
+          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
+          if (context.collected < cost) return context.hudWeapons;
+
+          return addWeaponToHud(context.hudWeapons, event.weapon);
         },
       }),
     },
@@ -328,8 +439,12 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           actions: assign({
             endAt: () => Date.now() + GAME_SECONDS * 1000,
             score: 0,
+            collected: 0,
             lives: GAME_LIVES,
+            maxLives: GAME_LIVES,
             selectedWeapon: "hoe",
+            weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
+            hudWeapons: [...DEFAULT_HUD_WEAPONS],
             validations: structuredClone(VALIDATIONS),
             state: (context: Context) => {
               if (context.isTraining) return context.state;

@@ -353,22 +353,33 @@ export class Scene extends BaseScene {
     if (!this.currentPlayer) return;
 
     const portalService = this.portalService;
-    let selectedWeapon = portalService?.state.context.selectedWeapon ?? "hoe";
+    const portalContext = portalService?.state.context;
+    let weaponLoadout = this.createWeaponLoadout(
+      portalContext?.selectedWeapon,
+      portalContext
+        ? portalContext.weaponLevels[portalContext.selectedWeapon]
+        : undefined,
+    );
 
     this.weaponManager = new WeaponManager({
       scene: this,
       player: this.currentPlayer,
       enemyGroup: this.enemyGroup,
       portalService,
-      loadout: this.createWeaponLoadout(selectedWeapon),
+      loadout: weaponLoadout,
     });
 
     const subscription = portalService?.subscribe((state) => {
-      const nextSelectedWeapon = state.context.selectedWeapon;
-      if (nextSelectedWeapon === selectedWeapon) return;
+      const nextWeaponLoadout = this.createWeaponLoadout(
+        state.context.selectedWeapon,
+        state.context.weaponLevels[state.context.selectedWeapon],
+      );
+      if (JSON.stringify(nextWeaponLoadout) === JSON.stringify(weaponLoadout)) {
+        return;
+      }
 
-      selectedWeapon = nextSelectedWeapon;
-      this.weaponManager?.reset(this.createWeaponLoadout(nextSelectedWeapon));
+      weaponLoadout = nextWeaponLoadout;
+      this.weaponManager?.reset(nextWeaponLoadout);
     });
 
     this.events.once("shutdown", () => {
@@ -394,8 +405,16 @@ export class Scene extends BaseScene {
     this.currentPlayer[animation]?.();
   }
 
-  private createWeaponLoadout(selectedWeapon: WeaponId): WeaponLoadoutItem[] {
-    return [{ id: selectedWeapon, level: 1 }];
+  private createWeaponLoadout(
+    selectedWeapon: WeaponId = "hoe",
+    selectedWeaponLevel: WeaponLoadoutItem["level"] = 1,
+  ): WeaponLoadoutItem[] {
+    return [
+      {
+        id: selectedWeapon,
+        level: Math.max(1, selectedWeaponLevel) as WeaponLoadoutItem["level"],
+      },
+    ];
   }
 
   private groupPhysics() {
