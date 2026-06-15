@@ -17,8 +17,9 @@ import greenOrb from "public/world/portal/images/dropItem2.webp";
 import grayOrb from "public/world/portal/images/dropItem3.webp";
 import yellowOrb from "public/world/portal/images/dropItem4.webp";
 import purpleOrb from "public/world/portal/images/dropItem5.webp";
+import icon_mob2 from "public/world/portal/images/icon_mob_2.webp";
 import icon_mob4 from "public/world/portal/images/icon_mob_4.webp";
-import icon_mob5 from "public/world/portal/images/icon_mob_2.webp";
+import icon_mob5 from "public/world/portal/images/icon_mob_5.webp";
 import icon_boss1 from "public/world/portal/images/icon_boss_1.webp";
 import icon_boss2 from "public/world/portal/images/icon_boss_2.webp";
 import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
@@ -135,7 +136,7 @@ export const ENEMIES_TABLE: {
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob1.dropItem],
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: icon_mob2,
     type: mob_config.mob2.key,
     hp: mob_config.mob2.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob2.dropItem],

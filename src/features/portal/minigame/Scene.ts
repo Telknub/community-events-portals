@@ -153,6 +153,9 @@ export class Scene extends BaseScene {
     //   "backgroundMusic",
     //   "/world/portal/music/background-music.mp3",
     // );
+
+    // SFX
+    this.load.audio("mob_spawn", "world/portal/sfx/mob_spawn.wav");
   }
 
   async create() {
