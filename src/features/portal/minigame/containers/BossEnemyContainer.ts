@@ -169,12 +169,22 @@ export class BossEnemy extends Phaser.GameObjects.Container {
   }
 
   changeDirection() {
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 10);
+    if (!this.player) return;
 
-    this.avoidX = Math.cos(angle);
-    this.avoidY = Math.sin(angle);
+    const dx = this.player.x - this.x;
+    const dy = this.player.y - this.y;
 
-    this.avoidTimer = 100;
+    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    const dirX = dx / distance;
+    const dirY = dy / distance;
+
+    const side = Math.random() < 1 ? -2 : 2;
+
+    this.avoidX = -dirY * side;
+    this.avoidY = dirX * side;
+
+    this.avoidTimer = 30;
   }
 
   private handleCollider() {
