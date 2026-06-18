@@ -187,3 +187,12 @@ export type EnemyConfig = {
   maxHp: number;
   dropItem: DropItemType;
 };
+
+export type MobWaveConfig = {
+  scoreReq: number;
+  mobType: MobTypes;
+  totalEnemy: number;
+  batchSize: number;
+  delay: number;
+  flag: string;
+};

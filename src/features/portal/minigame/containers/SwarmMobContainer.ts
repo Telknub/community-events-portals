@@ -1,7 +1,7 @@
 import { Scene } from "../Scene";
 import { BumpkinContainer } from "../Core/BumpkinContainer";
 import { MachineInterpreter } from "../lib/Machine";
-import { DamagePayload } from "../Types";
+import { DamagePayload, MobTypes } from "../Types";
 import { EnemyConfig } from "../Types";
 import { MOB_CONFIGS } from "../constants/EnemyConstants";
 
@@ -10,6 +10,7 @@ interface Props {
   y: number;
   scene: Scene;
   player?: BumpkinContainer;
+  mobType: MobTypes;
 }
 
 export class SwarmMob extends Phaser.GameObjects.Container {
@@ -29,14 +30,14 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   private avoidTimer = 0;
   private deathHandled = false;
 
-  constructor({ scene, x, y, player }: Props) {
+  constructor({ scene, x, y, player, mobType }: Props) {
     super(scene, x, y);
     this.scene = scene;
     this.player = player;
 
     scene.physics.add.existing(this);
 
-    this.config = Phaser.Utils.Array.GetRandom(Object.values(MOB_CONFIGS));
+    this.config = MOB_CONFIGS[mobType];
 
     this.hp = this.config.hp;
     this.maxHp = this.config.maxHp;
@@ -155,12 +156,22 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   }
 
   changeDirection() {
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 10);
+    if (!this.player) return;
 
-    this.avoidX = Math.cos(angle);
-    this.avoidY = Math.sin(angle);
+    const dx = this.player.x - this.x;
+    const dy = this.player.y - this.y;
 
-    this.avoidTimer = 100;
+    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    const dirX = dx / distance;
+    const dirY = dy / distance;
+
+    const side = Math.random() < 1 ? -2 : 2;
+
+    this.avoidX = -dirY * side;
+    this.avoidY = dirX * side;
+
+    this.avoidTimer = 30;
   }
 
   private handleCollider() {

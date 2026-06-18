@@ -1,8 +1,13 @@
-import { BossTypes, DropItemType, EnemyConfig, MobTypes } from "../Types";
+import {
+  BossTypes,
+  DropItemType,
+  EnemyConfig,
+  MobTypes,
+  MobWaveConfig,
+} from "../Types";
 
 export const BOSS_DEPTH = 100;
 export const ORB_DEPTH = 70;
-export const TOTAL_MOB_NUMBER = 30;
 
 // XP thresholds for boss spawns
 export const BOSS_WAVE_XP_THRESHOLDS = {
@@ -10,6 +15,49 @@ export const BOSS_WAVE_XP_THRESHOLDS = {
   boss2: 240,
   finalBoss: 360,
 };
+
+export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
+  {
+    scoreReq: 0,
+    mobType: "mob1",
+    totalEnemy: 30,
+    batchSize: 3,
+    delay: 3000,
+    flag: "wave1",
+  },
+  {
+    scoreReq: 20,
+    mobType: "mob2",
+    totalEnemy: 30,
+    batchSize: 5,
+    delay: 3000,
+    flag: "wave2",
+  },
+  {
+    scoreReq: 50,
+    mobType: "mob3",
+    totalEnemy: 30,
+    batchSize: 5,
+    delay: 3000,
+    flag: "wave3",
+  },
+  {
+    scoreReq: 80,
+    mobType: "mob4",
+    totalEnemy: 30,
+    batchSize: 3,
+    delay: 4000,
+    flag: "wave4",
+  },
+  {
+    scoreReq: 120,
+    mobType: "mob5",
+    totalEnemy: 30,
+    batchSize: 3,
+    delay: 4000,
+    flag: "wave5",
+  },
+];
 
 // XP values for each drop item type
 export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
@@ -26,16 +74,16 @@ export const BOSS_BALANCE_STATS: Record<
   { HP: number; SPEED: number }
 > = {
   boss1: {
-    HP: 20,
-    SPEED: 15,
+    HP: 50,
+    SPEED: 25,
   },
   boss2: {
-    HP: 30,
-    SPEED: 20,
+    HP: 100,
+    SPEED: 25,
   },
   boss3: {
-    HP: 40,
-    SPEED: 25,
+    HP: 50,
+    SPEED: 30,
   },
 };
 
@@ -43,11 +91,11 @@ export const BOSS_BALANCE_STATS: Record<
 export const MOB_BALANCE_STATS = {
   mob1: {
     HP: 1,
-    SPEED: 30,
+    SPEED: 15,
   },
   mob2: {
     HP: 1,
-    SPEED: 25,
+    SPEED: 20,
   },
   mob3: {
     HP: 2,
@@ -55,11 +103,11 @@ export const MOB_BALANCE_STATS = {
   },
   mob4: {
     HP: 3,
-    SPEED: 15,
+    SPEED: 25,
   },
   mob5: {
     HP: 4,
-    SPEED: 10,
+    SPEED: 25,
   },
 };
 
@@ -67,7 +115,7 @@ export const MOB_BALANCE_STATS = {
 export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   mob1: {
     key: "Mob1",
-    scale: 1,
+    scale: 0.8,
     bodyWidth: 16,
     bodyHeight: 16,
     offsetX: -8,
@@ -83,7 +131,7 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   },
   mob2: {
     key: "Mob2",
-    scale: 1,
+    scale: 0.8,
     bodyWidth: 16,
     bodyHeight: 16,
     offsetX: -8,
@@ -99,7 +147,7 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   },
   mob3: {
     key: "Mob3",
-    scale: 1,
+    scale: 0.8,
     bodyWidth: 16,
     bodyHeight: 16,
     offsetX: -8,
@@ -115,7 +163,7 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   },
   mob4: {
     key: "Mob4",
-    scale: 1,
+    scale: 0.8,
     bodyWidth: 16,
     bodyHeight: 16,
     offsetX: -8,
@@ -131,7 +179,7 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   },
   mob5: {
     key: "Mob5",
-    scale: 1,
+    scale: 0.8,
     bodyWidth: 8,
     bodyHeight: 8,
     offsetX: -4,

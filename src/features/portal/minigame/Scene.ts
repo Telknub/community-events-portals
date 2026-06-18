@@ -16,11 +16,17 @@ import { OBSTACLES_LAYOUT } from "./constants";
 import { SwarmMob } from "./containers/SwarmMobContainer";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import { DropItem } from "./containers/DropItemsContainer";
-import { WeaponId, WeaponLoadoutItem, DropItemType, BossTypes } from "./Types";
+import {
+  WeaponId,
+  WeaponLoadoutItem,
+  DropItemType,
+  BossTypes,
+  MobTypes,
+} from "./Types";
 import { BossEnemy } from "./containers/BossEnemyContainer";
 import {
   BOSS_WAVE_XP_THRESHOLDS,
-  TOTAL_MOB_NUMBER,
+  MOB_WAVE_THRESHOLDS,
 } from "./constants/EnemyConstants";
 
 // export const NPCS: NPCBumpkin[] = [
@@ -186,9 +192,6 @@ export class Scene extends BaseScene {
     this.createObstacles();
     this.initialiseCombat();
     this.initialiseWearables();
-    for (let i = 0; i < TOTAL_MOB_NUMBER; i++) {
-      this.createSwarmEnemies();
-    }
     this.setupPortalListener();
 
     // DEBUG
@@ -510,13 +513,6 @@ export class Scene extends BaseScene {
     // this.physics.add.collider(
     //   this.bossGroup,
     //   this.swarmGroup,
-    //   (bossObj, swarmObj) => {
-    //     const boss = bossObj as BossEnemy;
-    //     const swarmMob = swarmObj as SwarmMob;
-
-    //     boss.changeDirection();
-    //     swarmMob.changeDirection();
-    //   },
     // );
   }
 
@@ -525,7 +521,9 @@ export class Scene extends BaseScene {
       if (!state.changed) return;
 
       const xp = state.context.collected;
+      const score = state.context.score;
       this.spawnBossEnemy(xp);
+      this.spawnSwarmMob(score);
     });
   }
 
@@ -557,8 +555,8 @@ export class Scene extends BaseScene {
           if (!this.seaBeastDefeated) {
             const faceDirection =
               Math.random() < 0.5
-                ? player.x - 4 * SQUARE_WIDTH
-                : player.x + 4 * SQUARE_WIDTH;
+                ? player.x - 7 * SQUARE_WIDTH
+                : player.x + 7 * SQUARE_WIDTH;
             this.createBossEnemy(
               faceDirection,
               player.y - 1 * SQUARE_WIDTH,
@@ -619,30 +617,35 @@ export class Scene extends BaseScene {
 
     if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss2 && !this.boss2Spawned) {
       this.boss2Spawned = true;
-      this.createBossEnemy(x - 6 * SQUARE_WIDTH, y - 6 * SQUARE_WIDTH, "boss2");
+      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 7 * SQUARE_WIDTH, "boss2");
     }
 
     if (xp >= BOSS_WAVE_XP_THRESHOLDS.finalBoss && !this.finalBossSpawned) {
       this.finalBossSpawned = true;
 
-      this.createBossEnemy(x - 4 * SQUARE_WIDTH, y - 4 * SQUARE_WIDTH, "boss1");
+      this.createBossEnemy(x - 4 * SQUARE_WIDTH, y - 7 * SQUARE_WIDTH, "boss1");
 
-      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 3 * SQUARE_WIDTH, "boss2");
+      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 7 * SQUARE_WIDTH, "boss2");
     }
   }
 
-  createSwarmEnemies() {
+  createSwarmEnemies(mobType: MobTypes) {
+    if (!this.currentPlayer) return;
+
     const maxAttempts = 20;
     const minDistance = 20;
+    const spawnRadius = 5 * SQUARE_WIDTH;
 
     let x = 0;
     let y = 0;
-
     let placed = false;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      x = Phaser.Utils.Array.GetRandom([0, 60]) * SQUARE_WIDTH;
-      y = Phaser.Math.Between(0, 60) * SQUARE_WIDTH;
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const distance = Phaser.Math.Between(10 * SQUARE_WIDTH, spawnRadius);
+
+      x = this.currentPlayer.x + Math.cos(angle) * distance;
+      y = this.currentPlayer.y + Math.sin(angle) * distance;
 
       const tooClose = this.swarmEnemies.some((enemy) => {
         const dist = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
@@ -654,12 +657,12 @@ export class Scene extends BaseScene {
         break;
       }
     }
-
     const mob = new SwarmMob({
       x,
       y,
       scene: this,
       player: this.currentPlayer,
+      mobType,
     });
 
     this.swarmEnemies.push(mob);
@@ -668,6 +671,44 @@ export class Scene extends BaseScene {
     mob.once("destroy", () => {
       this.unregisterSwarmMob(mob);
     });
+  }
+
+  private spawnWave(
+    mobType: MobTypes,
+    total: number,
+    batchSize: number,
+    delay: number,
+  ) {
+    let spawned = 0;
+
+    this.time.addEvent({
+      delay,
+      callback: () => {
+        for (let i = 0; i < batchSize && spawned < total; i++) {
+          this.createSwarmEnemies(mobType);
+          spawned++;
+        }
+      },
+      repeat: Math.ceil(total / batchSize) - 1,
+    });
+  }
+
+  private waveState = new Map<string, boolean>();
+
+  private spawnSwarmMob(score: number) {
+    for (const wave of MOB_WAVE_THRESHOLDS) {
+      const key = wave.flag;
+      if (score >= wave.scoreReq && !this.waveState.get(key)) {
+        this.waveState.set(key, true);
+
+        this.spawnWave(
+          wave.mobType,
+          wave.totalEnemy,
+          wave.batchSize,
+          wave.delay,
+        );
+      }
+    }
   }
 
   public createDropItems({
@@ -692,7 +733,6 @@ export class Scene extends BaseScene {
     this.createDropItems({ x: mob.x, y: mob.y, itemKey: mob.config.dropItem });
     this.unregisterSwarmMob(mob);
     mob.destroy();
-    this.createSwarmEnemies();
   }
 
   private unregisterSwarmMob(mob: SwarmMob) {
