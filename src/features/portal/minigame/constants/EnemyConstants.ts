@@ -50,7 +50,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
     flag: "wave4",
   },
   {
-    scoreReq: 120,
+    scoreReq: 110,
     mobType: "mob5",
     totalEnemy: 30,
     batchSize: 3,
@@ -95,7 +95,7 @@ export const MOB_BALANCE_STATS = {
   },
   mob2: {
     HP: 1,
-    SPEED: 20,
+    SPEED: 15,
   },
   mob3: {
     HP: 2,
@@ -103,7 +103,7 @@ export const MOB_BALANCE_STATS = {
   },
   mob4: {
     HP: 3,
-    SPEED: 25,
+    SPEED: 20,
   },
   mob5: {
     HP: 4,
@@ -116,8 +116,8 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   mob1: {
     key: "Mob1",
     scale: 0.8,
-    bodyWidth: 16,
-    bodyHeight: 16,
+    bodyWidth: 32,
+    bodyHeight: 32,
     offsetX: -8,
     offsetY: -8,
     frameStart: 0,
@@ -148,10 +148,10 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   mob3: {
     key: "Mob3",
     scale: 0.8,
-    bodyWidth: 16,
-    bodyHeight: 16,
-    offsetX: -8,
-    offsetY: -8,
+    bodyWidth: 18,
+    bodyHeight: 18,
+    offsetX: -9,
+    offsetY: -9,
     frameStart: 0,
     frameEnd: 12,
     frameRate: 10,
@@ -164,10 +164,10 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   mob4: {
     key: "Mob4",
     scale: 0.8,
-    bodyWidth: 16,
-    bodyHeight: 16,
-    offsetX: -8,
-    offsetY: -8,
+    bodyWidth: 32,
+    bodyHeight: 32,
+    offsetX: -16,
+    offsetY: -16,
     frameStart: 0,
     frameEnd: 11,
     frameRate: 10,
@@ -180,10 +180,10 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
   mob5: {
     key: "Mob5",
     scale: 0.8,
-    bodyWidth: 8,
-    bodyHeight: 8,
-    offsetX: -4,
-    offsetY: 0,
+    bodyWidth: 16,
+    bodyHeight: 32,
+    offsetX: -8,
+    offsetY: -16,
     frameStart: 0,
     frameEnd: 4,
     frameRate: 5,
