@@ -192,7 +192,6 @@ export class Scene extends BaseScene {
     this.createObstacles();
     this.initialiseCombat();
     this.initialiseWearables();
-    this.setupPortalListener();
 
     // DEBUG
     this.physics.world.drawDebug = false;
@@ -237,6 +236,7 @@ export class Scene extends BaseScene {
     } else if (this.isGameReady) {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
+      this.setupPortalListener();
     }
 
     super.update();

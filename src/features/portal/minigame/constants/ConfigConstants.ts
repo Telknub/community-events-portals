@@ -1,4 +1,4 @@
-import { Equipped } from "features/game/types/bumpkin";
+import { BumpkinWings, Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import { ITEM_DETAILS } from "features/game/types/images";
@@ -12,6 +12,8 @@ import water_pistol from "public/world/portal/images/skill_water_pistol_icon.web
 import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
 import summon_bees from "public/world/portal/images/skill_summon_bees_icon.webp";
 import corn_bomb from "public/world/portal/images/skill_corn_bomb_icon.webp";
+import boomNana from "public/world/portal/images/skill_boomnana_icon.webp";
+import giant_pumpkin from "public/world/portal/images/skill_giantPumpkin_icon.webp";
 import blueOrb from "public/world/portal/images/dropItem1.webp";
 import greenOrb from "public/world/portal/images/dropItem2.webp";
 import grayOrb from "public/world/portal/images/dropItem3.webp";
@@ -55,6 +57,8 @@ export const RESTOCK_ATTEMPTS = [
 //   9239, 36214, 55626, 3249, 128122,
 // ];
 export const BETA_TESTERS: number[] = [];
+
+export const PASSIVE_ABILITY_ITEM: BumpkinWings = "Underworld Stimpack";
 
 // Guide
 export const INSTRUCTIONS: {
@@ -115,49 +119,49 @@ export const ENEMIES_TABLE: {
 }[] = [
   {
     image: icon_boss1,
-    type: boss_config.boss1.key,
+    type: t(`${PORTAL_NAME}.boss1`),
     hp: boss_config.boss1.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss1.dropItem],
   },
   {
     image: icon_boss2,
-    type: boss_config.boss2.key,
+    type: t(`${PORTAL_NAME}.boss2`),
     hp: boss_config.boss2.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss2.dropItem],
   },
   {
     image: icon_boss3,
-    type: boss_config.boss3.key,
+    type: t(`${PORTAL_NAME}.boss3`),
     hp: boss_config.boss3.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss3.dropItem],
   },
   {
     image: icon_mob1,
-    type: mob_config.mob1.key,
+    type: t(`${PORTAL_NAME}.mob1`),
     hp: mob_config.mob1.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob1.dropItem],
   },
   {
     image: icon_mob2,
-    type: mob_config.mob2.key,
+    type: t(`${PORTAL_NAME}.mob2`),
     hp: mob_config.mob2.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob2.dropItem],
   },
   {
     image: icon_mob3,
-    type: mob_config.mob3.key,
+    type: t(`${PORTAL_NAME}.mob3`),
     hp: mob_config.mob3.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob3.dropItem],
   },
   {
     image: icon_mob4,
-    type: mob_config.mob4.key,
+    type: t(`${PORTAL_NAME}.mob4`),
     hp: mob_config.mob4.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob4.dropItem],
   },
   {
     image: icon_mob5,
-    type: mob_config.mob5.key,
+    type: t(`${PORTAL_NAME}.mob5`),
     hp: mob_config.mob5.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob5.dropItem],
   },
@@ -190,6 +194,18 @@ export const SKILLS_TABLE: {
   {
     image: corn_bomb,
     skillName: t(`${PORTAL_NAME}.skill4`),
+    description: t(`${PORTAL_NAME}.enemy3`),
+    damage: skill_config.corn.baseStats.damage,
+  },
+  {
+    image: boomNana,
+    skillName: t(`${PORTAL_NAME}.skill5`),
+    description: t(`${PORTAL_NAME}.enemy3`),
+    damage: skill_config.corn.baseStats.damage,
+  },
+  {
+    image: giant_pumpkin,
+    skillName: t(`${PORTAL_NAME}.skill6`),
     description: t(`${PORTAL_NAME}.enemy3`),
     damage: skill_config.corn.baseStats.damage,
   },
