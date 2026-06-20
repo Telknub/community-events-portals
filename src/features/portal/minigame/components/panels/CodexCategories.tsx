@@ -21,7 +21,8 @@ export const Skills: React.FC = () => {
               key={index}
               icon={skill.image}
               skillName={skill.skillName}
-              damage={skill.damage}
+              minDamage={skill.minDamage}
+              maxDamage={skill.maxDamage}
             />
           ))}
         </div>
@@ -74,17 +75,21 @@ export const Enemies: React.FC = () => {
 export const SkillsCard: React.FC<{
   icon: string;
   skillName: string;
-  damage: number;
-}> = ({ icon, damage, skillName }) => {
+  minDamage: number;
+  maxDamage: number;
+}> = ({ icon, minDamage, skillName, maxDamage }) => {
   const { t } = useAppTranslation();
   return (
     <ButtonPanel className="flex flex-col items-center">
-      <img src={icon} className="h-10 mr-1" />
-      <span className="text-xs">{skillName}</span>
-      <div className="flex flex-col pt-3">
-        <span className="text-xs">{t(`${PORTAL_NAME}.damage`)}</span>
-        <span className="text-xs">
-          {t(`${PORTAL_NAME}.level`)} {damage}
+      <img src={icon} className="h-10 mr-1 pb-1" />
+      <span className="text-xs font-bold">{skillName}</span>
+      <div className="flex flex-col pt-3 w-full text-left">
+        <span className="text-xs pb-2">{t(`${PORTAL_NAME}.damage`)}</span>
+        <span className="text-xs px-3 bg-black/10">
+          {t(`${PORTAL_NAME}.min`)} {minDamage}
+        </span>
+        <span className="text-xs px-3 bg-black/10">
+          {t(`${PORTAL_NAME}.max`)} {maxDamage}
         </span>
       </div>
     </ButtonPanel>
@@ -97,10 +102,10 @@ export const DropItemCard: React.FC<{
 }> = ({ icon, xp }) => {
   const { t } = useAppTranslation();
   return (
-    <ButtonPanel className="flex flex-col items-center">
-      <img src={icon} className="h-10 mr-1" />
-      <div className="flex flex-col items-start pt-3">
-        <span className="text-xs">
+    <ButtonPanel className="flex flex-col w-full items-center">
+      <img src={icon} className="h-10 mr-1 pb-3" />
+      <div className="flex flex-col w-full items-center bg-black/10">
+        <span className="text-xs font-bold">
           {t(`${PORTAL_NAME}.xp`)} {xp}
         </span>
       </div>
@@ -117,13 +122,13 @@ export const EnemyCard: React.FC<{
   const { t } = useAppTranslation();
   return (
     <ButtonPanel className="flex flex-col items-center">
-      <img src={icon} className="h-10 mr-1" />
-      <span className="text-xs">{type}</span>
-      <div className="flex flex-col items-start pt-3">
-        <span className="text-xs">
+      <img src={icon} className="h-10 mr-1 pb-1" />
+      <span className="text-xs font-semibold">{type}</span>
+      <div className="flex flex-col w-full text-start pt-3">
+        <span className="text-xs  bg-black/10">
           {t(`${PORTAL_NAME}.hp`)} {hp}
         </span>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 bg-black/10">
           <span className="text-xs">{t(`${PORTAL_NAME}.drop`)}</span>
           <img src={itemIcon} className="h-4 mr-1" />
         </div>

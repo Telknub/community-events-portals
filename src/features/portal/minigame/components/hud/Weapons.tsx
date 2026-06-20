@@ -33,7 +33,7 @@ const WEAPON_ICONS: Record<WeaponId, string> = {
 
 const WEAPON_IDS = Object.keys(WEAPON_CONFIGS) as WeaponId[];
 
-const WEAPON_NAMES: Record<WeaponId, string> = {
+export const WEAPON_NAMES: Record<WeaponId, string> = {
   hoe: "Hoe",
   broomScythe: "Broom Scythe",
   wateringCan: "Watering Can",

@@ -7,7 +7,8 @@ import {
   BOSS_CONFIGS,
   DROP_ITEM_XP_VALUES,
 } from "./EnemyConstants";
-import { WEAPON_CONFIGS } from "./WeaponConstants";
+import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
+import { WEAPON_NAMES } from "../components/hud/Weapons";
 import water_pistol from "public/world/portal/images/skill_water_pistol_icon.webp";
 import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
 import summon_bees from "public/world/portal/images/skill_summon_bees_icon.webp";
@@ -27,6 +28,7 @@ import icon_mob5 from "public/world/portal/images/icon_mob_5.webp";
 import icon_boss1 from "public/world/portal/images/icon_boss_1.webp";
 import icon_boss2 from "public/world/portal/images/icon_boss_2.webp";
 import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
+import { BossTypes, MobTypes, WeaponId } from "../Types";
 
 export const PORTAL_NAME = "festival-of-colors";
 export const PORTAL_TOKEN = "Festival of Colors Token 2026";
@@ -111,6 +113,20 @@ export const DROP_ITEM_ASSETS: Record<string, string> = {
   purpleOrb,
 };
 
+const MOB_NAMES: Record<MobTypes, string> = {
+  mob1: "Potted Slime",
+  mob2: "Flappy",
+  mob3: "Slime",
+  mob4: "Blobert",
+  mob5: "Balloon slime",
+};
+
+const BOSS_NAMES: Record<BossTypes, string> = {
+  boss1: "Daisy",
+  boss2: "Pierrot",
+  boss3: "Sharky",
+};
+
 export const ENEMIES_TABLE: {
   image: string;
   type: string;
@@ -119,95 +135,115 @@ export const ENEMIES_TABLE: {
 }[] = [
   {
     image: icon_boss1,
-    type: t(`${PORTAL_NAME}.boss1`),
+    type: BOSS_NAMES.boss1,
     hp: boss_config.boss1.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss1.dropItem],
   },
   {
     image: icon_boss2,
-    type: t(`${PORTAL_NAME}.boss2`),
+    type: BOSS_NAMES.boss2,
     hp: boss_config.boss2.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss2.dropItem],
   },
   {
     image: icon_boss3,
-    type: t(`${PORTAL_NAME}.boss3`),
+    type: BOSS_NAMES.boss3,
     hp: boss_config.boss3.hp,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss3.dropItem],
   },
   {
     image: icon_mob1,
-    type: t(`${PORTAL_NAME}.mob1`),
+    type: MOB_NAMES.mob1,
     hp: mob_config.mob1.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob1.dropItem],
   },
   {
     image: icon_mob2,
-    type: t(`${PORTAL_NAME}.mob2`),
+    type: MOB_NAMES.mob2,
     hp: mob_config.mob2.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob2.dropItem],
   },
   {
     image: icon_mob3,
-    type: t(`${PORTAL_NAME}.mob3`),
+    type: MOB_NAMES.mob3,
     hp: mob_config.mob3.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob3.dropItem],
   },
   {
     image: icon_mob4,
-    type: t(`${PORTAL_NAME}.mob4`),
+    type: MOB_NAMES.mob4,
     hp: mob_config.mob4.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob4.dropItem],
   },
   {
     image: icon_mob5,
-    type: t(`${PORTAL_NAME}.mob5`),
+    type: MOB_NAMES.mob5,
     hp: mob_config.mob5.hp,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob5.dropItem],
   },
 ];
 
+function getWeaponMaxDamage(weaponId: WeaponId) {
+  const baseDamage = WEAPON_CONFIGS[weaponId].baseStats.damage;
+
+  const damageBonus = WEAPON_UPGRADES[weaponId]
+    .flatMap((upgrade) => upgrade.modifiers)
+    .filter(
+      (modifier) => modifier.stat === "damage" && modifier.operation === "add",
+    )
+    .reduce((total, modifier) => total + modifier.value, 0);
+
+  return baseDamage + damageBonus;
+}
+
 export const SKILLS_TABLE: {
   image: string;
   skillName: string;
   description: string;
-  damage: number;
+  minDamage: number;
+  maxDamage: number;
 }[] = [
   {
     image: water_pistol,
-    skillName: t(`${PORTAL_NAME}.skill1`),
+    skillName: WEAPON_NAMES.wateringCan,
     description: t(`${PORTAL_NAME}.enemy1`),
-    damage: skill_config.wateringCan.baseStats.damage,
+    minDamage: skill_config.wateringCan.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("wateringCan"),
   },
   {
     image: wind_blade,
-    skillName: t(`${PORTAL_NAME}.skill2`),
+    skillName: WEAPON_NAMES.hoe,
     description: t(`${PORTAL_NAME}.enemy2`),
-    damage: skill_config.hoe.baseStats.damage,
+    minDamage: skill_config.hoe.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("hoe"),
   },
   {
     image: summon_bees,
-    skillName: t(`${PORTAL_NAME}.skill3`),
+    skillName: WEAPON_NAMES.beehive,
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: skill_config.beehive.baseStats.damage,
+    minDamage: skill_config.beehive.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("beehive"),
   },
   {
     image: corn_bomb,
-    skillName: t(`${PORTAL_NAME}.skill4`),
+    skillName: WEAPON_NAMES.corn,
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: skill_config.corn.baseStats.damage,
+    minDamage: skill_config.corn.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("corn"),
   },
   {
     image: boomNana,
-    skillName: t(`${PORTAL_NAME}.skill5`),
+    skillName: WEAPON_NAMES.broomScythe,
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: skill_config.corn.baseStats.damage,
+    minDamage: skill_config.broomScythe.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("broomScythe"),
   },
   {
     image: giant_pumpkin,
-    skillName: t(`${PORTAL_NAME}.skill6`),
+    skillName: WEAPON_NAMES.pumpkin,
     description: t(`${PORTAL_NAME}.enemy3`),
-    damage: skill_config.corn.baseStats.damage,
+    minDamage: skill_config.pumpkin.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("pumpkin"),
   },
 ];
 
