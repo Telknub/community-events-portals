@@ -492,11 +492,11 @@ export class Scene extends BaseScene {
       this.bossEnemies,
       this.bossEnemies,
       (obj1, obj2) => {
-        const enemy1 = obj1 as BossEnemy;
-        const enemy2 = obj2 as BossEnemy;
+        const boss1 = obj1 as BossEnemy;
+        const boss2 = obj2 as BossEnemy;
 
-        enemy1.separateFrom(enemy2);
-        enemy2.separateFrom(enemy1);
+        boss1.changeDirection();
+        boss2.changeDirection();
       },
     );
 
@@ -553,15 +553,7 @@ export class Scene extends BaseScene {
           player.swim?.();
           this.velocity = 30;
           if (!this.seaBeastDefeated) {
-            const faceDirection =
-              Math.random() < 0.5
-                ? player.x - 7 * SQUARE_WIDTH
-                : player.x + 7 * SQUARE_WIDTH;
-            this.createBossEnemy(
-              faceDirection,
-              player.y - 1 * SQUARE_WIDTH,
-              "boss3",
-            );
+            this.createBossEnemy("boss3");
           }
         }
       },
@@ -588,7 +580,34 @@ export class Scene extends BaseScene {
     }
   }
 
-  private createBossEnemy(x: number, y: number, bossType: BossTypes) {
+  private createBossEnemy(bossType: BossTypes) {
+    if (!this.currentPlayer) return;
+    const maxAttempts = 20;
+    const minDistance = 20;
+    const spawnRadius = 5 * SQUARE_WIDTH;
+
+    let x = 0;
+    let y = 0;
+    let placed = false;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const distance = Phaser.Math.Between(10 * SQUARE_WIDTH, spawnRadius);
+
+      x = this.currentPlayer.x + Math.cos(angle) * distance;
+      y = this.currentPlayer.y + Math.sin(angle) * distance;
+
+      const tooClose = this.swarmEnemies.some((enemy) => {
+        const dist = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
+        return dist < minDistance;
+      });
+
+      if (!tooClose) {
+        placed = true;
+        break;
+      }
+    }
+
     const boss = new BossEnemy({
       x,
       y,
@@ -605,27 +624,34 @@ export class Scene extends BaseScene {
     });
   }
 
+  private bossWarningFlash() {
+    for (let i = 0; i < 3; i++) {
+      this.time.delayedCall(i * 100, () => {
+        this.cameras.main.flash(100, 255, 0, 0);
+      });
+    }
+  }
+
   private spawnBossEnemy(xp: number) {
     if (!this.currentPlayer) return;
 
-    const { x, y } = this.currentPlayer;
-
     if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss1 && !this.boss1Spawned) {
       this.boss1Spawned = true;
-      this.createBossEnemy(x - 5 * SQUARE_WIDTH, y - 5 * SQUARE_WIDTH, "boss1");
+      this.bossWarningFlash();
+      this.createBossEnemy("boss1");
     }
 
     if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss2 && !this.boss2Spawned) {
       this.boss2Spawned = true;
-      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 7 * SQUARE_WIDTH, "boss2");
+      this.bossWarningFlash();
+      this.createBossEnemy("boss2");
     }
 
     if (xp >= BOSS_WAVE_XP_THRESHOLDS.finalBoss && !this.finalBossSpawned) {
       this.finalBossSpawned = true;
-
-      this.createBossEnemy(x - 4 * SQUARE_WIDTH, y - 7 * SQUARE_WIDTH, "boss1");
-
-      this.createBossEnemy(x + 3 * SQUARE_WIDTH, y + 7 * SQUARE_WIDTH, "boss2");
+      this.bossWarningFlash();
+      this.createBossEnemy("boss1");
+      this.createBossEnemy("boss2");
     }
   }
 
