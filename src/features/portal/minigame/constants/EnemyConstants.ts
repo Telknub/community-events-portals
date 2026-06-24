@@ -1,5 +1,6 @@
 import {
   BossTypes,
+  BossWaveConfig,
   DropItemType,
   EnemyConfig,
   MobTypes,
@@ -9,81 +10,141 @@ import {
 export const BOSS_DEPTH = 100;
 export const ORB_DEPTH = 70;
 
-// XP thresholds for boss spawns
-export const BOSS_WAVE_XP_THRESHOLDS = {
-  boss1: 70,
-  boss2: 240,
-  finalBoss: 360,
+// XP values for each drop item type
+export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
+  blueOrb: 2,
+  greenOrb: 4,
+  grayOrb: 8,
+  yellowOrb: 40,
+  purpleOrb: 80,
 };
 
+// Score thresholds for boss spawns
+export const BOSS_WAVE_THRESHOLDS: BossWaveConfig[] = [
+  {
+    scoreReq: 200,
+    bossType: "boss1",
+    totalEnemy: 1,
+    flag: "bossWave1",
+  },
+  {
+    scoreReq: 400,
+    bossType: "boss2",
+    totalEnemy: 1,
+    flag: "bossWave2",
+  },
+  {
+    scoreReq: 700,
+    bossType: "boss1",
+    totalEnemy: 1,
+    flag: "bossWave3",
+  },
+  {
+    scoreReq: 710,
+    bossType: "boss2",
+    totalEnemy: 1,
+    flag: "bossWave4",
+  },
+];
+
+// Score thresholds for mob spawn
 export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     scoreReq: 0,
     mobType: "mob1",
-    totalEnemy: 30,
+    totalEnemy: 100,
     batchSize: 3,
-    delay: 3000,
+    delay: 2500,
     flag: "wave1",
   },
   {
-    scoreReq: 20,
+    scoreReq: 80,
     mobType: "mob2",
-    totalEnemy: 30,
-    batchSize: 5,
-    delay: 3000,
+    totalEnemy: 120,
+    batchSize: 3,
+    delay: 2200,
     flag: "wave2",
   },
   {
-    scoreReq: 50,
+    scoreReq: 180,
     mobType: "mob3",
-    totalEnemy: 30,
-    batchSize: 5,
-    delay: 3000,
+    totalEnemy: 150,
+    batchSize: 4,
+    delay: 1800,
     flag: "wave3",
   },
   {
-    scoreReq: 80,
+    scoreReq: 320,
     mobType: "mob4",
-    totalEnemy: 30,
-    batchSize: 3,
-    delay: 4000,
+    totalEnemy: 180,
+    batchSize: 4,
+    delay: 1400,
     flag: "wave4",
   },
   {
-    scoreReq: 110,
+    scoreReq: 500,
     mobType: "mob5",
-    totalEnemy: 30,
-    batchSize: 3,
-    delay: 4000,
+    totalEnemy: 250,
+    batchSize: 5,
+    delay: 1000,
     flag: "wave5",
+  },
+  // Endless
+  {
+    scoreReq: 800,
+    mobType: "mob1",
+    totalEnemy: 100,
+    batchSize: 3,
+    delay: 2500,
+    flag: "endless",
+  },
+  {
+    scoreReq: 1000,
+    mobType: "mob2",
+    totalEnemy: 120,
+    batchSize: 3,
+    delay: 2200,
+    flag: "endless",
+  },
+  {
+    scoreReq: 1200,
+    mobType: "mob3",
+    totalEnemy: 150,
+    batchSize: 4,
+    delay: 1800,
+    flag: "endless",
+  },
+  {
+    scoreReq: 1500,
+    mobType: "mob4",
+    totalEnemy: 180,
+    batchSize: 4,
+    delay: 1400,
+    flag: "endless",
+  },
+  {
+    scoreReq: 2000,
+    mobType: "mob5",
+    totalEnemy: 250,
+    batchSize: 5,
+    delay: 1000,
+    flag: "endless",
   },
 ];
 
-// XP values for each drop item type
-export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
-  blueOrb: 2,
-  greenOrb: 3,
-  grayOrb: 4,
-  yellowOrb: 100,
-  purpleOrb: 150,
-};
-
 // Balance stats for each boss type
-export const BOSS_BALANCE_STATS: Record<
-  BossTypes,
-  { HP: number; SPEED: number }
-> = {
+export const BOSS_BALANCE_STATS = {
   boss1: {
-    HP: 50,
-    SPEED: 25,
+    HP: 200,
+    SPEED: 30,
   },
   boss2: {
-    HP: 100,
+    HP: 300,
     SPEED: 25,
   },
   boss3: {
-    HP: 50,
-    SPEED: 30,
+    HP: 150,
+    SPEED: 27,
   },
 };
 
