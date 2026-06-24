@@ -158,13 +158,25 @@ export class Scene extends BaseScene {
 
     // Music
     // Background
-    // this.load.audio(
-    //   "backgroundMusic",
-    //   "/world/portal/music/background-music.mp3",
-    // );
+    this.load.audio(
+      "backgroundMusic",
+      "/world/portal/music/background-music.mp3",
+    );
 
     // SFX
-    this.load.audio("mob_spawn", "world/portal/sfx/mob_spawn.wav");
+    this.load.audio("bossDeath", "world/portal/sfx/bossDeath.wav");
+    this.load.audio("collect_xp", "world/portal/sfx/xp.wav");
+
+    // Weapon SFX
+    this.load.audio("sfx_hoe_swing", "world/portal/sfx/hoe.wav");
+    this.load.audio("sfx_slash_broom", "world/portal/sfx/broomScythe.wav");
+    this.load.audio("sfx_tomato_throw", "world/portal/sfx/tomato.wav");
+    this.load.audio("sfx_water_shot", "world/portal/sfx/wateringCan.wav");
+    this.load.audio("sfx_explosion_pop", "world/portal/sfx/corn.wav");
+    this.load.audio("sfx_light_shot", "world/portal/sfx/sunflower.wav");
+    this.load.audio("sfx_root_cast", "world/portal/sfx/wheat.wav");
+    this.load.audio("sfx_pumpkin_roll", "world/portal/sfx/pumpkin.wav");
+    this.load.audio("sfx_bee_spawn", "world/portal/sfx/beehive.wav");
   }
 
   async create() {
@@ -214,11 +226,10 @@ export class Scene extends BaseScene {
     }
 
     // Background music
-    // this.backgroundMusic = this.sound.add("backgroundMusic", {
-    //   loop: true,
-    //   volume: 0.1,
-    // });
-    // this.backgroundMusic.play();
+    this.backgroundMusic = this.sound.add("backgroundMusic", {
+      loop: true,
+      volume: 0.2,
+    });
   }
 
   update(time = this.time.now, delta = this.game.loop.delta) {
@@ -237,6 +248,7 @@ export class Scene extends BaseScene {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
       this.setupPortalListener();
+      this.backgroundMusic.play();
     }
 
     super.update();

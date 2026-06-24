@@ -281,3 +281,17 @@ export const DROP_ITEMS_XP_TABLE: {
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
+
+// SFX
+export const WEAPON_SFX_VOL = 0.3;
+export const WEAPON_SFX: Record<WeaponId, { activate: string }> = {
+  hoe: { activate: "sfx_hoe_swing" },
+  broomScythe: { activate: "sfx_slash_broom" },
+  wateringCan: { activate: "sfx_water_shot" },
+  corn: { activate: "sfx_explosion_pop" },
+  tomato: { activate: "sfx_tomato_throw" },
+  sunflower: { activate: "sfx_light_shot" },
+  wheat: { activate: "sfx_root_cast" },
+  pumpkin: { activate: "sfx_pumpkin_roll" },
+  beehive: { activate: "sfx_bee_spawn" },
+};

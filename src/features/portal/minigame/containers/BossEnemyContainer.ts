@@ -5,6 +5,7 @@ import { BossTypes, DamagePayload } from "../Types";
 import { EnemyConfig } from "../Types";
 import { BOSS_CONFIGS } from "../constants/EnemyConstants";
 import { LifeBar } from "./LifeBar";
+import { WEAPON_SFX, WEAPON_SFX_VOL } from "../constants";
 
 interface Props {
   x: number;
@@ -220,6 +221,15 @@ export class BossEnemy extends Phaser.GameObjects.Container {
 
   public takeDamage(damage: number, _payload: DamagePayload) {
     if (this.isDead) return;
+
+    const sfx = WEAPON_SFX[_payload.sourceWeaponId];
+
+    if (sfx?.activate) {
+      this.scene.sound.play(sfx.activate, {
+        volume: WEAPON_SFX_VOL,
+      });
+    }
+
     this.isHurt();
     this.hp = Math.max(0, this.hp - damage);
     this.isDead = this.hp <= 0;
@@ -233,6 +243,8 @@ export class BossEnemy extends Phaser.GameObjects.Container {
 
   public onDeath() {
     if (this.deathHandled) return;
+
+    this.scene.sound.play("bossDeath", { volume: 0.3 });
 
     this.deathHandled = true;
     this.scene.handleBossDefeat(this);

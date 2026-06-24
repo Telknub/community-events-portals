@@ -4,6 +4,7 @@ import { MachineInterpreter } from "../lib/Machine";
 import { DamagePayload, MobTypes } from "../Types";
 import { EnemyConfig } from "../Types";
 import { MOB_CONFIGS } from "../constants/EnemyConstants";
+import { WEAPON_SFX, WEAPON_SFX_VOL } from "../constants";
 
 interface Props {
   x: number;
@@ -207,6 +208,15 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
   public takeDamage(damage: number, _payload: DamagePayload) {
     if (this.isDead) return;
+
+    const sfx = WEAPON_SFX[_payload.sourceWeaponId];
+
+    if (sfx?.activate) {
+      this.scene.sound.play(sfx.activate, {
+        volume: WEAPON_SFX_VOL,
+      });
+    }
+
     this.isHurt();
     this.hp = Math.max(0, this.hp - damage);
     this.isDead = this.hp <= 0;
