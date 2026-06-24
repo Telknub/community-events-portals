@@ -25,7 +25,7 @@ import {
 } from "./Types";
 import { BossEnemy } from "./containers/BossEnemyContainer";
 import {
-  BOSS_WAVE_XP_THRESHOLDS,
+  BOSS_WAVE_THRESHOLDS,
   MOB_WAVE_THRESHOLDS,
 } from "./constants/EnemyConstants";
 
@@ -43,9 +43,6 @@ export class Scene extends BaseScene {
   private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
   private enemyGroup!: Phaser.Physics.Arcade.Group;
   private weaponManager?: WeaponManager;
-  private boss1Spawned = false;
-  private boss2Spawned = false;
-  private finalBossSpawned = false;
   private seaBeastDefeated = false;
   waterGroup!: Phaser.Physics.Arcade.StaticGroup;
   swarmEnemies: SwarmMob[] = [];
@@ -532,9 +529,8 @@ export class Scene extends BaseScene {
     this.portalService?.onTransition((state) => {
       if (!state.changed) return;
 
-      const xp = state.context.collected;
       const score = state.context.score;
-      this.spawnBossEnemy(xp);
+      this.spawnBoss(score);
       this.spawnSwarmMob(score);
     });
   }
@@ -644,26 +640,10 @@ export class Scene extends BaseScene {
     }
   }
 
-  private spawnBossEnemy(xp: number) {
-    if (!this.currentPlayer) return;
-
-    if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss1 && !this.boss1Spawned) {
-      this.boss1Spawned = true;
+  private bossSpawnWave(bossType: BossTypes, total: number) {
+    for (let i = 0; i < total; i++) {
       this.bossWarningFlash();
-      this.createBossEnemy("boss1");
-    }
-
-    if (xp >= BOSS_WAVE_XP_THRESHOLDS.boss2 && !this.boss2Spawned) {
-      this.boss2Spawned = true;
-      this.bossWarningFlash();
-      this.createBossEnemy("boss2");
-    }
-
-    if (xp >= BOSS_WAVE_XP_THRESHOLDS.finalBoss && !this.finalBossSpawned) {
-      this.finalBossSpawned = true;
-      this.bossWarningFlash();
-      this.createBossEnemy("boss1");
-      this.createBossEnemy("boss2");
+      this.createBossEnemy(bossType);
     }
   }
 
@@ -711,7 +691,7 @@ export class Scene extends BaseScene {
     });
   }
 
-  private spawnWave(
+  private mobSpawnWave(
     mobType: MobTypes,
     total: number,
     batchSize: number,
@@ -733,13 +713,24 @@ export class Scene extends BaseScene {
 
   private waveState = new Map<string, boolean>();
 
+  private spawnBoss(score: number) {
+    for (const wave of BOSS_WAVE_THRESHOLDS) {
+      const key = wave.flag;
+      if (score >= wave.scoreReq && !this.waveState.get(key)) {
+        this.waveState.set(key, true);
+
+        this.bossSpawnWave(wave.bossType, wave.totalEnemy);
+      }
+    }
+  }
+
   private spawnSwarmMob(score: number) {
     for (const wave of MOB_WAVE_THRESHOLDS) {
       const key = wave.flag;
       if (score >= wave.scoreReq && !this.waveState.get(key)) {
         this.waveState.set(key, true);
 
-        this.spawnWave(
+        this.mobSpawnWave(
           wave.mobType,
           wave.totalEnemy,
           wave.batchSize,

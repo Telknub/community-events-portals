@@ -196,3 +196,10 @@ export type MobWaveConfig = {
   delay: number;
   flag: string;
 };
+
+export type BossWaveConfig = {
+  scoreReq: number;
+  bossType: BossTypes;
+  totalEnemy: number;
+  flag: string;
+};
