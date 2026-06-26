@@ -1012,6 +1012,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   public hurt() {
     if (this.isHurting) return;
     this.isHurting = true;
+    this.scene.sound.play("hurt", { volume: 0.7 });
     this.portalService?.send("LOSE_LIFE");
     if (this.isGameOver) return;
     this.hitPlayer();
