@@ -161,6 +161,7 @@ export class Scene extends BaseScene {
     );
 
     // SFX
+    this.load.audio("hurt", "world/portal/sfx/hurt.wav");
     this.load.audio("bossDeath", "world/portal/sfx/bossDeath.wav");
     this.load.audio("collect_xp", "world/portal/sfx/xp.wav");
 
