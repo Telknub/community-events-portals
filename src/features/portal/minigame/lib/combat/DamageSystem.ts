@@ -4,6 +4,7 @@ import { EventBus } from "../EventBus";
 import { isEnemyAlive } from "./geometry";
 import type { StatusEffectSystem } from "./StatusEffectSystem";
 import { COMBAT_CONFIG } from "../../constants";
+import { resolvePlayerDamage } from "../../constants/PlayerStatConstants";
 
 export class DamageSystem {
   private statusEffectSystem?: StatusEffectSystem;
@@ -22,10 +23,17 @@ export class DamageSystem {
   ) {
     if (!isEnemyAlive(enemy)) return false;
 
+    const damageLevel =
+      this.portalService?.state.context.playerStatLevels.damage ?? 1;
+    const resolvedPayload = {
+      ...payload,
+      amount: resolvePlayerDamage(payload.amount, damageLevel),
+    };
+
     if (enemy.takeDamage) {
-      enemy.takeDamage(payload.amount, payload);
+      enemy.takeDamage(resolvedPayload.amount, resolvedPayload);
     } else if (enemy.hp !== undefined) {
-      enemy.hp = Math.max(0, enemy.hp - payload.amount);
+      enemy.hp = Math.max(0, enemy.hp - resolvedPayload.amount);
       enemy.isDead = enemy.hp <= 0;
     }
 
@@ -36,7 +44,7 @@ export class DamageSystem {
     EventBus.emit("weapon:hit", {
       enemy,
       sourceWeaponId: payload.sourceWeaponId,
-      amount: payload.amount,
+      amount: resolvedPayload.amount,
       damageType: payload.damageType,
     });
 

@@ -10,7 +10,7 @@ import {
 } from "../types/game";
 import { getKeys } from "lib/object";
 import { BumpkinParts, tokenUriBuilder } from "lib/utils/tokenUriBuilder";
-import { Equipped } from "../types/bumpkin";
+import { BumpkinItem, Equipped } from "../types/bumpkin";
 import { isSeed, SeedName } from "../types/seeds";
 import { makeAnimalBuilding } from "./animals";
 import { ChoreBoard } from "../types/choreBoard";
@@ -336,14 +336,76 @@ export const INITIAL_EQUIPMENT: BumpkinParts = {
   mouth: "Bumpkin Smile",
 };
 
+export const BUMPKIN_EQUIPMENT: BumpkinParts = {
+  background: "Farm Background",
+  body: "Beige Farmer Potion",
+  hair: "Basic Hair",
+  shoes: "Black Farmer Boots",
+  pants: "Farmer Overalls",
+  tool: "Farmer Pitchfork",
+  shirt: "Red Farmer Shirt",
+  eyes: "Bumpkin Eyes",
+  mouth: "Bumpkin Smile",
+};
+
 export const INITIAL_BUMPKIN: Bumpkin = {
-  equipped: INITIAL_EQUIPMENT as Equipped,
+  equipped: BUMPKIN_EQUIPMENT as Equipped,
   experience: 0,
 
   id: 1,
   skills: {},
-  tokenUri: `1_${tokenUriBuilder(INITIAL_EQUIPMENT)}`,
+  tokenUri: `1_${tokenUriBuilder(BUMPKIN_EQUIPMENT)}`,
   achievements: {},
+};
+
+export const PORTAL_MINIGAME_WARDROBE: Partial<Record<BumpkinItem, number>> = {
+  "Carrot Pitchfork": 1,
+  "Handheld Bunny": 1,
+  "Bunny Mask": 1,
+  "Bunny Pants": 1,
+  "Easter Apron": 1,
+  "Slime Hat": 1,
+  "Slime Wings": 1,
+  "Slime Aura": 1,
+  "Paint Splattered Hair": 1,
+  "Paint Splattered Shirt": 1,
+  "Paint Splattered Overalls": 1,
+  "Paint Spray Can": 1,
+  "Moonseeker Potion": 1,
+  "Frizzy Bob Cut": 1,
+  "Two-toned Layered": 1,
+  "Halloween Deathscythe": 1,
+  "Moonseeker Hand Puppet": 1,
+  "Sweet Devil Horns": 1,
+  "Trick and Treat": 1,
+  "Jack O'Sweets": 1,
+  "Frank Onesie": 1,
+  "Research Uniform": 1,
+  "Sweet Devil Dress": 1,
+  "Underworld Stimpack": 1,
+  "Sweet Devil Wings": 1,
+  "Wisp Aura": 1,
+  "Comfy Xmas Sweater": 1,
+  "Comfy Xmas Pants": 1,
+  "Candy Halbred": 1,
+  "Xmas Top Hat": 1,
+  "Reindeer Mask": 1,
+  "Snowman Mask": 1,
+  "Cool Glasses": 1,
+  "Cookie Shield": 1,
+  "Holiday Feast Background": 1,
+  "Cozy Reindeer Onesie": 1,
+  "Diamond Snow Aura": 1,
+  "Neon Noiz Jacket": 1,
+  "404 Chic Top": 1,
+  "Neon Noiz Pants": 1,
+  "404 Chic Skirt": 1,
+  "Admin Fools Tools": 1,
+  "Neon Noiz Shoes": 1,
+  "404 Chic Boots": 2,
+  "Aether Specs": 1,
+  "Cardboard Wings": 1,
+  "Glitch Aura": 1,
 };
 
 export const INITIAL_CHORE_BOARD: ChoreBoard = {
@@ -392,7 +454,8 @@ export const INITIAL_FARM: GameState = {
     "Yellow Cosmos": new Decimal(1),
   },
   previousInventory: {},
-  wardrobe: {},
+  username: "Bumpkin",
+  wardrobe: PORTAL_MINIGAME_WARDROBE,
   previousWardrobe: {},
   bank: { taxFreeSFL: 0, withdrawnAmount: 0 },
 
@@ -786,7 +849,8 @@ export const TEST_FARM: GameState = {
     pots: {},
     oil: 0,
   },
-  wardrobe: {},
+  username: "Bumpkin",
+  wardrobe: PORTAL_MINIGAME_WARDROBE,
   previousWardrobe: {},
   createdAt: new Date().getTime(),
   conversations: [],

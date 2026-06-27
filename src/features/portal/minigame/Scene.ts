@@ -5,7 +5,13 @@ import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
 import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME, WALKING_SPEED } from "./constants";
+import {
+  getPlayerStatValue,
+  PLAYER_STAT_INITIAL_LEVEL,
+  PLAYER_WATER_SPEED_MULTIPLIER,
+  PORTAL_NAME,
+  WALKING_SPEED,
+} from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { BoundingBox } from "./lib/collisionDetection";
@@ -122,6 +128,7 @@ export class Scene extends BaseScene {
     this.load.image("purpleOrb", "world/portal/images/dropItem5.webp");
     this.load.image("boss_dropItem1", SUNNYSIDE.icons.lightning);
     this.load.image("boss_dropItem2", SUNNYSIDE.icons.happy);
+    this.load.image("heart", SUNNYSIDE.icons.heart);
 
     // Obstacles
     this.load.image("rock", SUNNYSIDE.resource.stone_rock);
@@ -233,6 +240,7 @@ export class Scene extends BaseScene {
   update(time = this.time.now, delta = this.game.loop.delta) {
     if (this.isGamePlaying) {
       // The game has started
+      this.velocity = this.getPlayerMovementSpeed();
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
       this.weaponManager?.update(time, delta);
@@ -247,6 +255,8 @@ export class Scene extends BaseScene {
       this.velocity = WALKING_SPEED;
       this.setupPortalListener();
       this.backgroundMusic.play();
+    } else {
+      this.velocity = 0;
     }
 
     super.update();
@@ -254,6 +264,17 @@ export class Scene extends BaseScene {
 
   private initialiseProperties() {
     this.velocity = 0;
+  }
+
+  private getPlayerMovementSpeed() {
+    const speedLevel =
+      this.portalService?.state.context.playerStatLevels.speed ??
+      PLAYER_STAT_INITIAL_LEVEL;
+    const speed = getPlayerStatValue("speed", speedLevel);
+
+    return this.currentPlayer?.isSwimming
+      ? speed * PLAYER_WATER_SPEED_MULTIPLIER
+      : speed;
   }
 
   private initializeControls() {
@@ -357,6 +378,14 @@ export class Scene extends BaseScene {
       }
     };
     this.portalService?.onEvent(onContinueTraining);
+
+    // Ensure the scene is fresh when the game starts
+    const onStart = (event: EventObject) => {
+      if (event.type === "START") {
+        this.scene.restart();
+      }
+    };
+    this.portalService?.onEvent(onStart);
   }
 
   private initialiseFontFamily() {
@@ -444,6 +473,7 @@ export class Scene extends BaseScene {
   private loadBumpkinAnimations() {
     if (!this.currentPlayer) return;
     if (!this.cursorKeys) return;
+    if (this.currentPlayer.isHurting) return;
 
     if (this.currentPlayer.isSwimming) {
       this.currentPlayer.swim?.();
@@ -560,7 +590,7 @@ export class Scene extends BaseScene {
         if (!player.isSwimming) {
           player.isSwimming = true;
           player.swim?.();
-          this.velocity = 30;
+          this.velocity = this.getPlayerMovementSpeed();
           if (!this.seaBeastDefeated) {
             this.createBossEnemy("boss3");
           }
@@ -581,7 +611,7 @@ export class Scene extends BaseScene {
     if (!isInWater && player.isSwimming) {
       player.isSwimming = false;
       player.walk?.();
-      this.velocity = WALKING_SPEED;
+      this.velocity = this.getPlayerMovementSpeed();
       const boss = this.bossEnemies.find((b) => b.bossType === "boss3");
       if (boss) {
         this.dismissBoss(boss);

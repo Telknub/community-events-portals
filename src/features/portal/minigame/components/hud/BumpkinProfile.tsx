@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "@xstate/react";
 import { SpringValue } from "@react-spring/web";
 
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Modal } from "components/ui/Modal";
-import { Panel } from "components/ui/Panel";
 import Spritesheet, {
   SpriteSheetInstance,
 } from "components/animation/SpriteAnimator";
@@ -12,8 +11,24 @@ import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import { PortalContext } from "../../lib/PortalProvider";
 import { PortalMachineState } from "../../lib/Machine";
 import { BumpkinParts } from "lib/utils/tokenUriBuilder";
-import { Profile } from "./Profile";
-import { WeaponsPanel } from "./Weapons";
+import {
+  loadStoredLoadouts,
+  LOADOUT_SLOTS,
+  Profile,
+  saveStoredLoadouts,
+  WearableLoadouts,
+  WearableLoadoutSlot,
+} from "./Profile";
+import { ProfilePanel, ProfilePanelTab } from "./ProfilePanel";
+import { WEARABLES_TAB_ITEMS } from "./Wearables";
+import {
+  BUMPKIN_ITEM_PART,
+  BumpkinItem,
+  BumpkinPart,
+} from "features/game/types/bumpkin";
+import { availableWardrobe } from "features/game/events/landExpansion/equip";
+import { GameState } from "features/game/types/game";
+import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 
 const DIMENSIONS = {
   original: 80,
@@ -38,7 +53,87 @@ const DIMENSIONS = {
 
 const SPRITE_STEPS = 51;
 
+const getFallbackWearable = ({
+  defaultEquipment,
+  name,
+  part,
+}: {
+  defaultEquipment?: BumpkinParts;
+  name: BumpkinItem;
+  part: BumpkinPart;
+}) => {
+  const defaultItem = defaultEquipment?.[part];
+  const shouldUseInitialEquipment =
+    defaultItem === name && WEARABLES_TAB_ITEMS.includes(name);
+
+  return shouldUseInitialEquipment ? INITIAL_EQUIPMENT[part] : defaultItem;
+};
+
+const applyIncompatibleWearableRules = (outfit: BumpkinParts) => {
+  if (outfit.dress) {
+    delete outfit.shirt;
+    delete outfit.pants;
+  }
+
+  if (outfit.shirt || outfit.pants) {
+    delete outfit.dress;
+  }
+};
+
+const enforceWearableInventory = ({
+  defaultEquipment,
+  loadouts,
+  wardrobe,
+}: {
+  defaultEquipment: BumpkinParts;
+  loadouts: WearableLoadouts;
+  wardrobe: GameState["wardrobe"];
+}) => {
+  const usage: Partial<Record<BumpkinItem, number>> = {};
+  const nextLoadouts = LOADOUT_SLOTS.reduce(
+    (next, slot) => ({
+      ...next,
+      [slot]: { ...loadouts[slot] },
+    }),
+    {} as WearableLoadouts,
+  );
+
+  LOADOUT_SLOTS.forEach((slot) => {
+    Object.entries(nextLoadouts[slot]).forEach(([part, item]) => {
+      const wearable = item as BumpkinItem;
+      if (!WEARABLES_TAB_ITEMS.includes(wearable)) return;
+
+      const used = usage[wearable] ?? 0;
+      const ownedTotal = wardrobe[wearable] ?? 0;
+      if (used < ownedTotal) {
+        usage[wearable] = used + 1;
+        return;
+      }
+
+      const bumpkinPart = part as BumpkinPart;
+      const fallbackItem = getFallbackWearable({
+        defaultEquipment,
+        name: wearable,
+        part: bumpkinPart,
+      });
+
+      if (fallbackItem) {
+        nextLoadouts[slot][bumpkinPart] = fallbackItem as never;
+      } else {
+        delete nextLoadouts[slot][bumpkinPart];
+      }
+    });
+
+    applyIncompatibleWearableRules(nextLoadouts[slot]);
+  });
+
+  return nextLoadouts;
+};
+
 const _profileState = (state: PortalMachineState) => ({
+  farmId: state.context.id,
+  gameState: state.context.state,
+  username: state.context.state?.username,
   bumpkin: state.context.state?.bumpkin,
   activeWearables: state.context.activeWearables,
   lives: state.context.lives,
@@ -139,44 +234,244 @@ const BumpkinAvatar: React.FC<{
   );
 };
 
-export const BumpkinProfile: React.FC = () => {
-  const { portalService } = useContext(PortalContext);
-  const [showModal, setShowModal] = useState(false);
+type BumpkinProfileMode = "preGame" | "hud";
 
-  const { bumpkin, activeWearables, lives, maxLives } = useSelector(
-    portalService,
-    _profileState,
+interface BumpkinProfileProps {
+  mode?: BumpkinProfileMode;
+  showAvatar?: boolean;
+  showModal?: boolean;
+  onModalHide?: () => void;
+  onStart?: () => void;
+  onStartTraining?: () => void;
+  onBack?: () => void;
+}
+
+export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
+  mode = "hud",
+  showAvatar = true,
+  showModal,
+  onModalHide,
+  onStart,
+  onStartTraining,
+  onBack,
+}) => {
+  const { portalService } = useContext(PortalContext);
+  const [internalShowModal, setInternalShowModal] = useState(false);
+  const [currentTab, setCurrentTab] = useState<WearableLoadoutSlot>("I");
+  const [profilePanelTab, setProfilePanelTab] = useState<ProfilePanelTab>(
+    mode === "preGame" ? "wearables" : "weapons",
   );
+  const [loadouts, setLoadouts] = useState<WearableLoadouts>();
+  const [defaultEquipment, setDefaultEquipment] = useState<BumpkinParts>();
+  const [equipped, setEquipped] = useState<BumpkinParts>();
+  const [selectedBumpkinPart, setSelectedBumpkinPart] =
+    useState<BumpkinPart>("background");
+
+  const {
+    farmId,
+    gameState,
+    username,
+    bumpkin,
+    activeWearables,
+    lives,
+    maxLives,
+  } = useSelector(portalService, _profileState);
+
+  const bumpkinEquipment = gameState?.bumpkin?.equipped as
+    | BumpkinParts
+    | undefined;
+
+  useEffect(() => {
+    if (!bumpkinEquipment || !gameState) return;
+
+    const stored = loadStoredLoadouts({
+      farmId,
+      fallback: bumpkinEquipment,
+      available: availableWardrobe(gameState as GameState),
+    });
+    const loadouts = enforceWearableInventory({
+      defaultEquipment: stored.defaultEquipment,
+      loadouts: stored.loadouts,
+      wardrobe: gameState.wardrobe,
+    });
+
+    saveStoredLoadouts({
+      farmId,
+      defaultEquipment: stored.defaultEquipment,
+      loadouts,
+    });
+
+    setDefaultEquipment(stored.defaultEquipment);
+    setLoadouts(loadouts);
+    setEquipped(loadouts[currentTab]);
+    portalService.send("SET_ACTIVE_WEARABLES", {
+      wearables: loadouts[currentTab],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [farmId, !!bumpkinEquipment, !!gameState]);
+
+  useEffect(() => {
+    if (!loadouts) return;
+
+    const nextEquipment = loadouts[currentTab];
+    setEquipped(nextEquipment);
+    portalService.send("SET_ACTIVE_WEARABLES", { wearables: nextEquipment });
+  }, [currentTab, loadouts, portalService]);
+
+  const availableWearableCounts = useMemo<
+    Partial<Record<BumpkinItem, number>>
+  >(() => {
+    if (!gameState || !loadouts) return {};
+
+    return WEARABLES_TAB_ITEMS.reduce(
+      (counts, name) => {
+        const usedInLoadouts = Object.values(loadouts).reduce(
+          (total, loadout) => {
+            return Object.values(loadout).includes(name) ? total + 1 : total;
+          },
+          0,
+        );
+        const ownedTotal = gameState.wardrobe[name] ?? 0;
+
+        return {
+          ...counts,
+          [name]: Math.max(0, ownedTotal - usedInLoadouts),
+        };
+      },
+      {} as Partial<Record<BumpkinItem, number>>,
+    );
+  }, [gameState, loadouts]);
+
+  const saveEquipment = (nextEquipment: BumpkinParts) => {
+    if (!loadouts || !defaultEquipment) return;
+
+    const nextLoadouts = {
+      ...loadouts,
+      [currentTab]: nextEquipment,
+    };
+
+    setEquipped(nextEquipment);
+    setLoadouts(nextLoadouts);
+    saveStoredLoadouts({
+      farmId,
+      defaultEquipment,
+      loadouts: nextLoadouts,
+    });
+    portalService.send("SET_ACTIVE_WEARABLES", { wearables: nextEquipment });
+  };
+
+  const equipWearable = (name: BumpkinItem) => {
+    if (!equipped) return;
+
+    const part = BUMPKIN_ITEM_PART[name];
+    const isEquipped = equipped[part] === name;
+    if (!isEquipped && (availableWearableCounts[name] ?? 0) <= 0) return;
+
+    const outfit = {
+      ...equipped,
+    };
+
+    if (isEquipped) {
+      const fallbackItem = getFallbackWearable({
+        defaultEquipment,
+        name,
+        part,
+      });
+
+      if (fallbackItem) {
+        outfit[part] = fallbackItem as never;
+      } else {
+        delete outfit[part];
+      }
+    } else {
+      outfit[part] = name as never;
+    }
+
+    applyIncompatibleWearableRules(outfit);
+    saveEquipment(outfit);
+  };
 
   const healthPercent = maxLives > 0 ? (lives / maxLives) * 100 : 0;
   const bumpkinParts = activeWearables ?? bumpkin?.equipped;
+  const isControlled = showModal !== undefined;
+  const isModalOpen = showModal ?? internalShowModal;
+  const profilePanelTabs: ProfilePanelTab[] =
+    mode === "preGame" ? ["wearables", "guide"] : ["weapons", "guide"];
+
+  const closeModal = () => {
+    if (isControlled) {
+      onModalHide?.();
+      return;
+    }
+
+    setInternalShowModal(false);
+  };
+
+  const openModal = () => {
+    setProfilePanelTab(mode === "preGame" ? "wearables" : "weapons");
+    setInternalShowModal(true);
+  };
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    setProfilePanelTab(mode === "preGame" ? "wearables" : "weapons");
+  }, [isModalOpen, mode]);
 
   return (
     <>
-      <div
-        className="relative"
-        style={{
-          width: "100px",
-          height: "95px",
-        }}
-      >
-        <div className="scale-[0.7] absolute left-0 top-0 width-100">
-          <BumpkinAvatar
-            bumpkinParts={bumpkinParts}
-            healthPercent={healthPercent}
-            lives={lives}
-            maxLives={maxLives}
-            onClick={() => setShowModal(true)}
-          />
+      {showAvatar && (
+        <div
+          className="relative"
+          style={{
+            width: "100px",
+            height: "95px",
+          }}
+        >
+          <div className="scale-[0.7] absolute left-0 top-0 width-100">
+            <BumpkinAvatar
+              bumpkinParts={bumpkinParts}
+              healthPercent={healthPercent}
+              lives={lives}
+              maxLives={maxLives}
+              onClick={openModal}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+      <Modal show={isModalOpen} onHide={closeModal} size="lg">
         <div className="flex max-h-[90vh]">
-          <Profile onClose={() => setShowModal(false)} />
-          <Panel className="h-full min-h-[520px] p-2">
-            <WeaponsPanel />
-          </Panel>
+          {equipped && loadouts && (
+            <Profile
+              onClose={closeModal}
+              currentTab={currentTab}
+              setCurrentTab={setCurrentTab}
+              username={username}
+              equipped={equipped}
+              selectedBumpkinPart={selectedBumpkinPart}
+              onSelectBumpkinPart={(part) => {
+                setSelectedBumpkinPart(part);
+                if (mode === "preGame") {
+                  setProfilePanelTab("wearables");
+                }
+              }}
+              lives={lives}
+              maxLives={maxLives}
+              onStart={mode === "preGame" ? onStart : undefined}
+              onStartTraining={mode === "preGame" ? onStartTraining : undefined}
+              onBack={mode === "preGame" ? (onBack ?? closeModal) : undefined}
+            />
+          )}
+          <ProfilePanel
+            currentTab={profilePanelTab}
+            setCurrentTab={setProfilePanelTab}
+            tabs={profilePanelTabs}
+            selectedBumpkinPart={selectedBumpkinPart}
+            equipped={equipped}
+            availableWearableCounts={availableWearableCounts}
+            onEquipWearable={equipWearable}
+          />
         </div>
       </Modal>
     </>

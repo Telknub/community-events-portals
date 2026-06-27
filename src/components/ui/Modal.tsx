@@ -88,7 +88,7 @@ export const Modal: React.FC<React.PropsWithChildren<ModalProps>> = ({
                 className={classNames(`relative w-full`, dialogClassName, {
                   "max-w-[300px]": !fullscreen && size === "sm",
                   "max-w-[500px]": !fullscreen && size === undefined,
-                  "max-w-[1200px]": !fullscreen && size === "lg",
+                  "max-w-[1000px]": !fullscreen && size === "lg",
                   "w-screen h-full": !!fullscreen,
                 })}
                 // Prevent click through to Phaser

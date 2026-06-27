@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { useSelector } from "@xstate/react";
 import { Modal } from "components/ui/Modal";
@@ -14,9 +14,9 @@ import { CONFIG } from "lib/config";
 import { authorisePortal, claimPrize } from "../lib/portalUtil";
 import { RulesPanel } from "./components/panels/RulesPanel";
 import { NoAttemptsPanel } from "./components/panels/NoAttemptsPanel";
-import { PORTAL_NAME } from "./constants";
 import { Hud } from "./components/hud/Hud";
 import { Phaser } from "./Phaser";
+import { BumpkinProfile } from "./components/hud/BumpkinProfile";
 
 const _sflBalance = (state: PortalMachineState) => state.context.state?.balance;
 const _isError = (state: PortalMachineState) => state.matches("error");
@@ -37,6 +37,7 @@ const _isComplete = (state: PortalMachineState) => state.matches("complete");
 export const Portal: React.FC = () => {
   const { portalService } = useContext(PortalContext);
   const { t } = useAppTranslation();
+  const [showPreGameProfile, setShowPreGameProfile] = useState(false);
 
   const sflBalance = useSelector(portalService, _sflBalance);
   const isError = useSelector(portalService, _isError);
@@ -61,6 +62,16 @@ export const Portal: React.FC = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
+
+  const startGame = () => {
+    setShowPreGameProfile(false);
+    portalService.send("CONTINUE");
+  };
+
+  const startTraining = () => {
+    setShowPreGameProfile(false);
+    portalService.send("CONTINUE_TRAINING");
+  };
 
   if (isError) {
     return (
@@ -113,18 +124,28 @@ export const Portal: React.FC = () => {
         </Modal>
       )}
 
-      {isIntroduction && (
+      {isIntroduction && !showPreGameProfile && (
         <Modal show>
           <RulesPanel
             mode={"introduction"}
             showScore={false}
             showExitButton={true}
-            confirmButtonText={t("start")}
-            onConfirm={() => portalService.send("CONTINUE")}
-            trainingButtonText={t(`${PORTAL_NAME}.start.training`)}
-            onTraining={() => portalService.send("CONTINUE_TRAINING")}
+            confirmButtonText={t("continue")}
+            onConfirm={() => setShowPreGameProfile(true)}
           />
         </Modal>
+      )}
+
+      {isIntroduction && (
+        <BumpkinProfile
+          mode="preGame"
+          showAvatar={false}
+          showModal={showPreGameProfile}
+          onModalHide={() => setShowPreGameProfile(false)}
+          onBack={() => setShowPreGameProfile(false)}
+          onStart={startGame}
+          onStartTraining={startTraining}
+        />
       )}
 
       {isLoser && (

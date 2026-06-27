@@ -11,7 +11,7 @@ import { Timer } from "./Timer";
 import { ColletedItems } from "./CollectedItems";
 import { Codex } from "./Codex";
 import { BumpkinProfile } from "./BumpkinProfile";
-import { Weapons } from "./Weapons";
+import { HudWeapons } from "./HudWeapons";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -75,7 +75,7 @@ export const Hud: React.FC = () => {
             <>
               <BumpkinProfile />
               <Codex />
-              <Weapons />
+              <HudWeapons />
             </>
           )}
         </div>

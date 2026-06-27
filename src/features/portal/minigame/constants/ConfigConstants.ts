@@ -8,8 +8,12 @@ import {
   DROP_ITEM_XP_VALUES,
 } from "./EnemyConstants";
 import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
-import { WEAPON_NAMES } from "../components/hud/Weapons";
+import { WEAPON_NAMES } from "./WeaponUIConstants";
 import wateringCan from "public/world/portal/images/skill_water_pistol_icon.webp";
+import {
+  getPlayerStatValue,
+  PLAYER_STAT_INITIAL_LEVEL,
+} from "./PlayerStatConstants";
 import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
 import summon_bees from "public/world/portal/images/skill_summon_bees_icon.webp";
 import corn_bomb from "public/world/portal/images/skill_corn_bomb_icon.webp";
@@ -36,10 +40,16 @@ export const PORTAL_TOKEN = "Festival of Colors Token 2026";
 
 // Game config
 export const GAME_SECONDS = 300;
-export const GAME_LIVES = 100;
+export const GAME_LIVES = getPlayerStatValue(
+  "health",
+  PLAYER_STAT_INITIAL_LEVEL,
+);
 
 // Player
-export const WALKING_SPEED = 50;
+export const WALKING_SPEED = getPlayerStatValue(
+  "speed",
+  PLAYER_STAT_INITIAL_LEVEL,
+);
 
 // Attempts
 export const INITIAL_DATE = "2025-10-28"; // YYYY-MM-DD

@@ -9,6 +9,9 @@ import {
   GAME_LIVES,
   PORTAL_NAME,
   DROP_ITEM_XP_VALUES,
+  DEFAULT_PLAYER_STAT_LEVELS,
+  getPlayerStatValueIncrease,
+  resolvePlayerStatUpgrade,
 } from "../constants";
 import { GameState } from "features/game/types/game";
 import { BumpkinParts } from "lib/utils/tokenUriBuilder";
@@ -18,7 +21,13 @@ import { submitMinigameScore } from "features/game/events/minigames/submitMiniga
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
-import { DropItemType, WeaponId, WeaponLevel } from "../Types";
+import {
+  DropItemType,
+  PlayerStatId,
+  PlayerStatLevels,
+  WeaponId,
+  WeaponLevel,
+} from "../Types";
 import { WEAPON_UPGRADE_XP_COSTS } from "../constants/WeaponConstants";
 
 const getJWT = () => {
@@ -44,6 +53,7 @@ export interface Context {
   selectedWeapon: WeaponId;
   weaponLevels: Record<WeaponId, WeaponLevel>;
   hudWeapons: WeaponId[];
+  playerStatLevels: PlayerStatLevels;
   activeWearables?: BumpkinParts;
 }
 
@@ -130,6 +140,11 @@ type UpgradeWeaponEvent = {
   weapon: WeaponId;
 };
 
+type UpgradePlayerStatEvent = {
+  type: "UPGRADE_PLAYER_STAT";
+  stat: PlayerStatId;
+};
+
 type SetActiveWearablesEvent = {
   type: "SET_ACTIVE_WEARABLES";
   wearables: BumpkinParts;
@@ -153,6 +168,7 @@ export type PortalEvent =
   | CollectItemEvent
   | SetSelectedWeaponEvent
   | UpgradeWeaponEvent
+  | UpgradePlayerStatEvent
   | SetActiveWearablesEvent;
 
 export type PortalState = {
@@ -195,6 +211,7 @@ const resetGameTransition = {
       selectedWeapon: () => "hoe" as WeaponId,
       weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
       hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
+      playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),
       activeWearables: (context: Context) => context.activeWearables,
       validations: () => structuredClone(VALIDATIONS),
     }) as any,
@@ -224,6 +241,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     selectedWeapon: "hoe",
     weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
     hudWeapons: [...DEFAULT_HUD_WEAPONS],
+    playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
 
     // Portal minigame
   },
@@ -304,6 +322,33 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           return addWeaponToHud(context.hudWeapons, event.weapon);
         },
       }),
+    },
+    UPGRADE_PLAYER_STAT: {
+      actions: assign(
+        (context: Context, event: UpgradePlayerStatEvent): Partial<Context> => {
+          const level = context.playerStatLevels[event.stat];
+          const upgrade = resolvePlayerStatUpgrade({
+            level,
+            xp: context.collected,
+          });
+          if (!upgrade.upgraded) return {};
+
+          const healthIncrease =
+            event.stat === "health"
+              ? getPlayerStatValueIncrease("health", level)
+              : 0;
+
+          return {
+            collected: upgrade.xp,
+            playerStatLevels: {
+              ...context.playerStatLevels,
+              [event.stat]: upgrade.level,
+            },
+            maxLives: context.maxLives + healthIncrease,
+            lives: context.lives + healthIncrease,
+          };
+        },
+      ),
     },
     // UNLOCKED_ACHIEVEMENTS: {
     //   actions: assign({
@@ -461,6 +506,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             selectedWeapon: "hoe",
             weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
             hudWeapons: [...DEFAULT_HUD_WEAPONS],
+            playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
             validations: structuredClone(VALIDATIONS),
             state: (context: Context) => {
               if (context.isTraining) return context.state;
@@ -543,6 +589,14 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         GAME_OVER: {
           target: "gameOver",
           actions: assign({
+            collected: () => 0,
+            lives: () => GAME_LIVES,
+            maxLives: () => GAME_LIVES,
+            selectedWeapon: () => "hoe" as WeaponId,
+            weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
+            hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
+            playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),
+            validations: () => structuredClone(VALIDATIONS),
             lastScore: (context: Context) => {
               if (context.isTraining) return context.lastScore;
               return context.score;

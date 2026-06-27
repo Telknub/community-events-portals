@@ -75,6 +75,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   private digAnimationKey: string | undefined;
   private drillAnimationKey: string | undefined;
   private swimmingAnimationKey: string | undefined;
+  private hurtAnimationKey: string | undefined;
   private backAuraKey: string | undefined;
   private frontAuraKey: string | undefined;
   private frontAuraAnimationKey: string | undefined;
@@ -237,6 +238,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.walkingAnimationKey = `${this.spriteKey}-bumpkin-walking`;
     this.digAnimationKey = `${this.spriteKey}-bumpkin-dig`;
     this.swimmingAnimationKey = `${this.spriteKey}-bumpkin-swim`;
+    this.hurtAnimationKey = `${this.spriteKey}-bumpkin-hurt`;
 
     await buildNPCSheets({
       parts: this.clothing,
@@ -257,6 +259,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         this.faceLeft();
       }
 
+      this.createHurtAnimation(39, 46);
       this.sprite.play(this.idleAnimationKey, true);
 
       if (this.silhouette?.active) {
@@ -270,6 +273,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         "walking",
         "dig",
         "drilling",
+        "hurt",
       ]);
       const idleLoader = scene.load.spritesheet(this.spriteKey, url, {
         frameWidth: 96,
@@ -301,6 +305,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         this.createWalkingAnimation(9, 16);
         this.createDigAnimation(17, 29);
         this.createDrillAnimation(30, 38);
+        this.createHurtAnimation(39, 46);
         this.sprite.play(this.idleAnimationKey as string, true);
 
         this.ready = true;
@@ -342,6 +347,26 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
       }),
       frameRate: 10,
       repeat: -1,
+    });
+  }
+
+  private createHurtAnimation(start: number, end: number) {
+    if (!this.scene || !this.scene.anims) return;
+    if (
+      !this.hurtAnimationKey ||
+      this.scene.anims.exists(this.hurtAnimationKey)
+    ) {
+      return;
+    }
+
+    this.scene.anims.create({
+      key: this.hurtAnimationKey,
+      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
+        start,
+        end,
+      }),
+      frameRate: 10,
+      repeat: 0,
     });
   }
 
@@ -1008,40 +1033,94 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     }
   }
 
-  // For testing
   public hurt() {
     if (this.isHurting) return;
-    this.isHurting = true;
-    this.scene.sound.play("hurt", { volume: 0.7 });
-    this.portalService?.send("LOSE_LIFE");
-    if (this.isGameOver) return;
-    this.hitPlayer();
 
-    this.scene.time.delayedCall(2500, () => {
+    this.isHurting = true;
+    this.playHurtSound();
+    this.portalService?.send("LOSE_LIFE");
+    this.playHeartFall();
+
+    if (this.isGameOver) return;
+
+    this.playHurtAnimation(() => {
       this.isHurting = false;
     });
   }
 
-  public hitPlayer() {
-    this.invincible = true;
+  private playHurtSound() {
+    if (!this.scene.sound || !this.scene.cache.audio.exists("hurt")) {
+      return;
+    }
 
-    // make sprite flash opacity
-    const tween = this.scene.tweens.add({
-      targets: this.sprite,
-      alpha: 0.5,
-      duration: 100,
-      ease: "Linear",
-      repeat: -1,
-      yoyo: true,
+    this.scene.sound.play("hurt", { volume: 0.7 });
+  }
+
+  private playHeartFall() {
+    if (!this.scene.textures.exists("heart")) return;
+
+    const container = this.scene.add
+      .container(this.x, this.y - 18)
+      .setDepth(this.depth + 1);
+    const damageText = this.scene.add
+      .text(0, 7, "-1", {
+        fontSize: "5px",
+        fontFamily: "Teeny",
+        color: "#FFFFFF",
+        resolution: 10,
+        padding: { x: 2, y: 2 },
+      })
+      .setOrigin(0, 0.5);
+    damageText.setShadow(4, 4, "#161424", 0, true, true);
+    const heart = this.scene.add.sprite(0, 0, "heart").setScale(0.8);
+
+    const totalWidth = damageText.displayWidth + heart.displayWidth;
+    const textX = -totalWidth / 2;
+    const heartX = textX + damageText.displayWidth + heart.displayWidth / 2;
+
+    damageText.setPosition(textX, 0);
+    heart.setPosition(heartX, 0);
+
+    container.add([damageText, heart]);
+
+    this.scene.tweens.add({
+      targets: container,
+      y: container.y + 22,
+      alpha: 0,
+      duration: 700,
+      ease: "Sine.easeIn",
+      onComplete: () => {
+        if (container.active) container.destroy(true);
+      },
     });
+  }
 
-    setTimeout(() => {
-      this.invincible = false;
+  private playHurtAnimation(onComplete: () => void) {
+    const canPlayHurtAnimation =
+      this.sprite?.anims &&
+      this.scene?.anims.exists(this.hurtAnimationKey as string) &&
+      this.sprite?.anims.getName() !== this.hurtAnimationKey;
 
-      if (tween && tween.isPlaying()) {
-        tween.remove();
-      }
-    }, 2000);
+    if (!canPlayHurtAnimation) {
+      this.scene.time.delayedCall(2500, onComplete);
+      return;
+    }
+
+    try {
+      this.sprite?.anims.play(this.hurtAnimationKey as string, true);
+      this.sprite?.once("animationcomplete", () => {
+        if (this.isSwimming) {
+          this.swim();
+        } else {
+          this.idle();
+        }
+        onComplete();
+      });
+    } catch (e) {
+      onComplete();
+      // eslint-disable-next-line no-console
+      console.log("Bumpkin Container: Error playing hurt animation: ", e);
+    }
   }
 
   private destroyed = false;

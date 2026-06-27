@@ -15,7 +15,7 @@ import { CountLabel } from "./CountLabel";
 
 const LABEL_RIGHT_SHIFT_PX = -5 * PIXEL_SCALE;
 const LABEL_TOP_SHIFT_PX = -5 * PIXEL_SCALE;
-const INNER_CANVAS_WIDTH = 13.7;
+export const INNER_CANVAS_WIDTH = 13.7;
 
 export interface BoxProps {
   hideCount?: boolean;
@@ -23,6 +23,7 @@ export interface BoxProps {
   secondaryImage?: string;
   isSelected?: boolean;
   count?: Decimal;
+  showZeroCount?: boolean;
   countLabelType?: LabelType;
   onClick?: () => void;
   disabled?: boolean;
@@ -74,6 +75,7 @@ export const Box: React.FC<BoxProps> = ({
   secondaryImage,
   isSelected,
   count,
+  showZeroCount = false,
   countLabelType = "default",
   onClick,
   disabled,
@@ -112,7 +114,8 @@ export const Box: React.FC<BoxProps> = ({
     ? longPressEvents
     : { onClick: canClick ? onClick : undefined };
 
-  const showCountLabel = !locked && !hideCount && precisionCount.greaterThan(0);
+  const showCountLabel =
+    !locked && !hideCount && (precisionCount.greaterThan(0) || showZeroCount);
 
   return (
     <div

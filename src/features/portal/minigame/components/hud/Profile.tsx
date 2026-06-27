@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import classNames from "classnames";
+import React, { useContext } from "react";
 import { useSelector } from "@xstate/react";
 
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
@@ -12,42 +11,48 @@ import {
   BumpkinItem,
   BumpkinPart,
 } from "features/game/types/bumpkin";
-import { availableWardrobe } from "features/game/events/landExpansion/equip";
-import { GameState } from "features/game/types/game";
-import { getKeys } from "lib/object";
 import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import { Wardrobe } from "features/game/types/game";
+import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { PORTAL_NAME } from "../../constants";
-import { PortalMachineState } from "../../lib/Machine";
-import { PortalContext } from "../../lib/PortalProvider";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import { InnerPanel } from "components/ui/Panel";
 import { StatCard } from "./StatCard";
+import { Button } from "components/ui/Button";
 
 import swordIcon from "public/world/portal/images/sword_icon.png";
 import speedIcon from "public/world/portal/images/lightning.png";
+import { Label } from "components/ui/Label";
+import { PortalContext } from "../../lib/PortalProvider";
+import { PortalMachineState } from "../../lib/Machine";
+import {
+  getPlayerStatUpgradeCost,
+  getPlayerStatValue,
+  PLAYER_STAT_IDS,
+} from "../../constants";
+import { PlayerStatId } from "../../Types";
 
 export type WearableLoadoutSlot = "I" | "II" | "III";
 export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;
+export type StoredWearableLoadouts = {
+  version: 1;
+  defaultEquipment: BumpkinParts;
+  loadouts: WearableLoadouts;
+};
 
-const LOADOUT_SLOTS: WearableLoadoutSlot[] = ["I", "II", "III"];
+export const LOADOUT_SLOTS: WearableLoadoutSlot[] = ["I", "II", "III"];
 
-const REQUIRED: BumpkinPart[] = ["background", "body", "hair", "shoes", "tool"];
+export const REQUIRED: BumpkinPart[] = [
+  "background",
+  "body",
+  "hair",
+  "shoes",
+  "tool",
+];
 
 const REQUIRED_BUT_INCOMPATIBLE: BumpkinPart[][] = [
   ["shirt", "pants"],
   ["dress"],
-];
-
-const NOT_REQUIRED: BumpkinPart[] = [
-  "hat",
-  "beard",
-  "necklace",
-  "coat",
-  "wings",
-  "suit",
-  "onesie",
-  "secondaryTool",
-  "aura",
 ];
 
 const LEFT_EQUIPMENT: BumpkinPart[] = [
@@ -57,6 +62,8 @@ const LEFT_EQUIPMENT: BumpkinPart[] = [
   "shoes",
   "tool",
   "hat",
+  "secondaryTool",
+  "aura",
 ];
 
 const RIGHT_EQUIPMENT: BumpkinPart[] = [
@@ -66,19 +73,19 @@ const RIGHT_EQUIPMENT: BumpkinPart[] = [
   "wings",
   "suit",
   "onesie",
+  "shirt",
+  "pants",
 ];
 
 const BOTTOM_EQUIPMENT: BumpkinPart[] = ["secondaryTool", "aura"];
 
-const _profileState = (state: PortalMachineState) => ({
-  farmId: state.context.id,
-  gameState: state.context.state,
-  lives: state.context.lives,
-  maxLives: state.context.maxLives,
-});
-
 const getStorageKey = (farmId: number) =>
   `portal:${PORTAL_NAME}:wearableLoadouts:${farmId}`;
+
+const _playerStatsState = (state: PortalMachineState) => ({
+  collected: state.context.collected,
+  playerStatLevels: state.context.playerStatLevels,
+});
 
 const getDefaultLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
   I: { ...equipment },
@@ -93,260 +100,370 @@ const isValidEquipment = (value: unknown): value is BumpkinParts => {
   return REQUIRED.every((part) => !!equipment[part]);
 };
 
-const loadStoredLoadouts = ({
+const getAllowedItems = ({
+  available,
+  defaultEquipment,
+}: {
+  available: Wardrobe;
+  defaultEquipment: BumpkinParts;
+}) => {
+  return new Set([
+    ...Object.values(defaultEquipment),
+    ...Object.values(INITIAL_EQUIPMENT),
+    ...Object.entries(available)
+      .filter(([, amount]) => amount > 0)
+      .map(([name]) => name as BumpkinItem),
+  ]);
+};
+
+const getFallbackItem = ({
+  part,
+  fallback,
+  allowedItems,
+}: {
+  part: BumpkinPart;
+  fallback: BumpkinParts;
+  allowedItems: Set<BumpkinItem | undefined>;
+}) => {
+  const defaultItem = fallback[part];
+  if (defaultItem && allowedItems.has(defaultItem)) return defaultItem;
+
+  const initialItem = INITIAL_EQUIPMENT[part];
+  if (initialItem && allowedItems.has(initialItem)) return initialItem;
+
+  return undefined;
+};
+
+const sanitizeEquipment = ({
+  equipment,
+  fallback,
+  allowedItems,
+}: {
+  equipment: unknown;
+  fallback: BumpkinParts;
+  allowedItems: Set<BumpkinItem | undefined>;
+}): BumpkinParts => {
+  if (!isValidEquipment(equipment)) return { ...fallback };
+
+  const sanitized = { ...equipment };
+
+  Object.entries(sanitized).forEach(([part, item]) => {
+    const bumpkinPart = part as BumpkinPart;
+    const bumpkinItem = item as BumpkinItem | undefined;
+    const itemMatchesPart =
+      !!bumpkinItem && BUMPKIN_ITEM_PART[bumpkinItem] === bumpkinPart;
+
+    if (bumpkinItem && allowedItems.has(bumpkinItem) && itemMatchesPart) {
+      return;
+    }
+
+    const fallbackItem = getFallbackItem({
+      part: bumpkinPart,
+      fallback,
+      allowedItems,
+    });
+
+    if (fallbackItem) {
+      sanitized[bumpkinPart] = fallbackItem as never;
+    } else {
+      delete sanitized[bumpkinPart];
+    }
+  });
+
+  REQUIRED.forEach((part) => {
+    if (sanitized[part]) return;
+
+    const fallbackItem = getFallbackItem({ part, fallback, allowedItems });
+    if (fallbackItem) {
+      sanitized[part] = fallbackItem as never;
+    }
+  });
+
+  return isValidEquipment(sanitized) ? sanitized : { ...fallback };
+};
+
+export const loadStoredLoadouts = ({
   farmId,
   fallback,
+  available,
 }: {
   farmId: number;
   fallback: BumpkinParts;
-}): WearableLoadouts => {
+  available: Wardrobe;
+}): StoredWearableLoadouts => {
   const defaults = getDefaultLoadouts(fallback);
+  const allowedItems = getAllowedItems({
+    available,
+    defaultEquipment: fallback,
+  });
+
+  const getStoredLoadouts = (
+    value: unknown,
+  ): Partial<WearableLoadouts> | undefined => {
+    if (!value || typeof value !== "object") return undefined;
+
+    const parsed = value as
+      | Partial<WearableLoadouts>
+      | Partial<StoredWearableLoadouts>;
+
+    return "loadouts" in parsed
+      ? (parsed.loadouts as Partial<WearableLoadouts> | undefined)
+      : (parsed as Partial<WearableLoadouts>);
+  };
 
   try {
     const raw = localStorage.getItem(getStorageKey(farmId));
-    if (!raw) return defaults;
+    if (!raw) {
+      return {
+        version: 1,
+        defaultEquipment: { ...fallback },
+        loadouts: defaults,
+      };
+    }
 
-    const parsed = JSON.parse(raw) as Partial<WearableLoadouts>;
+    const parsed = JSON.parse(raw) as unknown;
+    const storedLoadouts = getStoredLoadouts(parsed);
+    if (!storedLoadouts) {
+      return {
+        version: 1,
+        defaultEquipment: { ...fallback },
+        loadouts: defaults,
+      };
+    }
 
-    return LOADOUT_SLOTS.reduce((loadouts, slot) => {
-      const stored = parsed[slot];
+    const loadouts = LOADOUT_SLOTS.reduce((loadouts, slot) => {
+      const stored = storedLoadouts[slot];
 
       return {
         ...loadouts,
-        [slot]: isValidEquipment(stored) ? stored : defaults[slot],
+        [slot]: sanitizeEquipment({
+          equipment: stored,
+          fallback,
+          allowedItems,
+        }),
       };
     }, defaults);
+
+    return {
+      version: 1,
+      defaultEquipment: { ...fallback },
+      loadouts,
+    };
   } catch {
-    return defaults;
+    return {
+      version: 1,
+      defaultEquipment: { ...fallback },
+      loadouts: defaults,
+    };
   }
 };
 
-const saveStoredLoadouts = ({
+export const saveStoredLoadouts = ({
   farmId,
+  defaultEquipment,
   loadouts,
 }: {
   farmId: number;
+  defaultEquipment: BumpkinParts;
   loadouts: WearableLoadouts;
 }) => {
-  localStorage.setItem(getStorageKey(farmId), JSON.stringify(loadouts));
+  localStorage.setItem(
+    getStorageKey(farmId),
+    JSON.stringify({
+      version: 1,
+      defaultEquipment,
+      loadouts,
+    } satisfies StoredWearableLoadouts),
+  );
 };
 
 export const Profile: React.FC<{
   onClose: () => void;
-}> = ({ onClose }) => {
+  currentTab: WearableLoadoutSlot;
+  setCurrentTab: React.Dispatch<React.SetStateAction<WearableLoadoutSlot>>;
+  username?: string;
+  equipped: BumpkinParts;
+  selectedBumpkinPart: BumpkinPart;
+  onSelectBumpkinPart: (part: BumpkinPart) => void;
+  lives: number;
+  maxLives: number;
+  onStart?: () => void;
+  onStartTraining?: () => void;
+  onBack?: () => void;
+}> = ({
+  onClose,
+  currentTab,
+  setCurrentTab,
+  username,
+  equipped,
+  selectedBumpkinPart,
+  onSelectBumpkinPart,
+  lives,
+  maxLives,
+  onStart,
+  onStartTraining,
+  onBack,
+}) => {
   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
-  const { farmId, gameState, lives, maxLives } = useSelector(
+  const { collected, playerStatLevels } = useSelector(
     portalService,
-    _profileState,
+    _playerStatsState,
   );
 
-  const [currentTab, setCurrentTab] = useState<WearableLoadoutSlot>("I");
-  const [loadouts, setLoadouts] = useState<WearableLoadouts>();
-  const [equipped, setEquipped] = useState<BumpkinParts>();
-  const [baseEquipment, setBaseEquipment] = useState<BumpkinParts>();
-  const [selectedBumpkinPart, setSelectedBumpkinPart] =
-    useState<BumpkinPart>("background");
-
-  const bumpkinEquipment = gameState?.bumpkin?.equipped as
-    | BumpkinParts
-    | undefined;
-
-  useEffect(() => {
-    if (!bumpkinEquipment) return;
-
-    const storedLoadouts = loadStoredLoadouts({
-      farmId,
-      fallback: bumpkinEquipment,
-    });
-
-    setLoadouts(storedLoadouts);
-    setEquipped(storedLoadouts[currentTab]);
-    setBaseEquipment(storedLoadouts[currentTab]);
-    portalService.send("SET_ACTIVE_WEARABLES", {
-      wearables: storedLoadouts[currentTab],
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [farmId, !!bumpkinEquipment]);
-
-  useEffect(() => {
-    if (!loadouts) return;
-
-    const nextEquipment = loadouts[currentTab];
-    setEquipped(nextEquipment);
-    setBaseEquipment(nextEquipment);
-    portalService.send("SET_ACTIVE_WEARABLES", { wearables: nextEquipment });
-  }, [currentTab, loadouts, portalService]);
-
-  const wardrobe = useMemo(() => {
-    if (!gameState) return {};
-
-    const available = availableWardrobe(gameState as GameState);
-
-    return Object.values(equipped ?? {}).reduce(
-      (acc, name) => ({
-        ...acc,
-        [name]: acc[name] ?? 0,
-      }),
-      available,
-    );
-  }, [equipped, gameState]);
-
-  if (!gameState || !bumpkinEquipment || !loadouts || !equipped) {
-    return null;
-  }
-
-  const equipPart = (name: BumpkinItem) => {
-    const part = BUMPKIN_ITEM_PART[name];
-    const outfit = {
-      ...equipped,
-      [part]: name,
-    };
-
-    if (part === "dress") {
-      delete outfit.shirt;
-      delete outfit.pants;
-    }
-
-    if (part === "shirt" || part === "pants") {
-      delete outfit.dress;
-    }
-
-    setEquipped(outfit);
+  const statIcons: Record<PlayerStatId, { src: string; width?: number }> = {
+    health: { src: SUNNYSIDE.icons.heart },
+    speed: { src: speedIcon, width: 14 },
+    damage: { src: swordIcon },
   };
 
-  const unequipPart = (name: BumpkinItem) => {
-    const part = BUMPKIN_ITEM_PART[name];
+  const statLabelTypes = {
+    health: "danger",
+    speed: "warning",
+    damage: "info",
+  } as const;
 
-    if (REQUIRED.includes(part as BumpkinPart)) return;
-
-    const outfit = { ...equipped };
-    delete outfit[part];
-
-    setEquipped(outfit);
+  const statTitles = {
+    health: t(`${PORTAL_NAME}.lives`),
+    speed: t(`${PORTAL_NAME}.speed`),
+    damage: t(`${PORTAL_NAME}.damage`),
   };
 
-  const handleSave = () => {
-    const nextLoadouts = {
-      ...loadouts,
-      [currentTab]: equipped,
-    };
+  const playerStats = (
+    <>
+      <InnerPanel className="flex mt-2 gap-2 w-full">
+        {PLAYER_STAT_IDS.map((stat) => {
+          const level = playerStatLevels[stat];
+          const cost = getPlayerStatUpgradeCost(level);
+          const canUpgrade = cost !== undefined && collected >= cost;
+          const value =
+            stat === "health"
+              ? `${lives}/${maxLives}`
+              : getPlayerStatValue(stat, level);
 
-    setLoadouts(nextLoadouts);
-    setBaseEquipment(equipped);
-    saveStoredLoadouts({ farmId, loadouts: nextLoadouts });
-    portalService.send("SET_ACTIVE_WEARABLES", { wearables: equipped });
-  };
-
-  const isDirty = JSON.stringify(equipped) !== JSON.stringify(baseEquipment);
-  const equippedItems = Object.values(equipped);
-  const selectedBumpkinItem = equipped[selectedBumpkinPart];
-
-  const sortedWardrobeNames = getKeys(wardrobe).sort((a, b) =>
-    a.localeCompare(b),
-  );
-
-  const filteredWardrobeNames = sortedWardrobeNames.filter(
-    (name) => BUMPKIN_ITEM_PART[name] === selectedBumpkinPart,
-  );
-
-  const incompatibleWearables = (
-    <InnerPanel className="flex mt-2 gap-2 w-full">
-      <StatCard
-        title={t(`${PORTAL_NAME}.lives`)}
-        label={{ value: `${lives}/${maxLives}`, type: "danger" }}
-        img={{ src: SUNNYSIDE.icons.heart }}
-        progress={{ percentage: 100, type: "error" }}
-        className="w-full"
-      />
-      <StatCard
-        title={t(`${PORTAL_NAME}.speed`)}
-        label={{ value: 40, type: "warning" }}
-        img={{ src: speedIcon, width: 14 }}
-        progress={{ percentage: 0.5, type: "error" }}
-        className="w-full"
-      />
-      <StatCard
-        title={t(`${PORTAL_NAME}.damage`)}
-        label={{ value: 0, type: "info" }}
-        img={{ src: swordIcon }}
-        progress={{ percentage: 0.5, type: "error" }}
-        className="w-full"
-      />
-    </InnerPanel>
+          return (
+            <StatCard
+              key={stat}
+              title={statTitles[stat]}
+              label={{ value, type: statLabelTypes[stat] }}
+              img={statIcons[stat]}
+              progress={
+                cost === undefined
+                  ? undefined
+                  : {
+                      percentage: Math.min(100, (collected / cost) * 100),
+                      type: canUpgrade ? "health" : "progress",
+                      currentXp: collected,
+                      requiredXp: cost,
+                    }
+              }
+              onClick={() => {
+                if (!canUpgrade) return;
+                portalService.send("UPGRADE_PLAYER_STAT", { stat });
+              }}
+              className="w-full"
+            />
+          );
+        })}
+      </InnerPanel>
+      {onStart && onStartTraining && onBack && (
+        <InnerPanel className="flex flex-col mt-2 gap-1 w-full">
+          <div className="flex gap-1">
+            <Button
+              className="whitespace-nowrap capitalize"
+              onClick={onStartTraining}
+            >
+              {t(`${PORTAL_NAME}.start.training`)}
+            </Button>
+            <Button className="whitespace-nowrap capitalize" onClick={onStart}>
+              {t("start")}
+            </Button>
+          </div>
+          <Button className="whitespace-nowrap capitalize" onClick={onBack}>
+            <div className="flex items-center justify-center gap-1">
+              <img src={SUNNYSIDE.icons.arrow_left} className="h-5" />
+              {t("back")}
+            </div>
+          </Button>
+        </InnerPanel>
+      )}
+    </>
   );
 
   return (
-    <CloseButtonPanel
-      tabs={LOADOUT_SLOTS.map((slot) => ({
-        id: slot,
-        icon: SUNNYSIDE.icons.player,
-        name: slot,
-      }))}
-      currentTab={currentTab}
-      setCurrentTab={setCurrentTab}
-      innerPanelFooter={incompatibleWearables}
-    >
-      <div className="p-2">
-        <div className="flex items-start gap-2">
-          <BumpkinPartGroup
-            bumpkinParts={LEFT_EQUIPMENT}
-            equipped={equipped}
-            selected={selectedBumpkinPart}
-            onSelect={setSelectedBumpkinPart}
-            gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
-          />
-          <div className="flex h-[165px] w-[165px] shrink-0">
-            <div className="relative h-full w-full overflow-hidden">
-              <InnerPanel style={{ padding: "0px" }}>
-                <DynamicNFT
-                  showBackground
-                  bumpkinParts={equipped}
-                  key={JSON.stringify(equipped)}
-                />
-              </InnerPanel>
-              <div className="absolute w-8 h-8 bottom-4 right-4">
-                <NPCIcon parts={equipped} key={JSON.stringify(equipped)} />
+    <div className="min-w-[429px]">
+      <CloseButtonPanel
+        tabs={LOADOUT_SLOTS.map((slot) => ({
+          id: slot,
+          icon: SUNNYSIDE.icons.player,
+          name: slot,
+        }))}
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+        innerPanelFooter={playerStats}
+      >
+        <div className="p-1">
+          <div className="flex items-center gap-2">
+            <BumpkinPartGroup
+              bumpkinParts={LEFT_EQUIPMENT}
+              equipped={equipped}
+              selected={selectedBumpkinPart}
+              onSelect={onSelectBumpkinPart}
+              gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
+            />
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative h-[165px] w-[165px] overflow-hidden">
+                <InnerPanel style={{ padding: "0px" }}>
+                  <DynamicNFT
+                    showBackground
+                    bumpkinParts={equipped}
+                    key={JSON.stringify(equipped)}
+                  />
+                </InnerPanel>
+                <div className="absolute w-8 h-8 bottom-4 right-4">
+                  <NPCIcon parts={equipped} key={JSON.stringify(equipped)} />
+                </div>
               </div>
+              {username && <Label>{username}</Label>}
             </div>
+            <BumpkinPartGroup
+              bumpkinParts={RIGHT_EQUIPMENT}
+              equipped={equipped}
+              selected={selectedBumpkinPart}
+              onSelect={onSelectBumpkinPart}
+              gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
+            />
           </div>
-          <BumpkinPartGroup
-            bumpkinParts={RIGHT_EQUIPMENT}
-            equipped={equipped}
-            selected={selectedBumpkinPart}
-            onSelect={setSelectedBumpkinPart}
-            gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
-          />
+          {/* <div className="flex w-full mt-2 gap-2 justify-between">
+            <BumpkinPartGroup
+              bumpkinParts={BOTTOM_EQUIPMENT}
+              equipped={equipped}
+              selected={selectedBumpkinPart}
+              onSelect={onSelectBumpkinPart}
+              gridStyling="grid grid-cols-2 gap-2 max-w-[110px]"
+            />
+            <div className="flex justify-end ml-auto divide-x-2 divide-white">
+              {REQUIRED_BUT_INCOMPATIBLE.map((parts, index) => (
+                <div
+                  key={parts.join(",")}
+                  className={classNames({
+                    "pr-1": index === 0,
+                    "pl-1": index > 0,
+                  })}
+                >
+                  <BumpkinPartGroup
+                    bumpkinParts={BOTTOM_EQUIPMENT_2}
+                    equipped={equipped}
+                    selected={selectedBumpkinPart}
+                    onSelect={onSelectBumpkinPart}
+                    gridStyling={`grid ${index === 0 ? "grid-cols-2" : "grid-cols-1"} gap-2`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div> */}
         </div>
-        <div className="flex w-full mt-2 gap-2">
-          <BumpkinPartGroup
-            bumpkinParts={BOTTOM_EQUIPMENT}
-            equipped={equipped}
-            selected={selectedBumpkinPart}
-            onSelect={setSelectedBumpkinPart}
-            gridStyling="grid grid-cols-2 gap-2 max-w-[110px]"
-          />
-          <div className="flex justify-end divide-x-2 divide-white ml-auto">
-            {REQUIRED_BUT_INCOMPATIBLE.map((parts, index) => (
-              <div
-                key={parts.join(",")}
-                className={classNames({
-                  "pr-1": index === 0,
-                  "pl-1": index > 0,
-                })}
-              >
-                <BumpkinPartGroup
-                  bumpkinParts={parts}
-                  equipped={equipped}
-                  selected={selectedBumpkinPart}
-                  onSelect={setSelectedBumpkinPart}
-                  gridStyling={`grid ${index === 0 ? "grid-cols-2" : "grid-cols-1"} gap-2`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </CloseButtonPanel>
+      </CloseButtonPanel>
+    </div>
   );
 };
