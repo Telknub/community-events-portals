@@ -1,6 +1,6 @@
 import { TranslationKeys } from "lib/i18n/dictionaries/types";
 import { WeaponId, WeaponRuntimeStats } from "../Types";
-import { PORTAL_NAME } from "./ConfigConstants";
+import { PORTAL_NAME } from "./PortalConstants";
 import { WEAPON_CONFIGS } from "./WeaponConstants";
 
 import hoeIcon from "public/world/portal/images/hoe.webp";

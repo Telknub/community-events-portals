@@ -9,6 +9,7 @@ import {
 } from "./EnemyConstants";
 import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
 import { WEAPON_NAMES } from "./WeaponUIConstants";
+import { PORTAL_NAME } from "./PortalConstants";
 import wateringCan from "public/world/portal/images/skill_water_pistol_icon.webp";
 import {
   getPlayerStatValue,
@@ -35,7 +36,7 @@ import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
 import tooltip_icon from "public/world/portal/images/ExpOrb_combined.webp";
 import { BossTypes, MobTypes, WeaponId, PassiveAbilityType } from "../Types";
 
-export const PORTAL_NAME = "festival-of-colors";
+export { PORTAL_NAME } from "./PortalConstants";
 export const PORTAL_TOKEN = "Festival of Colors Token 2026";
 
 // Game config

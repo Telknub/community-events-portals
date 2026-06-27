@@ -1,4 +1,5 @@
 export * from "./ConfigConstants";
+export * from "./PortalConstants";
 export * from "./DecorationConstants";
 export * from "./EnemyConstants";
 export * from "./WeaponConstants";
