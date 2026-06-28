@@ -55,6 +55,7 @@ export class Scene extends BaseScene {
   swarmGroup!: Phaser.Physics.Arcade.Group;
   bossEnemies: BossEnemy[] = [];
   bossGroup!: Phaser.Physics.Arcade.Group;
+  private gameStartTime = Date.now();
 
   sceneId: SceneId = PORTAL_NAME;
 
@@ -244,7 +245,8 @@ export class Scene extends BaseScene {
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
       this.weaponManager?.update(time, delta);
-      this.setupPortalListener();
+      this.timeBaseWave();
+      // this.scoreBaseWave();
       this.swarmEnemies.forEach((mob) => {
         mob.setSwarmMove(true);
       });
@@ -556,13 +558,26 @@ export class Scene extends BaseScene {
     // );
   }
 
-  private setupPortalListener() {
+  private scoreBaseWave() {
     this.portalService?.onTransition((state) => {
       if (!state.changed) return;
 
       const score = state.context.score;
       this.spawnBoss(score);
       this.spawnSwarmMob(score);
+    });
+  }
+
+  private timeBaseWave() {
+    this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => {
+        const elapsedTime = (Date.now() - this.gameStartTime) / 1000;
+
+        this.spawnBoss(elapsedTime);
+        this.spawnSwarmMob(elapsedTime);
+      },
     });
   }
 

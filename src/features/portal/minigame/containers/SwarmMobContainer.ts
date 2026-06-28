@@ -25,6 +25,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   public isDead = false;
   public config: EnemyConfig;
   private isHurting = false;
+  public deSpawnState = false;
 
   private avoidX = 0;
   private avoidY = 0;
@@ -89,6 +90,15 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
   private readonly handleSceneUpdate = () => {
     if (!this.player || !this.active || this.isDead) return;
+
+    if (this.deSpawnState) {
+      const camera = this.scene.cameras.main;
+
+      if (!camera.worldView.contains(this.x, this.y)) {
+        this.destroy();
+        return;
+      }
+    }
 
     if (!this.swarmMove) {
       this.enemyBody.setVelocity(0, 0);
