@@ -244,6 +244,7 @@ export class Scene extends BaseScene {
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
       this.weaponManager?.update(time, delta);
+      this.setupPortalListener();
       this.swarmEnemies.forEach((mob) => {
         mob.setSwarmMove(true);
       });
@@ -253,7 +254,6 @@ export class Scene extends BaseScene {
     } else if (this.isGameReady) {
       this.portalService?.send("START");
       this.velocity = WALKING_SPEED;
-      this.setupPortalListener();
       this.backgroundMusic.play();
     } else {
       this.velocity = 0;
@@ -268,7 +268,7 @@ export class Scene extends BaseScene {
 
   private getPlayerMovementSpeed() {
     const speedLevel =
-      this.portalService?.state.context.playerStatLevels.speed ??
+      // this.portalService?.state.context.playerStatLevels.speed ??
       PLAYER_STAT_INITIAL_LEVEL;
     const speed = getPlayerStatValue("speed", speedLevel);
 
