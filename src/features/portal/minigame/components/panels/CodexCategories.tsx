@@ -14,8 +14,9 @@ export const Skills: React.FC = () => {
   return (
     <div className="flex md:flex-row flex-col-reverse md:mr-1 items-start h-full">
       <InnerPanel className="p-2 w-full">
-        <Label type="default">{t(`${PORTAL_NAME}.skills`)}</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 w-full mt-1 gap-1">
+        <Label type="default">{t(`${PORTAL_NAME}.weapon`)}</Label>
+        <span className="text-xs">{t(`${PORTAL_NAME}.instructions6`)}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-3 w-full mt-2 gap-1">
           {SKILLS_TABLE.map((skill, index) => (
             <SkillsCard
               key={index}

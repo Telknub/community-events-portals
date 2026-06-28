@@ -8,7 +8,6 @@ import {
   DROP_ITEM_XP_VALUES,
 } from "./EnemyConstants";
 import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
-import { WEAPON_NAMES } from "./WeaponUIConstants";
 import { PORTAL_NAME } from "./PortalConstants";
 import wateringCan from "public/world/portal/images/skill_water_pistol_icon.webp";
 import {
@@ -229,63 +228,63 @@ export const SKILLS_TABLE: {
 }[] = [
   {
     image: wind_blade,
-    skillName: WEAPON_NAMES.hoe,
+    skillName: t(`${PORTAL_NAME}.weapon.hoe`),
     description: t(`${PORTAL_NAME}.enemy2`),
     minDamage: skill_config.hoe.baseStats.damage,
     maxDamage: getWeaponMaxDamage("hoe"),
   },
   {
     image: broomScythe,
-    skillName: WEAPON_NAMES.broomScythe,
+    skillName: t(`${PORTAL_NAME}.weapon.broomScythe`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.broomScythe.baseStats.damage,
     maxDamage: getWeaponMaxDamage("broomScythe"),
   },
   {
     image: wateringCan,
-    skillName: WEAPON_NAMES.wateringCan,
+    skillName: t(`${PORTAL_NAME}.weapon.wateringCan`),
     description: t(`${PORTAL_NAME}.enemy1`),
     minDamage: skill_config.wateringCan.baseStats.damage,
     maxDamage: getWeaponMaxDamage("wateringCan"),
   },
   {
     image: corn_bomb,
-    skillName: WEAPON_NAMES.corn,
+    skillName: t(`${PORTAL_NAME}.weapon.corn`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.corn.baseStats.damage,
     maxDamage: getWeaponMaxDamage("corn"),
   },
   {
     image: wind_blade,
-    skillName: WEAPON_NAMES.tomato,
+    skillName: t(`${PORTAL_NAME}.weapon.tomato`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.tomato.baseStats.damage,
     maxDamage: getWeaponMaxDamage("tomato"),
   },
   {
     image: wind_blade,
-    skillName: WEAPON_NAMES.sunflower,
+    skillName: t(`${PORTAL_NAME}.weapon.sunflower`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.sunflower.baseStats.damage,
     maxDamage: getWeaponMaxDamage("sunflower"),
   },
   {
     image: wind_blade,
-    skillName: WEAPON_NAMES.wheat,
+    skillName: t(`${PORTAL_NAME}.weapon.wheat`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.wheat.baseStats.damage,
     maxDamage: getWeaponMaxDamage("wheat"),
   },
   {
     image: giant_pumpkin,
-    skillName: WEAPON_NAMES.pumpkin,
+    skillName: t(`${PORTAL_NAME}.weapon.pumpkin`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.pumpkin.baseStats.damage,
     maxDamage: getWeaponMaxDamage("pumpkin"),
   },
   {
     image: summon_bees,
-    skillName: WEAPON_NAMES.beehive,
+    skillName: t(`${PORTAL_NAME}.weapon.beehive`),
     description: t(`${PORTAL_NAME}.enemy3`),
     minDamage: skill_config.beehive.baseStats.damage,
     maxDamage: getWeaponMaxDamage("beehive"),
