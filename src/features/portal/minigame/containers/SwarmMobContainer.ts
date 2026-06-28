@@ -26,6 +26,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   public config: EnemyConfig;
   private isHurting = false;
   public deSpawnState = false;
+  private mobType: MobTypes;
 
   private avoidX = 0;
   private avoidY = 0;
@@ -38,7 +39,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.player = player;
 
     scene.physics.add.existing(this);
-
+    this.mobType = mobType;
     this.config = MOB_CONFIGS[mobType];
 
     this.hp = this.config.hp;
@@ -191,7 +192,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
       this,
       this.player,
       () => {
-        this.player?.hurt();
+        this.player?.hurt(this.mobType);
       },
       undefined,
       this,

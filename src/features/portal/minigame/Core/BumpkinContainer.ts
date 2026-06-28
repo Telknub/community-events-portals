@@ -19,6 +19,7 @@ import { formatNumber } from "lib/utils/formatNumber";
 import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
 import { MachineInterpreter } from "../lib/Machine";
+import { EnemyType } from "../Types";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {
   "pumpkin' pete": "pete",
@@ -1033,12 +1034,12 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     }
   }
 
-  public hurt() {
+  public hurt(enemyType: EnemyType) {
     if (this.isHurting) return;
 
     this.isHurting = true;
     this.playHurtSound();
-    this.portalService?.send("LOSE_LIFE");
+    this.portalService?.send("LOSE_LIFE", { enemyType: enemyType });
     this.playHeartFall();
 
     if (this.isGameOver) return;

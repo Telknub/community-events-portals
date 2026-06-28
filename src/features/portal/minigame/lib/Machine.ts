@@ -12,6 +12,7 @@ import {
   DEFAULT_PLAYER_STAT_LEVELS,
   getPlayerStatValueIncrease,
   resolvePlayerStatUpgrade,
+  ENEMY_BALANCE_STATS,
 } from "../constants";
 import { GameState } from "features/game/types/game";
 import { BumpkinParts } from "lib/utils/tokenUriBuilder";
@@ -23,6 +24,7 @@ import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
 import {
   DropItemType,
+  EnemyType,
   PlayerStatId,
   PlayerStatLevels,
   WeaponId,
@@ -118,6 +120,7 @@ type GainPointsEvent = {
 
 type LoseLifeEvent = {
   type: "LOSE_LIFE";
+  enemyType: EnemyType;
 };
 
 type CollectItemEvent = {
@@ -549,8 +552,9 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         },
         LOSE_LIFE: {
           actions: assign({
-            lives: (context: Context) => {
-              return context.lives - 1;
+            lives: (context, event) => {
+              const damage = ENEMY_BALANCE_STATS[event.enemyType].DAMAGE;
+              return Math.max(0, context.lives - damage);
             },
           }),
         },

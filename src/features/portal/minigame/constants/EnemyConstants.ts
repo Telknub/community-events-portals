@@ -138,45 +138,50 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   },
 ];
 
-// Balance stats for each boss type
-export const BOSS_BALANCE_STATS = {
-  boss1: {
-    HP: 200,
-    SPEED: 30,
-  },
-  boss2: {
-    HP: 300,
-    SPEED: 25,
-  },
-  boss3: {
-    HP: 150,
-    SPEED: 27,
-  },
-};
-
-// Balance stats for each mob type
-export const MOB_BALANCE_STATS = {
+// Balance enemy stats
+export const ENEMY_BALANCE_STATS = {
   mob1: {
     HP: 1,
     SPEED: 15,
+    DAMAGE: 2,
   },
   mob2: {
     HP: 1,
     SPEED: 15,
+    DAMAGE: 2,
   },
   mob3: {
     HP: 2,
     SPEED: 20,
+    DAMAGE: 3,
   },
   mob4: {
     HP: 3,
     SPEED: 20,
+    DAMAGE: 3,
   },
   mob5: {
     HP: 4,
     SPEED: 25,
+    DAMAGE: 5,
   },
-};
+
+  boss1: {
+    HP: 200,
+    SPEED: 30,
+    DAMAGE: 10,
+  },
+  boss2: {
+    HP: 300,
+    SPEED: 25,
+    DAMAGE: 15,
+  },
+  boss3: {
+    HP: 150,
+    SPEED: 27,
+    DAMAGE: 20,
+  },
+} as const;
 
 // Mob configurations
 export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
@@ -191,9 +196,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     frameEnd: 8,
     frameRate: 10,
     depth: 80,
-    speed: MOB_BALANCE_STATS.mob1.SPEED,
-    hp: MOB_BALANCE_STATS.mob1.HP,
-    maxHp: MOB_BALANCE_STATS.mob1.HP,
+    speed: ENEMY_BALANCE_STATS.mob1.SPEED,
+    hp: ENEMY_BALANCE_STATS.mob1.HP,
+    maxHp: ENEMY_BALANCE_STATS.mob1.HP,
     dropItem: "blueOrb",
   },
   mob2: {
@@ -207,9 +212,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     frameEnd: 8,
     frameRate: 10,
     depth: 85,
-    speed: MOB_BALANCE_STATS.mob2.SPEED,
-    hp: MOB_BALANCE_STATS.mob2.HP,
-    maxHp: MOB_BALANCE_STATS.mob2.HP,
+    speed: ENEMY_BALANCE_STATS.mob2.SPEED,
+    hp: ENEMY_BALANCE_STATS.mob2.HP,
+    maxHp: ENEMY_BALANCE_STATS.mob2.HP,
     dropItem: "blueOrb",
   },
   mob3: {
@@ -223,9 +228,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     frameEnd: 12,
     frameRate: 10,
     depth: 80,
-    speed: MOB_BALANCE_STATS.mob3.SPEED,
-    hp: MOB_BALANCE_STATS.mob3.HP,
-    maxHp: MOB_BALANCE_STATS.mob3.HP,
+    speed: ENEMY_BALANCE_STATS.mob3.SPEED,
+    hp: ENEMY_BALANCE_STATS.mob3.HP,
+    maxHp: ENEMY_BALANCE_STATS.mob3.HP,
     dropItem: "greenOrb",
   },
   mob4: {
@@ -239,9 +244,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     frameEnd: 11,
     frameRate: 10,
     depth: 80,
-    speed: MOB_BALANCE_STATS.mob4.SPEED,
-    hp: MOB_BALANCE_STATS.mob4.HP,
-    maxHp: MOB_BALANCE_STATS.mob4.HP,
+    speed: ENEMY_BALANCE_STATS.mob4.SPEED,
+    hp: ENEMY_BALANCE_STATS.mob4.HP,
+    maxHp: ENEMY_BALANCE_STATS.mob4.HP,
     dropItem: "grayOrb",
   },
   mob5: {
@@ -255,9 +260,9 @@ export const MOB_CONFIGS: Record<MobTypes, EnemyConfig> = {
     frameEnd: 4,
     frameRate: 5,
     depth: 90,
-    speed: MOB_BALANCE_STATS.mob5.SPEED,
-    hp: MOB_BALANCE_STATS.mob5.HP,
-    maxHp: MOB_BALANCE_STATS.mob5.HP,
+    speed: ENEMY_BALANCE_STATS.mob5.SPEED,
+    hp: ENEMY_BALANCE_STATS.mob5.HP,
+    maxHp: ENEMY_BALANCE_STATS.mob5.HP,
     dropItem: "grayOrb",
   },
 };
@@ -275,9 +280,9 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     frameEnd: 7,
     frameRate: 10,
     depth: 100,
-    speed: BOSS_BALANCE_STATS.boss1.SPEED,
-    hp: BOSS_BALANCE_STATS.boss1.HP,
-    maxHp: BOSS_BALANCE_STATS.boss1.HP,
+    speed: ENEMY_BALANCE_STATS.boss1.SPEED,
+    hp: ENEMY_BALANCE_STATS.boss1.HP,
+    maxHp: ENEMY_BALANCE_STATS.boss1.HP,
     dropItem: "yellowOrb",
   },
   boss2: {
@@ -291,9 +296,9 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     frameEnd: 7,
     frameRate: 10,
     depth: BOSS_DEPTH,
-    speed: BOSS_BALANCE_STATS.boss2.SPEED,
-    hp: BOSS_BALANCE_STATS.boss2.HP,
-    maxHp: BOSS_BALANCE_STATS.boss2.HP,
+    speed: ENEMY_BALANCE_STATS.boss2.SPEED,
+    hp: ENEMY_BALANCE_STATS.boss2.HP,
+    maxHp: ENEMY_BALANCE_STATS.boss2.HP,
     dropItem: "purpleOrb",
   },
   boss3: {
@@ -307,9 +312,9 @@ export const BOSS_CONFIGS: Record<BossTypes, EnemyConfig> = {
     frameEnd: 8,
     frameRate: 10,
     depth: BOSS_DEPTH,
-    speed: BOSS_BALANCE_STATS.boss3.SPEED,
-    hp: BOSS_BALANCE_STATS.boss3.HP,
-    maxHp: BOSS_BALANCE_STATS.boss3.HP,
+    speed: ENEMY_BALANCE_STATS.boss3.SPEED,
+    hp: ENEMY_BALANCE_STATS.boss3.HP,
+    maxHp: ENEMY_BALANCE_STATS.boss3.HP,
     dropItem: "purpleOrb",
   },
 };

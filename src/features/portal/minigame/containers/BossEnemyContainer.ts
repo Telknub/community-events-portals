@@ -194,7 +194,7 @@ export class BossEnemy extends Phaser.GameObjects.Container {
       this,
       this.player,
       () => {
-        this.player?.hurt();
+        this.player?.hurt(this.bossType);
       },
       undefined,
       this,
