@@ -268,7 +268,7 @@ export class Scene extends BaseScene {
 
   private getPlayerMovementSpeed() {
     const speedLevel =
-      // this.portalService?.state.context.playerStatLevels.speed ??
+      this.portalService?.state.context.playerStatLevels.speed ??
       PLAYER_STAT_INITIAL_LEVEL;
     const speed = getPlayerStatValue("speed", speedLevel);
 
