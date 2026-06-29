@@ -762,7 +762,7 @@ export class Scene extends BaseScene {
   private spawnBoss(score: number) {
     for (const wave of BOSS_WAVE_THRESHOLDS) {
       const key = wave.flag;
-      if (score >= wave.scoreReq && !this.waveState.get(key)) {
+      if (score >= wave.triggerAt && !this.waveState.get(key)) {
         this.waveState.set(key, true);
 
         this.bossSpawnWave(wave.bossType, wave.totalEnemy);
@@ -773,7 +773,7 @@ export class Scene extends BaseScene {
   private spawnSwarmMob(score: number) {
     for (const wave of MOB_WAVE_THRESHOLDS) {
       const key = wave.flag;
-      if (score >= wave.scoreReq && !this.waveState.get(key)) {
+      if (score >= wave.triggerAt && !this.waveState.get(key)) {
         this.waveState.set(key, true);
 
         this.mobSpawnWave(
