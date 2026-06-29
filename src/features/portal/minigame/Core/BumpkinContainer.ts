@@ -20,6 +20,7 @@ import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
 import { MachineInterpreter } from "../lib/Machine";
 import { EnemyType } from "../Types";
+import { ENEMY_BALANCE_STATS } from "../constants";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {
   "pumpkin' pete": "pete",
@@ -1037,10 +1038,12 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   public hurt(enemyType: EnemyType) {
     if (this.isHurting) return;
 
+    const damage = ENEMY_BALANCE_STATS[enemyType].DAMAGE;
+
     this.isHurting = true;
     this.playHurtSound();
     this.portalService?.send("LOSE_LIFE", { enemyType: enemyType });
-    this.playHeartFall();
+    this.playHeartFall(damage);
 
     if (this.isGameOver) return;
 
@@ -1057,14 +1060,14 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.scene.sound.play("hurt", { volume: 0.7 });
   }
 
-  private playHeartFall() {
+  private playHeartFall(damage: number) {
     if (!this.scene.textures.exists("heart")) return;
 
     const container = this.scene.add
       .container(this.x, this.y - 18)
       .setDepth(this.depth + 1);
     const damageText = this.scene.add
-      .text(0, 7, "-1", {
+      .text(0, 7, `-${damage}`, {
         fontSize: "5px",
         fontFamily: "Teeny",
         color: "#FFFFFF",

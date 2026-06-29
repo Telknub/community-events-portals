@@ -197,7 +197,7 @@ export type EnemyConfig = {
 };
 
 export type MobWaveConfig = {
-  scoreReq: number;
+  triggerAt: number;
   mobType: MobTypes;
   totalEnemy: number;
   batchSize: number;
@@ -206,7 +206,7 @@ export type MobWaveConfig = {
 };
 
 export type BossWaveConfig = {
-  scoreReq: number;
+  triggerAt: number;
   bossType: BossTypes;
   totalEnemy: number;
   flag: string;
