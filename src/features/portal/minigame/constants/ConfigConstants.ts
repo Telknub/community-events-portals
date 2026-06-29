@@ -6,6 +6,7 @@ import {
   MOB_CONFIGS,
   BOSS_CONFIGS,
   DROP_ITEM_XP_VALUES,
+  ENEMY_BALANCE_STATS,
 } from "./EnemyConstants";
 import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
 import { PORTAL_NAME } from "./PortalConstants";
@@ -154,54 +155,63 @@ export const ENEMIES_TABLE: {
   image: string;
   type: string;
   hp: number;
+  damage: number;
   itemIcon: string;
 }[] = [
   {
     image: icon_boss1,
     type: BOSS_NAMES.boss1,
     hp: boss_config.boss1.hp,
+    damage: ENEMY_BALANCE_STATS.boss1.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss1.dropItem],
   },
   {
     image: icon_boss2,
     type: BOSS_NAMES.boss2,
     hp: boss_config.boss2.hp,
+    damage: ENEMY_BALANCE_STATS.boss2.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss2.dropItem],
   },
   {
     image: icon_boss3,
     type: BOSS_NAMES.boss3,
     hp: boss_config.boss3.hp,
+    damage: ENEMY_BALANCE_STATS.boss3.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[boss_config.boss3.dropItem],
   },
   {
     image: icon_mob1,
     type: MOB_NAMES.mob1,
     hp: mob_config.mob1.hp,
+    damage: ENEMY_BALANCE_STATS.mob1.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob1.dropItem],
   },
   {
     image: icon_mob2,
     type: MOB_NAMES.mob2,
     hp: mob_config.mob2.hp,
+    damage: ENEMY_BALANCE_STATS.mob2.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob2.dropItem],
   },
   {
     image: icon_mob3,
     type: MOB_NAMES.mob3,
     hp: mob_config.mob3.hp,
+    damage: ENEMY_BALANCE_STATS.mob3.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob3.dropItem],
   },
   {
     image: icon_mob4,
     type: MOB_NAMES.mob4,
     hp: mob_config.mob4.hp,
+    damage: ENEMY_BALANCE_STATS.mob4.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob4.dropItem],
   },
   {
     image: icon_mob5,
     type: MOB_NAMES.mob5,
     hp: mob_config.mob5.hp,
+    damage: ENEMY_BALANCE_STATS.mob5.DAMAGE,
     itemIcon: DROP_ITEM_ASSETS[mob_config.mob5.dropItem],
   },
 ];
