@@ -46,24 +46,35 @@ export const WEAPON_UPGRADE_XP_COSTS: Record<WeaponLevel, number | null> = {
 
 export const PROJECTILE_CONFIGS: Record<string, ProjectileConfig> = {
   waterDrop: {
-    texture: "weapon_water_drop",
+    texture: "weapon_watering_can_projectile",
     behavior: "linear",
     bodySize: 8,
+    rotateToVelocity: true,
   },
   corn: {
-    texture: "weapon_corn",
+    texture: "weapon_corn_projectile",
     behavior: "exploding",
     bodySize: 10,
+    rotateToVelocity: true,
+    rotationOffsetDegrees: -90,
+    scale: 0.7,
+    orientedHitbox: true,
   },
   tomato: {
-    texture: "weapon_tomato",
+    texture: "weapon_tomato_projectile",
+    ricochetTexture: "weapon_tomato_ricochet",
     behavior: "bouncing",
     bodySize: 10,
+    rotateToVelocity: true,
+    rotationOffsetDegrees: -45,
+    orientedHitbox: true,
   },
   light: {
-    texture: "weapon_light",
+    texture: "weapon_sunflower_projectile",
     behavior: "light",
-    bodySize: 8,
+    bodySize: 6,
+    rotateToVelocity: true,
+    rotationOffsetDegrees: 90,
   },
   pumpkin: {
     texture: "weapon_pumpkin",
@@ -106,22 +117,22 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
   },
   broomScythe: {
     id: "broomScythe",
-    texture: "weapon_slash",
+    texture: "weapon_scythe",
     behavior: "slash",
     damageType: "physical",
     targeting: "playerForward",
     baseStats: {
       ...BASE_WEAPON_STATS,
       damage: 3,
-      cooldownMs: 900,
-      durationMs: 180,
+      cooldownMs: 1500,
+      durationMs: 320,
       arcDegrees: 80,
       range: 42,
     },
   },
   wateringCan: {
     id: "wateringCan",
-    texture: "weapon_water_drop",
+    texture: "weapon_watering_can_projectile",
     behavior: "linearProjectile",
     damageType: "water",
     targeting: "movementVector",
@@ -136,7 +147,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
   },
   corn: {
     id: "corn",
-    texture: "weapon_corn",
+    texture: "weapon_corn_projectile",
     behavior: "explodingProjectile",
     damageType: "explosion",
     targeting: "nearest",
@@ -313,7 +324,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
   corn: [
     {
       level: 2,
-      modifiers: [{ stat: "areaRadius", operation: "add", value: 6 }],
+      modifiers: [{ stat: "areaRadius", operation: "add", value: 3 }],
     },
     {
       level: 3,
@@ -322,7 +333,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     { level: 4, modifiers: [{ stat: "damage", operation: "add", value: 1 }] },
     {
       level: 5,
-      modifiers: [{ stat: "areaRadius", operation: "add", value: 8 }],
+      modifiers: [{ stat: "areaRadius", operation: "add", value: 3 }],
     },
     {
       level: 6,
@@ -331,7 +342,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     { level: 7, modifiers: [{ stat: "damage", operation: "add", value: 2 }] },
     {
       level: 8,
-      modifiers: [{ stat: "areaRadius", operation: "multiply", value: 1.25 }],
+      modifiers: [{ stat: "areaRadius", operation: "add", value: 4 }],
     },
   ],
   tomato: [

@@ -10,8 +10,8 @@ import { WeaponsTab } from "./Weapons";
 import { WeaponsGuide } from "./WeaponsGuide";
 import { WearablesTab } from "./Wearables";
 
-import hoeIcon from "public/world/portal/images/hoe.webp";
-import guideIcon from "public/world/portal/images/skill_water_pistol_icon.webp";
+import hoeIcon from "public/world/portal/images/hoe_icon.webp";
+import guideIcon from "public/world/page.png";
 
 export type ProfilePanelTab = "weapons" | "wearables" | "guide";
 

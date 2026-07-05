@@ -503,7 +503,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           actions: assign({
             endAt: () => Date.now() + GAME_SECONDS * 1000,
             score: 0,
-            collected: 0,
+            collected: 1400,
             lives: GAME_LIVES,
             maxLives: GAME_LIVES,
             selectedWeapon: "hoe",

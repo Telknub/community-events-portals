@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import type { DamagePayload, EnemyLike } from "../../Types";
 import { distanceBetween, enemyCenter } from "../../lib/combat/geometry";
 
+type AreaHitboxShape = "circle" | "spriteBounds";
+
 type AreaHitboxSpawnProps = {
   x: number;
   y: number;
@@ -11,6 +13,9 @@ type AreaHitboxSpawnProps = {
   payload: DamagePayload;
   hitCooldownMs: number;
   persistent: boolean;
+  animationKey?: string;
+  despawnOnAnimationComplete?: boolean;
+  hitboxShape?: AreaHitboxShape;
 };
 
 export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
@@ -19,6 +24,8 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
   public radius = 0;
   public hitCooldownMs = 0;
   public persistent = false;
+  private hitboxShape: AreaHitboxShape = "circle";
+  private despawnWhenAnimationCompletes = false;
   private readonly hitAt = new Map<EnemyLike, number>();
 
   constructor(scene: Phaser.Scene, x = 0, y = 0, texture = "weapon_hitbox") {
@@ -38,6 +45,9 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     payload,
     hitCooldownMs,
     persistent,
+    animationKey,
+    despawnOnAnimationComplete = false,
+    hitboxShape = "circle",
   }: AreaHitboxSpawnProps) {
     this.setTexture(texture);
     this.setPosition(x, y);
@@ -45,24 +55,48 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     this.setActive(true);
     this.setVisible(true);
     this.setDepth(Math.floor(y) + 1);
-    this.setAlpha(persistent ? 0.45 : 0.65);
+    this.setAlpha(animationKey ? 1 : persistent ? 0.45 : 0.65);
     this.payload = payload;
     this.expiresAt = expiresAt;
     this.radius = radius;
     this.hitCooldownMs = hitCooldownMs;
     this.persistent = persistent;
+    this.hitboxShape = hitboxShape;
+    this.despawnWhenAnimationCompletes = false;
     this.hitAt.clear();
+    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+
+    if (animationKey && this.scene.anims.exists(animationKey)) {
+      this.play(animationKey, true);
+      if (despawnOnAnimationComplete) {
+        this.despawnWhenAnimationCompletes = true;
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+          this.despawn();
+        });
+      }
+    } else {
+      this.anims.stop();
+    }
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
-    body.setCircle(radius);
-    body.setOffset(this.width / 2 - radius, this.height / 2 - radius);
+    if (hitboxShape === "spriteBounds") {
+      body.setSize(this.displayWidth, this.displayHeight, true);
+    } else {
+      body.setCircle(radius);
+      body.setOffset(this.width / 2 - radius, this.height / 2 - radius);
+    }
     body.setAllowGravity(false);
     body.setImmovable(true);
   }
 
   public canHit(enemy: EnemyLike, time: number) {
-    if (distanceBetween(this, enemyCenter(enemy)) > this.radius) return false;
+    if (
+      this.hitboxShape === "circle" &&
+      distanceBetween(this, enemyCenter(enemy)) > this.radius
+    ) {
+      return false;
+    }
 
     const lastHitAt = this.hitAt.get(enemy) ?? -Infinity;
 
@@ -76,10 +110,16 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
   }
 
   public hasExpired(time: number) {
+    if (this.despawnWhenAnimationCompletes) return false;
+
     return time >= this.expiresAt;
   }
 
   public despawn() {
+    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+    this.anims.stop();
+    this.hitboxShape = "circle";
+    this.despawnWhenAnimationCompletes = false;
     this.setActive(false);
     this.setVisible(false);
     this.hitAt.clear();

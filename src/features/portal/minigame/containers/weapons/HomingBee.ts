@@ -54,8 +54,8 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
-    body.setCircle(5);
-    body.setOffset(this.width / 2 - 5, this.height / 2 - 5);
+    body.setSize(this.width, this.height);
+    body.setOffset(0, 0);
     body.setAllowGravity(false);
   }
 

@@ -1,12 +1,7 @@
 import type Phaser from "phaser";
 
 export type ObstacleName =
-  | "rock"
-  | "water"
-  | "tree"
-  | "cloud"
-  | "cloud1"
-  | "tree_stump";
+  "rock" | "water" | "tree" | "cloud" | "cloud1" | "tree_stump";
 
 export type Obstacle = { name: ObstacleName; x: number; y: number };
 
@@ -30,12 +25,7 @@ export type PlayerStatLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type PlayerStatLevels = Record<PlayerStatId, PlayerStatLevel>;
 
 export type DamageType =
-  | "physical"
-  | "water"
-  | "explosion"
-  | "light"
-  | "dot"
-  | "summon";
+  "physical" | "water" | "explosion" | "light" | "dot" | "summon";
 
 export type TargetingMode =
   | "nearest"
@@ -106,16 +96,17 @@ export type WeaponUpgrade = {
 };
 
 export type ProjectileBehavior =
-  | "linear"
-  | "exploding"
-  | "bouncing"
-  | "light"
-  | "rolling";
+  "linear" | "exploding" | "bouncing" | "light" | "rolling";
 
 export type ProjectileConfig = {
   texture: string;
   behavior: ProjectileBehavior;
   bodySize: number;
+  rotateToVelocity?: boolean;
+  rotationOffsetDegrees?: number;
+  scale?: number;
+  orientedHitbox?: boolean;
+  ricochetTexture?: string;
 };
 
 export type StatusEffectId = "rooted" | "wheatDot";
@@ -167,11 +158,7 @@ export type CombatConfig = {
 };
 
 export type DropItemType =
-  | "blueOrb"
-  | "greenOrb"
-  | "grayOrb"
-  | "yellowOrb"
-  | "purpleOrb";
+  "blueOrb" | "greenOrb" | "grayOrb" | "yellowOrb" | "purpleOrb";
 
 export type BossTypes = "boss1" | "boss2" | "boss3";
 export type MobTypes = "mob1" | "mob2" | "mob3" | "mob4" | "mob5";

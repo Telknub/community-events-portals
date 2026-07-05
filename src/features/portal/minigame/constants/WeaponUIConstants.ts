@@ -3,22 +3,26 @@ import { WeaponId, WeaponRuntimeStats } from "../Types";
 import { PORTAL_NAME } from "./PortalConstants";
 import { WEAPON_CONFIGS } from "./WeaponConstants";
 
-import hoeIcon from "public/world/portal/images/hoe.webp";
-import cornIcon from "public/world/portal/images/skill_corn_bomb_icon.webp";
-import beeIcon from "public/world/portal/images/skill_summon_bees_icon.webp";
-import waterIcon from "public/world/portal/images/skill_water_pistol_icon.webp";
-import bladeIcon from "public/world/portal/images/skill_windBlade_skill_icon.webp";
+import hoe_icon from "public/world/portal/images/hoe_icon.webp";
+import scythe_icon from "public/world/portal/images/scythe_icon.png";
+import tomato_icon from "public/world/portal/images/tomato_icon.png";
+import sunflower_icon from "public/world/portal/images/sunflower_icon.png";
+import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
+import beehive_icon from "public/world/portal/images/beehive_icon.webp";
+import corn_bomb_icon from "public/world/portal/images/corn_bomb_icon.webp";
+import pumpkin_icon from "public/world/portal/images/pumpkin_icon.webp";
+import watering_can_icon from "public/world/portal/images/watering_can_icon.webp";
 
 export const WEAPON_ICONS: Record<WeaponId, string> = {
-  hoe: hoeIcon,
-  broomScythe: bladeIcon,
-  wateringCan: waterIcon,
-  corn: cornIcon,
-  tomato: cornIcon,
-  sunflower: waterIcon,
-  wheat: hoeIcon,
-  pumpkin: cornIcon,
-  beehive: beeIcon,
+  hoe: hoe_icon,
+  broomScythe: scythe_icon,
+  wateringCan: watering_can_icon,
+  corn: corn_bomb_icon,
+  tomato: tomato_icon,
+  sunflower: sunflower_icon,
+  wheat: wind_blade,
+  pumpkin: pumpkin_icon,
+  beehive: beehive_icon,
 };
 
 export const WEAPON_IDS = Object.keys(WEAPON_CONFIGS) as WeaponId[];

@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import classNames from "classnames";
 import enemyIcon from "public/world/portal/images/icon_boss_3.webp";
-import weaponIcon from "public/world/portal/images/skill_water_pistol_icon.webp";
+import weaponIcon from "public/world/portal/images/hoe_icon.webp";
 import dropItemIcon from "public/world/portal/images/dropItem1.webp";
 
 import { DropItemsXP, Enemies, Skills } from "./CodexCategories";

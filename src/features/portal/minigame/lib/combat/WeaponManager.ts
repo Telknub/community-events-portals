@@ -35,6 +35,10 @@ import {
   type Vector,
 } from "./geometry";
 
+const WEAPON_CORN_EXPLOSION_TEXTURE_KEY = "weapon_corn_explosion";
+const WEAPON_CORN_EXPLOSION_ANIMATION_KEY = "weapon_corn_explosion_active";
+const WEAPON_CORN_EXPLOSION_ANIMATION_MS = 625;
+
 type RuntimeWeapon = {
   id: WeaponId;
   level: WeaponLevel;
@@ -279,6 +283,7 @@ export class WeaponManager {
         arcDegrees: weapon.stats.arcDegrees,
         expiresAt: time + weapon.stats.durationMs,
         payload: this.createPayload(weapon),
+        followTarget: this.props.player,
       });
       EventBus.emit("weapon:fired", {
         id: weapon.id,
@@ -502,7 +507,11 @@ export class WeaponManager {
       pierce: weapon.stats.pierce,
       bounceCount: weapon.stats.bounceCount,
       chainRadius: weapon.stats.chainRadius,
-      scale: weapon.stats.size,
+      scale: weapon.stats.size * (projectile.scale ?? 1),
+      rotateToVelocity: projectile.rotateToVelocity,
+      rotationOffsetDegrees: projectile.rotationOffsetDegrees,
+      orientedHitbox: projectile.orientedHitbox,
+      ricochetTexture: projectile.ricochetTexture,
     });
     EventBus.emit("weapon:fired", {
       id: weapon.id,
@@ -599,19 +608,21 @@ export class WeaponManager {
 
   private handleProjectileHit(projectile: Projectile, enemy: EnemyLike) {
     if (!projectile.active || projectile.hasHit(enemy)) return;
+    if (!projectile.canHit(enemy)) return;
 
     projectile.registerHit(enemy);
-    this.damageSystem.applyDamage(
-      enemy,
-      projectile.payload,
-      this.props.scene.time.now,
-    );
 
     if (projectile.behavior === "exploding") {
       this.spawnExplosion(projectile, this.props.scene.time.now);
       projectile.despawn();
       return;
     }
+
+    this.damageSystem.applyDamage(
+      enemy,
+      projectile.payload,
+      this.props.scene.time.now,
+    );
 
     if (projectile.behavior === "bouncing") {
       projectile.bounceRemaining -= 1;
@@ -622,6 +633,7 @@ export class WeaponManager {
       });
 
       if (projectile.bounceRemaining >= 0 && nextTarget) {
+        projectile.activateRicochet();
         projectile.redirectTo(nextTarget, this.getProjectileSpeed(projectile));
         return;
       }
@@ -682,15 +694,18 @@ export class WeaponManager {
     this.spawnArea({
       x: projectile.x,
       y: projectile.y,
-      texture: "weapon_explosion",
+      texture: WEAPON_CORN_EXPLOSION_TEXTURE_KEY,
       radius: weapon.stats.areaRadius,
-      expiresAt: time + 180,
+      expiresAt: time + WEAPON_CORN_EXPLOSION_ANIMATION_MS,
       payload: {
         ...projectile.payload,
         damageType: "explosion",
       },
       hitCooldownMs: weapon.stats.hitCooldownMs,
       persistent: false,
+      animationKey: WEAPON_CORN_EXPLOSION_ANIMATION_KEY,
+      despawnOnAnimationComplete: true,
+      hitboxShape: "spriteBounds",
     });
   }
 
@@ -703,6 +718,9 @@ export class WeaponManager {
     payload,
     hitCooldownMs,
     persistent,
+    animationKey,
+    despawnOnAnimationComplete,
+    hitboxShape,
   }: {
     x: number;
     y: number;
@@ -712,6 +730,9 @@ export class WeaponManager {
     payload: DamagePayload;
     hitCooldownMs: number;
     persistent: boolean;
+    animationKey?: string;
+    despawnOnAnimationComplete?: boolean;
+    hitboxShape?: "circle" | "spriteBounds";
   }) {
     const hitbox = this.hitboxGroup.get(x, y, texture) as AreaHitbox | null;
 
@@ -726,6 +747,9 @@ export class WeaponManager {
       payload,
       hitCooldownMs,
       persistent,
+      animationKey,
+      despawnOnAnimationComplete,
+      hitboxShape,
     });
     EventBus.emit("weapon:aoe", {
       sourceWeaponId: payload.sourceWeaponId,
@@ -789,9 +813,7 @@ export class WeaponManager {
     }
 
     const body = this.props.player.body as
-      | Phaser.Physics.Arcade.Body
-      | null
-      | undefined;
+      Phaser.Physics.Arcade.Body | null | undefined;
 
     if (body && (body.velocity.x !== 0 || body.velocity.y !== 0)) {
       this.lastAimVector = normalizeVector(body.velocity);
@@ -904,19 +926,22 @@ export class WeaponManager {
       graphics.generateTexture(key, width, height);
     };
 
-    circleTexture("weapon_projectile", 0xffffff, 8);
-    circleTexture("weapon_water_drop", 0x5bbcff, 8);
-    circleTexture("weapon_corn", 0xffd447, 10);
+    circleTexture("weapon_projectile", 0xffffff, 8); // Basic projectile
+    circleTexture("weapon_watering_can_projectile", 0x5bbcff, 8); // Watering Can projectile
+    circleTexture("weapon_corn_projectile", 0xffd447, 10); // Corn projectile
     circleTexture("weapon_tomato", 0xe14242, 10);
-    circleTexture("weapon_light", 0xfff6a3, 8);
-    circleTexture("weapon_pumpkin", 0xf28c28, 14);
-    circleTexture("weapon_sunflower", 0xffd447, 14);
+    circleTexture("weapon_tomato_projectile", 0xe14242, 10);
+    circleTexture("weapon_tomato_ricochet", 0xff6f61, 10);
+    circleTexture("weapon_sunflower_projectile", 0xfff6a3, 8); // Sunflower projectile
+    circleTexture("weapon_pumpkin", 0xf28c28, 14); // Pumpkin
+    circleTexture("weapon_sunflower", 0xffd447, 14); // Sunflower
     circleTexture("weapon_wheat", 0xd8b35a, 20);
     circleTexture("weapon_bee", 0xf4c430, 10);
-    circleTexture("weapon_explosion", 0xff8f3a, 42);
+    circleTexture("weapon_corn_explosion", 0xff8f3a, 48);
     circleTexture("weapon_hitbox", 0xffffff, 32);
-    rectTexture("weapon_hoe", 0xcfd7e6, 18, 6);
-    rectTexture("weapon_slash", 0xe8f2ff, 42, 14);
+    rectTexture("weapon_hoe", 0xcfd7e6, 18, 6); // Hoe
+    rectTexture("weapon_slash", 0xe8f2ff, 42, 14); // Scythe slash
+    rectTexture("weapon_scythe", 0xe8f2ff, 38, 25); // Scythe
 
     graphics.destroy();
   }

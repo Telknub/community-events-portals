@@ -19,7 +19,7 @@ import { formatNumber } from "lib/utils/formatNumber";
 import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
 import { MachineInterpreter } from "../lib/Machine";
-import { EnemyType } from "../Types";
+import { EnemyType, WeaponId } from "../Types";
 import { ENEMY_BALANCE_STATS } from "../constants";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {
@@ -40,6 +40,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   public alert: Phaser.GameObjects.Sprite | undefined;
   public silhouette: Phaser.GameObjects.Sprite | undefined;
   public skull: Phaser.GameObjects.Sprite | undefined;
+  public equippedWeapon: Phaser.GameObjects.Sprite | undefined;
 
   public speech: SpeechBubble | undefined;
   public reaction: Phaser.GameObjects.Group;
@@ -51,11 +52,9 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   public backfx: Phaser.GameObjects.Sprite | undefined;
   public frontfx: Phaser.GameObjects.Sprite | undefined;
   public backParticles:
-    | Phaser.GameObjects.Particles.ParticleEmitter
-    | undefined;
+    Phaser.GameObjects.Particles.ParticleEmitter | undefined;
   public frontParticles:
-    | Phaser.GameObjects.Particles.ParticleEmitter
-    | undefined;
+    Phaser.GameObjects.Particles.ParticleEmitter | undefined;
 
   public clothing: Player["clothing"];
   public username: string | undefined;
@@ -230,8 +229,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
   get portalService() {
     return this.scene.registry.get("portalService") as
-      | MachineInterpreter
-      | undefined;
+      MachineInterpreter | undefined;
   }
 
   private async loadSprites(scene: Phaser.Scene) {
@@ -260,6 +258,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
       if (this.direction === "left") {
         this.faceLeft();
       }
+      this.syncEquippedWeaponDepth();
 
       this.createHurtAnimation(39, 46);
       this.sprite.play(this.idleAnimationKey, true);
@@ -302,6 +301,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         if (this.direction === "left") {
           this.faceLeft();
         }
+        this.syncEquippedWeaponDepth();
 
         this.createIdleAnimation(0, 8);
         this.createWalkingAnimation(9, 16);
@@ -336,6 +336,34 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     }
 
     scene.load.start();
+  }
+
+  public setEquippedWeapon(weaponId?: WeaponId) {
+    if (weaponId !== "wateringCan") {
+      if (this.equippedWeapon?.active) {
+        this.equippedWeapon.destroy();
+      }
+      this.equippedWeapon = undefined;
+      return;
+    }
+
+    if (!this.scene.textures.exists("weapon_watering_can")) return;
+
+    if (!this.equippedWeapon?.active) {
+      this.equippedWeapon = this.scene.add
+        .sprite(0, 4, "weapon_watering_can")
+        .setOrigin(0.5);
+      this.add(this.equippedWeapon);
+    }
+
+    this.equippedWeapon.setScale(this.direction === "left" ? -1 : 1, 1);
+    this.syncEquippedWeaponDepth();
+  }
+
+  private syncEquippedWeaponDepth() {
+    if (!this.equippedWeapon?.active) return;
+
+    this.bringToTop(this.equippedWeapon);
   }
 
   private createDrillAnimation(start: number, end: number) {
@@ -778,6 +806,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     this.direction = "right";
     this.sprite?.setScale(1, 1);
+    this.equippedWeapon?.setScale(1, 1);
 
     if (this.speech) {
       this.speech.setScale(1, 1);
@@ -790,6 +819,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     this.direction = "left";
     this.sprite?.setScale(-1, 1);
+    this.equippedWeapon?.setScale(-1, 1);
 
     if (this.speech) {
       this.speech.changeDirection("left");

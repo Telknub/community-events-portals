@@ -44,6 +44,20 @@ import {
 //   },
 // ];
 export class Scene extends BaseScene {
+  private static readonly WEAPON_HOE_ANIMATION_KEY = "weapon_hoe_active";
+  private static readonly WEAPON_SCYTHE_ANIMATION_KEY = "weapon_scythe_active";
+  private static readonly WEAPON_WATERING_CAN_PROJECTILE_ANIMATION_KEY =
+    "weapon_watering_can_projectile_active";
+  private static readonly WEAPON_CORN_PROJECTILE_ANIMATION_KEY =
+    "weapon_corn_projectile_active";
+  private static readonly WEAPON_CORN_EXPLOSION_ANIMATION_KEY =
+    "weapon_corn_explosion_active";
+  private static readonly WEAPON_TOMATO_PROJECTILE_ANIMATION_KEY =
+    "weapon_tomato_projectile_active";
+  private static readonly WEAPON_SUNFLOWER_ANIMATION_KEY =
+    "weapon_sunflower_active";
+  private static readonly WEAPON_SUNFLOWER_PROJECTILE_ANIMATION_KEY =
+    "weapon_sunflower_projectile_active";
   private backgroundMusic!: Phaser.Sound.BaseSound;
   private obstacles: BoundingBox[] = [];
   private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
@@ -137,13 +151,76 @@ export class Scene extends BaseScene {
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
 
-    this.load.image("weapon_hoe", "world/portal/images/hoe.webp");
+    // Weapons
+    this.load.spritesheet("weapon_hoe", "world/portal/images/hoe.png", {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+    this.load.spritesheet("weapon_scythe", "world/portal/images/scythe.png", {
+      frameWidth: 38,
+      frameHeight: 25,
+    });
+    this.load.image(
+      "weapon_watering_can",
+      "world/portal/images/watering_can.png",
+    );
+    this.load.spritesheet(
+      "weapon_watering_can_projectile",
+      "world/portal/images/watering_can_projectile.png",
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_corn_projectile",
+      "world/portal/images/corn_projectile.png",
+      {
+        frameWidth: 16,
+        frameHeight: 48,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_corn_explosion",
+      "world/portal/images/corn_explosion.png",
+      {
+        frameWidth: 48,
+        frameHeight: 48,
+      },
+    );
+    this.load.image(
+      "weapon_tomato_ricochet",
+      "world/portal/images/tomato_ricochet.png",
+    );
+    this.load.spritesheet(
+      "weapon_tomato_projectile",
+      "world/portal/images/tomato_projectile.png",
+      {
+        frameWidth: 17,
+        frameHeight: 17,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_sunflower",
+      "world/portal/images/sunflower.png",
+      {
+        frameWidth: 18,
+        frameHeight: 31,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_sunflower_projectile",
+      "world/portal/images/sunflower_projectile.png",
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      },
+    );
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
     // this.load.image(
     //   "weapon_water_drop",
     //   "/world/portal/images/weapons/water_drop.png",
     // );
-    // this.load.image("weapon_corn", "/world/portal/images/weapons/corn.png");
     // this.load.image("weapon_tomato", "/world/portal/images/weapons/tomato.png");
     // this.load.image("weapon_light", "/world/portal/images/weapons/light.png");
     // this.load.image(
@@ -156,10 +233,6 @@ export class Scene extends BaseScene {
     // );
     // this.load.image("weapon_wheat", "/world/portal/images/weapons/wheat.png");
     // this.load.image("weapon_bee", "/world/portal/images/weapons/bee.png");
-    // this.load.image(
-    //   "weapon_explosion",
-    //   "/world/portal/images/weapons/explosion.png",
-    // );
 
     // Music
     // Background
@@ -193,6 +266,7 @@ export class Scene extends BaseScene {
 
     // Reset listeners
     EventBus.removeAllListeners();
+    this.createWeaponAnimations();
 
     // Initialise
     this.initialiseProperties();
@@ -212,7 +286,7 @@ export class Scene extends BaseScene {
     this.initialiseWearables();
 
     // DEBUG
-    this.physics.world.drawDebug = false;
+    this.physics.world.drawDebug = true;
     if (this.physics.world.drawDebug) {
       const GRID_SIZE = 16;
       // Draw coordinates at each grid position
@@ -236,6 +310,109 @@ export class Scene extends BaseScene {
       loop: true,
       volume: 0.2,
     });
+  }
+
+  private createWeaponAnimations() {
+    if (!this.anims.exists(Scene.WEAPON_HOE_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_HOE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_hoe", {
+          start: 0,
+          end: 7,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_SCYTHE_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_SCYTHE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_scythe", {
+          start: 0,
+          end: 9,
+        }),
+        frameRate: 36,
+        repeat: 0,
+      });
+    }
+
+    if (
+      !this.anims.exists(Scene.WEAPON_WATERING_CAN_PROJECTILE_ANIMATION_KEY)
+    ) {
+      this.anims.create({
+        key: Scene.WEAPON_WATERING_CAN_PROJECTILE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers(
+          "weapon_watering_can_projectile",
+          {
+            start: 0,
+            end: 4,
+          },
+        ),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_CORN_PROJECTILE_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_CORN_PROJECTILE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_corn_projectile", {
+          start: 0,
+          end: 9,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_CORN_EXPLOSION_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_CORN_EXPLOSION_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_corn_explosion", {
+          start: 0,
+          end: 14,
+        }),
+        frameRate: 24,
+        repeat: 0,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_TOMATO_PROJECTILE_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_TOMATO_PROJECTILE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_tomato_projectile", {
+          start: 0,
+          end: 3,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_SUNFLOWER_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_SUNFLOWER_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_sunflower", {
+          start: 0,
+          end: 4,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_SUNFLOWER_PROJECTILE_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_SUNFLOWER_PROJECTILE_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_sunflower_projectile", {
+          start: 0,
+          end: 7,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
   }
 
   update(time = this.time.now, delta = this.game.loop.delta) {
@@ -411,6 +588,7 @@ export class Scene extends BaseScene {
         ? portalContext.weaponLevels[portalContext.selectedWeapon]
         : undefined,
     );
+    this.currentPlayer.setEquippedWeapon(portalContext?.selectedWeapon);
 
     this.weaponManager = new WeaponManager({
       scene: this,
@@ -430,6 +608,7 @@ export class Scene extends BaseScene {
       }
 
       weaponLoadout = nextWeaponLoadout;
+      this.currentPlayer?.setEquippedWeapon(state.context.selectedWeapon);
       this.weaponManager?.reset(nextWeaponLoadout);
     });
 
