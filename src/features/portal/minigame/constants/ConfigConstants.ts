@@ -1,7 +1,6 @@
 import { BumpkinWings, Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
-import { ITEM_DETAILS } from "features/game/types/images";
 import {
   MOB_CONFIGS,
   BOSS_CONFIGS,
@@ -30,6 +29,8 @@ import greenOrb from "public/world/portal/images/dropItem2.webp";
 import grayOrb from "public/world/portal/images/dropItem3.webp";
 import yellowOrb from "public/world/portal/images/dropItem4.webp";
 import purpleOrb from "public/world/portal/images/dropItem5.webp";
+import Orb from "public/world/portal/images/ExpOrb_combined.webp";
+
 import icon_mob1 from "public/world/portal/images/icon_mob_1.webp";
 import icon_mob2 from "public/world/portal/images/icon_mob_2.webp";
 import icon_mob3 from "public/world/portal/images/icon_mob_3.webp";
@@ -39,7 +40,10 @@ import icon_boss1 from "public/world/portal/images/icon_boss_1.webp";
 import icon_boss2 from "public/world/portal/images/icon_boss_2.webp";
 import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
 import tooltip_icon from "public/world/portal/images/ExpOrb_combined.webp";
+import swordIcon from "public/world/portal/images/sword_icon.png";
+import speedIcon from "public/world/portal/images/lightning.png";
 import { BossTypes, MobTypes, WeaponId, PassiveAbilityType } from "../Types";
+import { SUNNYSIDE } from "assets/sunnyside";
 
 export { PORTAL_NAME } from "./PortalConstants";
 export const PORTAL_TOKEN = "Festival of Colors Token 2026";
@@ -109,6 +113,10 @@ export const INSTRUCTIONS: {
     image: watering_can_icon,
     description: t(`${PORTAL_NAME}.instructions3`),
   },
+  {
+    image: Orb,
+    description: t(`${PORTAL_NAME}.instructions7`),
+  },
 ];
 
 export const RESOURCES_TABLE: {
@@ -117,15 +125,15 @@ export const RESOURCES_TABLE: {
   width?: number;
 }[] = [
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: SUNNYSIDE.icons.heart,
     description: t(`${PORTAL_NAME}.resource1`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: speedIcon,
     description: t(`${PORTAL_NAME}.resource2`),
   },
   {
-    image: ITEM_DETAILS["Abandoned Bear"].image,
+    image: swordIcon,
     description: t(`${PORTAL_NAME}.resource3`),
   },
 ];

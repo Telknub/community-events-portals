@@ -3,7 +3,7 @@ import React from "react";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { Label } from "components/ui/Label";
-import { PORTAL_NAME, INSTRUCTIONS } from "../../constants";
+import { PORTAL_NAME, INSTRUCTIONS, RESOURCES_TABLE } from "../../constants";
 import { Enemies, Skills } from "./CodexCategories";
 import { DropItemsXP } from "./CodexCategories";
 
@@ -36,7 +36,7 @@ export const Guide = () => {
           </div>
         ))}
         {/* Resources */}
-        {/* <Label type="default">{t(`${PORTAL_NAME}.resources`)}</Label>
+        <Label type="default">{t(`${PORTAL_NAME}.resources`)}</Label>
         <table className="w-full text-xs table-fixed border-collapse">
           <tbody>
             {RESOURCES_TABLE.map(
@@ -62,7 +62,7 @@ export const Guide = () => {
               ),
             )}
           </tbody>
-        </table> */}
+        </table>
         {/* Skills */}
         <Skills />
         {/* Enemies */}
