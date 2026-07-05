@@ -12,7 +12,7 @@ type OrbitalWeaponSpawnProps = {
   hitCooldownMs: number;
 };
 
-const WEAPON_HOE_ANIMATION_KEY = "weapon_hoe_active";
+const WEAPON_BANANA_ANIMATION_KEY = "weapon_banana_active";
 const WEAPON_SUNFLOWER_ANIMATION_KEY = "weapon_sunflower_active";
 
 export class OrbitalWeapon extends Phaser.Physics.Arcade.Sprite {
@@ -24,7 +24,7 @@ export class OrbitalWeapon extends Phaser.Physics.Arcade.Sprite {
   private baseAngle = 0;
   private readonly hitAt = new Map<EnemyLike, number>();
 
-  constructor(scene: Phaser.Scene, x = 0, y = 0, texture = "weapon_hoe") {
+  constructor(scene: Phaser.Scene, x = 0, y = 0, texture = "weapon_banana") {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
@@ -63,10 +63,10 @@ export class OrbitalWeapon extends Phaser.Physics.Arcade.Sprite {
     body.enable = ownerWeaponId !== "sunflower";
 
     if (
-      ownerWeaponId === "hoe" &&
-      this.scene.anims.exists(WEAPON_HOE_ANIMATION_KEY)
+      ownerWeaponId === "banana" &&
+      this.scene.anims.exists(WEAPON_BANANA_ANIMATION_KEY)
     ) {
-      this.play(WEAPON_HOE_ANIMATION_KEY, true);
+      this.play(WEAPON_BANANA_ANIMATION_KEY, true);
     } else if (
       ownerWeaponId === "sunflower" &&
       this.scene.anims.exists(WEAPON_SUNFLOWER_ANIMATION_KEY)

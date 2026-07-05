@@ -27,7 +27,7 @@ const GUIDE_LEVELS: WeaponLevel[] = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const WeaponsGuide: React.FC = () => {
   const { t } = useAppTranslation();
-  const [selectedWeapon, setSelectedWeapon] = useState<WeaponId>("hoe");
+  const [selectedWeapon, setSelectedWeapon] = useState<WeaponId>("banana");
   const [selectedLevel, setSelectedLevel] = useState<WeaponLevel>(1);
   const [selectedStat, setSelectedStat] = useState<keyof WeaponRuntimeStats>();
   const selectedLevelXp = WEAPON_UPGRADE_XP_COSTS[selectedLevel] ?? 0;

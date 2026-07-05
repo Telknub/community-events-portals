@@ -3,6 +3,7 @@ import type { DamagePayload, EnemyLike } from "../../Types";
 import { distanceBetween, enemyCenter } from "../../lib/combat/geometry";
 
 type AreaHitboxShape = "circle" | "spriteBounds";
+type AreaHitboxSize = { width: number; height: number };
 
 type AreaHitboxSpawnProps = {
   x: number;
@@ -16,6 +17,7 @@ type AreaHitboxSpawnProps = {
   animationKey?: string;
   despawnOnAnimationComplete?: boolean;
   hitboxShape?: AreaHitboxShape;
+  hitboxSize?: AreaHitboxSize;
 };
 
 export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
@@ -48,6 +50,7 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     animationKey,
     despawnOnAnimationComplete = false,
     hitboxShape = "circle",
+    hitboxSize,
   }: AreaHitboxSpawnProps) {
     this.setTexture(texture);
     this.setPosition(x, y);
@@ -81,7 +84,11 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
     if (hitboxShape === "spriteBounds") {
-      body.setSize(this.displayWidth, this.displayHeight, true);
+      body.setSize(
+        hitboxSize?.width ?? this.displayWidth,
+        hitboxSize?.height ?? this.displayHeight,
+        true,
+      );
     } else {
       body.setCircle(radius);
       body.setOffset(this.width / 2 - radius, this.height / 2 - radius);

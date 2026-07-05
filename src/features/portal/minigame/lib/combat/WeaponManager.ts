@@ -37,6 +37,7 @@ import {
 
 const WEAPON_CORN_EXPLOSION_TEXTURE_KEY = "weapon_corn_explosion";
 const WEAPON_CORN_EXPLOSION_ANIMATION_KEY = "weapon_corn_explosion_active";
+const WEAPON_OIL_ANIMATION_KEY = "weapon_oil_active";
 const WEAPON_CORN_EXPLOSION_ANIMATION_MS = 625;
 
 type RuntimeWeapon = {
@@ -249,7 +250,7 @@ export class WeaponManager {
       case "orbitalShooter":
         return this.fireSunflower(weapon, time);
       case "snareArea":
-        return this.fireWheat(weapon, time);
+        return this.fireOil(weapon, time);
       case "rollingProjectile":
         return this.firePumpkin(weapon, time);
       case "homingSummon":
@@ -368,7 +369,7 @@ export class WeaponManager {
     return orbitals.length > 0;
   }
 
-  private fireWheat(weapon: RuntimeWeapon, time: number) {
+  private fireOil(weapon: RuntimeWeapon, time: number) {
     const target = this.targetingSystem.nearest(this.props.player);
     if (!target) return false;
 
@@ -381,6 +382,12 @@ export class WeaponManager {
       payload: this.createPayload(weapon),
       hitCooldownMs: weapon.stats.hitCooldownMs,
       persistent: true,
+      animationKey: WEAPON_OIL_ANIMATION_KEY,
+      hitboxShape: "spriteBounds",
+      hitboxSize: {
+        width: weapon.stats.areaRadius * 1,
+        height: Math.round(weapon.stats.areaRadius * 0.5),
+      },
     });
 
     return true;
@@ -500,6 +507,8 @@ export class WeaponManager {
         y: normalized.y * weapon.stats.projectileSpeed,
       },
       bodySize: projectile.bodySize,
+      bodySizeMode: projectile.bodySizeMode,
+      bodySizeScale: projectile.bodySizeScale,
       expiresAt: time + weapon.stats.durationMs,
       payload: this.createPayload(weapon),
       ownerWeaponId: weapon.id,
@@ -587,7 +596,7 @@ export class WeaponManager {
       }
     });
 
-    this.getActiveOrbitals("hoe").forEach((orbital) =>
+    this.getActiveOrbitals("banana").forEach((orbital) =>
       orbital.updateOrbit(this.props.player, time),
     );
     this.getActiveOrbitals("sunflower").forEach((orbital) =>
@@ -721,6 +730,7 @@ export class WeaponManager {
     animationKey,
     despawnOnAnimationComplete,
     hitboxShape,
+    hitboxSize,
   }: {
     x: number;
     y: number;
@@ -733,6 +743,7 @@ export class WeaponManager {
     animationKey?: string;
     despawnOnAnimationComplete?: boolean;
     hitboxShape?: "circle" | "spriteBounds";
+    hitboxSize?: { width: number; height: number };
   }) {
     const hitbox = this.hitboxGroup.get(x, y, texture) as AreaHitbox | null;
 
@@ -750,6 +761,7 @@ export class WeaponManager {
       animationKey,
       despawnOnAnimationComplete,
       hitboxShape,
+      hitboxSize,
     });
     EventBus.emit("weapon:aoe", {
       sourceWeaponId: payload.sourceWeaponId,
@@ -929,17 +941,21 @@ export class WeaponManager {
     circleTexture("weapon_projectile", 0xffffff, 8); // Basic projectile
     circleTexture("weapon_watering_can_projectile", 0x5bbcff, 8); // Watering Can projectile
     circleTexture("weapon_corn_projectile", 0xffd447, 10); // Corn projectile
-    circleTexture("weapon_tomato", 0xe14242, 10);
-    circleTexture("weapon_tomato_projectile", 0xe14242, 10);
-    circleTexture("weapon_tomato_ricochet", 0xff6f61, 10);
+    circleTexture("weapon_tomato_projectile", 0xe14242, 10); // Tomato projectile
+    circleTexture("weapon_tomato_ricochet", 0xff6f61, 10); // Tomato ricochet
     circleTexture("weapon_sunflower_projectile", 0xfff6a3, 8); // Sunflower projectile
     circleTexture("weapon_pumpkin", 0xf28c28, 14); // Pumpkin
+    circleTexture("weapon_horizontal_pumpkin", 0xf28c28, 14);
+    circleTexture("weapon_vertical_pumpkin", 0xf28c28, 14);
+    circleTexture("weapon_diagonal_pumpkin", 0xf28c28, 14);
     circleTexture("weapon_sunflower", 0xffd447, 14); // Sunflower
-    circleTexture("weapon_wheat", 0xd8b35a, 20);
+    circleTexture("weapon_oil", 0xd8b35a, 20); // Oil
     circleTexture("weapon_bee", 0xf4c430, 10);
+    circleTexture("weapon_bees", 0xf4c430, 10);
+    circleTexture("weapon_bees_spawn", 0xfff6a3, 12);
     circleTexture("weapon_corn_explosion", 0xff8f3a, 48);
-    circleTexture("weapon_hitbox", 0xffffff, 32);
-    rectTexture("weapon_hoe", 0xcfd7e6, 18, 6); // Hoe
+    circleTexture("weapon_hitbox", 0xffffff, 32); // Oil area
+    rectTexture("weapon_banana", 0xcfd7e6, 18, 6); // Banana
     rectTexture("weapon_slash", 0xe8f2ff, 42, 14); // Scythe slash
     rectTexture("weapon_scythe", 0xe8f2ff, 38, 25); // Scythe
 

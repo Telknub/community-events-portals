@@ -6,13 +6,13 @@ export type ObstacleName =
 export type Obstacle = { name: ObstacleName; x: number; y: number };
 
 export type WeaponId =
-  | "hoe"
+  | "banana"
   | "broomScythe"
   | "wateringCan"
   | "corn"
   | "tomato"
   | "sunflower"
-  | "wheat"
+  | "oil"
   | "pumpkin"
   | "beehive";
 
@@ -102,6 +102,8 @@ export type ProjectileConfig = {
   texture: string;
   behavior: ProjectileBehavior;
   bodySize: number;
+  bodySizeMode?: "fixed" | "spriteBounds";
+  bodySizeScale?: { width: number; height: number };
   rotateToVelocity?: boolean;
   rotationOffsetDegrees?: number;
   scale?: number;
@@ -109,7 +111,7 @@ export type ProjectileConfig = {
   ricochetTexture?: string;
 };
 
-export type StatusEffectId = "rooted" | "wheatDot";
+export type StatusEffectId = "rooted" | "oilDot";
 
 export type StatusEffectConfig = {
   id: StatusEffectId;

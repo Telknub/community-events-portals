@@ -3,6 +3,11 @@ import type { DamagePayload, EnemyLike } from "../../Types";
 import type { TargetingSystem } from "../../lib/combat/TargetingSystem";
 import { enemyCenter } from "../../lib/combat/geometry";
 
+const WEAPON_BEES_TEXTURE_KEY = "weapon_bees";
+const WEAPON_BEES_ANIMATION_KEY = "weapon_bees_active";
+const WEAPON_BEES_SPAWN_TEXTURE_KEY = "weapon_bees_spawn";
+const WEAPON_BEES_SPAWN_ANIMATION_KEY = "weapon_bees_spawn_active";
+
 type HomingBeeSpawnProps = {
   x: number;
   y: number;
@@ -20,13 +25,23 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
   public hitCooldownMs = 0;
   private target?: EnemyLike;
   private nextRetargetAt = 0;
+  private movementRotation = 0;
+  private readonly spawnSprite: Phaser.GameObjects.Sprite;
   private readonly hitAt = new Map<EnemyLike, number>();
 
-  constructor(scene: Phaser.Scene, x = 0, y = 0, texture = "weapon_bee") {
+  constructor(
+    scene: Phaser.Scene,
+    x = 0,
+    y = 0,
+    texture = WEAPON_BEES_TEXTURE_KEY,
+  ) {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.spawnSprite = scene.add.sprite(x, y, WEAPON_BEES_SPAWN_TEXTURE_KEY);
+    this.spawnSprite.setActive(false);
+    this.spawnSprite.setVisible(false);
     this.despawn();
   }
 
@@ -41,9 +56,16 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
   }: HomingBeeSpawnProps) {
     this.setTexture(texture);
     this.setPosition(x, y);
+    this.movementRotation = 0;
+    this.applyBeePresentation(this.movementRotation);
     this.setActive(true);
     this.setVisible(true);
     this.setDepth(Math.floor(y) + 2);
+    if (this.scene.anims.exists(WEAPON_BEES_ANIMATION_KEY)) {
+      this.play(WEAPON_BEES_ANIMATION_KEY, true);
+    } else {
+      this.anims.stop();
+    }
     this.payload = payload;
     this.speed = speed;
     this.expiresAt = expiresAt;
@@ -51,6 +73,23 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.target = undefined;
     this.nextRetargetAt = 0;
     this.hitAt.clear();
+    this.syncSpawnSprite();
+    this.spawnSprite.setActive(true);
+    this.spawnSprite.setVisible(true);
+    this.spawnSprite.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+    if (this.scene.anims.exists(WEAPON_BEES_SPAWN_ANIMATION_KEY)) {
+      this.spawnSprite.once(
+        Phaser.Animations.Events.ANIMATION_COMPLETE,
+        (animation: Phaser.Animations.Animation) => {
+          if (animation.key === WEAPON_BEES_SPAWN_ANIMATION_KEY) {
+            this.hideSpawnSprite();
+          }
+        },
+      );
+      this.spawnSprite.play(WEAPON_BEES_SPAWN_ANIMATION_KEY, true);
+    } else {
+      this.hideSpawnSprite();
+    }
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
@@ -69,20 +108,25 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
 
     if (!this.target) {
       body.setVelocity(0, 0);
+      this.syncSpawnSprite();
       return;
     }
 
     const target = enemyCenter(this.target);
     const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
-    const current = this.rotation;
-    const rotation = Phaser.Math.Angle.RotateTo(current, angle, 0.15);
+    this.movementRotation = Phaser.Math.Angle.RotateTo(
+      this.movementRotation,
+      angle,
+      0.15,
+    );
 
-    this.setRotation(rotation);
+    this.applyBeePresentation(this.movementRotation);
     body.setVelocity(
-      Math.cos(rotation) * this.speed,
-      Math.sin(rotation) * this.speed,
+      Math.cos(this.movementRotation) * this.speed,
+      Math.sin(this.movementRotation) * this.speed,
     );
     this.setDepth(Math.floor(this.y) + 2);
+    this.syncSpawnSprite();
   }
 
   public canHit(enemy: EnemyLike, time: number) {
@@ -95,11 +139,24 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.hitAt.set(enemy, time);
   }
 
+  public preUpdate(time: number, delta: number) {
+    super.preUpdate(time, delta);
+
+    if (this.active) {
+      this.syncSpawnSprite();
+    }
+  }
+
   public hasExpired(time: number) {
     return time >= this.expiresAt;
   }
 
   public despawn() {
+    this.anims.stop();
+    this.spawnSprite.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+    this.hideSpawnSprite();
+    this.movementRotation = 0;
+    this.applyBeePresentation(this.movementRotation);
     this.setActive(false);
     this.setVisible(false);
     this.target = undefined;
@@ -110,5 +167,35 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
 
     body.stop();
     body.enable = false;
+  }
+
+  public destroy(fromScene?: boolean) {
+    this.spawnSprite.destroy(fromScene);
+    super.destroy(fromScene);
+  }
+
+  private syncSpawnSprite() {
+    this.spawnSprite.setPosition(this.x, this.y);
+    this.spawnSprite.setRotation(this.rotation);
+    this.spawnSprite.setFlip(this.flipX, this.flipY);
+    this.spawnSprite.setDepth(this.depth + 1);
+  }
+
+  private applyBeePresentation(rotation: number) {
+    const isFacingLeft = Math.cos(rotation) < 0;
+
+    this.setFlip(isFacingLeft, false);
+    this.setRotation(
+      Math.atan2(
+        isFacingLeft ? -Math.sin(rotation) : Math.sin(rotation),
+        isFacingLeft ? -Math.cos(rotation) : Math.cos(rotation),
+      ),
+    );
+  }
+
+  private hideSpawnSprite() {
+    this.spawnSprite.anims.stop();
+    this.spawnSprite.setActive(false);
+    this.spawnSprite.setVisible(false);
   }
 }

@@ -68,7 +68,7 @@ export class StatusEffectSystem {
           this.applyDamage?.(
             enemy,
             {
-              sourceWeaponId: "wheat",
+              sourceWeaponId: "oil",
               amount: effect.damagePerTick,
               damageType: "dot",
             },
