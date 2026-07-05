@@ -10,7 +10,7 @@ import { WeaponsTab } from "./Weapons";
 import { WeaponsGuide } from "./WeaponsGuide";
 import { WearablesTab } from "./Wearables";
 
-import hoeIcon from "public/world/portal/images/hoe_icon.webp";
+import bananaIcon from "public/world/portal/images/banana_icon.webp";
 import guideIcon from "public/world/page.png";
 
 export type ProfilePanelTab = "weapons" | "wearables" | "guide";
@@ -42,7 +42,7 @@ export const ProfilePanel: React.FC<{
     },
     {
       id: "weapons" as const,
-      icon: hoeIcon,
+      icon: bananaIcon,
       name: t(`${PORTAL_NAME}.weapons`),
     },
     {

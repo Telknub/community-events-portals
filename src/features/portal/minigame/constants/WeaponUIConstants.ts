@@ -3,24 +3,24 @@ import { WeaponId, WeaponRuntimeStats } from "../Types";
 import { PORTAL_NAME } from "./PortalConstants";
 import { WEAPON_CONFIGS } from "./WeaponConstants";
 
-import hoe_icon from "public/world/portal/images/hoe_icon.webp";
+import banana_icon from "public/world/portal/images/banana_icon.webp";
 import scythe_icon from "public/world/portal/images/scythe_icon.png";
 import tomato_icon from "public/world/portal/images/tomato_icon.png";
 import sunflower_icon from "public/world/portal/images/sunflower_icon.png";
-import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
+import oil_icon from "public/world/portal/images/oil_icon.png";
 import beehive_icon from "public/world/portal/images/beehive_icon.webp";
 import corn_bomb_icon from "public/world/portal/images/corn_bomb_icon.webp";
 import pumpkin_icon from "public/world/portal/images/pumpkin_icon.webp";
 import watering_can_icon from "public/world/portal/images/watering_can_icon.webp";
 
 export const WEAPON_ICONS: Record<WeaponId, string> = {
-  hoe: hoe_icon,
+  banana: banana_icon,
   broomScythe: scythe_icon,
   wateringCan: watering_can_icon,
   corn: corn_bomb_icon,
   tomato: tomato_icon,
   sunflower: sunflower_icon,
-  wheat: wind_blade,
+  oil: oil_icon,
   pumpkin: pumpkin_icon,
   beehive: beehive_icon,
 };
@@ -28,13 +28,13 @@ export const WEAPON_ICONS: Record<WeaponId, string> = {
 export const WEAPON_IDS = Object.keys(WEAPON_CONFIGS) as WeaponId[];
 
 export const WEAPON_NAMES: Record<WeaponId, TranslationKeys> = {
-  hoe: `${PORTAL_NAME}.weapon.hoe`,
+  banana: `${PORTAL_NAME}.weapon.banana`,
   broomScythe: `${PORTAL_NAME}.weapon.broomScythe`,
   wateringCan: `${PORTAL_NAME}.weapon.wateringCan`,
   corn: `${PORTAL_NAME}.weapon.corn`,
   tomato: `${PORTAL_NAME}.weapon.tomato`,
   sunflower: `${PORTAL_NAME}.weapon.sunflower`,
-  wheat: `${PORTAL_NAME}.weapon.wheat`,
+  oil: `${PORTAL_NAME}.weapon.oil`,
   pumpkin: `${PORTAL_NAME}.weapon.pumpkin`,
   beehive: `${PORTAL_NAME}.weapon.beehive`,
 };

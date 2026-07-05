@@ -15,11 +15,11 @@ import {
   PLAYER_STAT_INITIAL_LEVEL,
 } from "./PlayerStatConstants";
 
-import hoe_icon from "public/world/portal/images/hoe_icon.webp";
+import banana_icon from "public/world/portal/images/banana_icon.webp";
 import scythe_icon from "public/world/portal/images/scythe_icon.png";
 import tomato_icon from "public/world/portal/images/tomato_icon.png";
 import sunflower_icon from "public/world/portal/images/sunflower_icon.png";
-import wind_blade from "public/world/portal/images/skill_windBlade_skill_icon.webp";
+import oil_icon from "public/world/portal/images/oil_icon.png";
 import beehive_icon from "public/world/portal/images/beehive_icon.webp";
 import corn_bomb_icon from "public/world/portal/images/corn_bomb_icon.webp";
 import pumpkin_icon from "public/world/portal/images/pumpkin_icon.webp";
@@ -242,11 +242,11 @@ export const SKILLS_TABLE: {
   maxDamage: number;
 }[] = [
   {
-    image: hoe_icon,
-    skillName: t(`${PORTAL_NAME}.weapon.hoe`),
+    image: banana_icon,
+    skillName: t(`${PORTAL_NAME}.weapon.banana`),
     description: t(`${PORTAL_NAME}.enemy2`),
-    minDamage: skill_config.hoe.baseStats.damage,
-    maxDamage: getWeaponMaxDamage("hoe"),
+    minDamage: skill_config.banana.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("banana"),
   },
   {
     image: scythe_icon,
@@ -284,11 +284,11 @@ export const SKILLS_TABLE: {
     maxDamage: getWeaponMaxDamage("sunflower"),
   },
   {
-    image: wind_blade,
-    skillName: t(`${PORTAL_NAME}.weapon.wheat`),
+    image: oil_icon,
+    skillName: t(`${PORTAL_NAME}.weapon.oil`),
     description: t(`${PORTAL_NAME}.enemy3`),
-    minDamage: skill_config.wheat.baseStats.damage,
-    maxDamage: getWeaponMaxDamage("wheat"),
+    minDamage: skill_config.oil.baseStats.damage,
+    maxDamage: getWeaponMaxDamage("oil"),
   },
   {
     image: pumpkin_icon,
@@ -344,13 +344,13 @@ export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
 // SFX
 export const WEAPON_SFX_VOL = 0.3;
 export const WEAPON_SFX: Record<WeaponId, { activate: string }> = {
-  hoe: { activate: "sfx_hoe_swing" },
+  banana: { activate: "sfx_banana_swing" },
   broomScythe: { activate: "sfx_slash_broom" },
   wateringCan: { activate: "sfx_water_shot" },
   corn: { activate: "sfx_explosion_pop" },
   tomato: { activate: "sfx_tomato_throw" },
   sunflower: { activate: "sfx_light_shot" },
-  wheat: { activate: "sfx_root_cast" },
+  oil: { activate: "sfx_oil_cast" },
   pumpkin: { activate: "sfx_pumpkin_roll" },
   beehive: { activate: "sfx_bee_spawn" },
 };

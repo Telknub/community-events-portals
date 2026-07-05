@@ -70,7 +70,7 @@ const WeaponIcon: React.FC<{
 export const WeaponsTab: React.FC = () => {
   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
-  const [inspectedWeapon, setInspectedWeapon] = useState<WeaponId>("hoe");
+  const [inspectedWeapon, setInspectedWeapon] = useState<WeaponId>("banana");
 
   const { collected, hudWeapons, selectedWeapon, weaponLevels, damageLevel } =
     useSelector(portalService, _weaponPanelState);

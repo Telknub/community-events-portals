@@ -26,6 +26,8 @@ export type ProjectileSpawnProps = {
   texture: string;
   velocity: { x: number; y: number };
   bodySize: number;
+  bodySizeMode?: "fixed" | "spriteBounds";
+  bodySizeScale?: { width: number; height: number };
   expiresAt: number;
   payload: DamagePayload;
   ownerWeaponId: WeaponId;
@@ -38,6 +40,9 @@ export type ProjectileSpawnProps = {
   rotationOffsetDegrees?: number;
   orientedHitbox?: boolean;
   ricochetTexture?: string;
+  animationKey?: string;
+  flipX?: boolean;
+  flipY?: boolean;
 };
 
 export class Projectile extends Phaser.Physics.Arcade.Sprite {
@@ -57,6 +62,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private ricochetTexture?: string;
   private hasActivatedRicochet = false;
   private bodySize = 0;
+  private bodySizeMode: "fixed" | "spriteBounds" = "fixed";
+  private bodySizeScale = { width: 1, height: 1 };
 
   constructor(
     scene: Phaser.Scene,
@@ -77,6 +84,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     texture,
     velocity,
     bodySize,
+    bodySizeMode = "fixed",
+    bodySizeScale = { width: 1, height: 1 },
     expiresAt,
     payload,
     ownerWeaponId,
@@ -89,12 +98,15 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     rotationOffsetDegrees = 0,
     orientedHitbox = false,
     ricochetTexture,
+    animationKey,
+    flipX,
+    flipY,
   }: ProjectileSpawnProps) {
     this.setTexture(texture);
-    const animationKey = this.getAnimationKey(texture);
+    const resolvedAnimationKey = animationKey ?? this.getAnimationKey(texture);
 
-    if (animationKey && this.scene.anims.exists(animationKey)) {
-      this.play(animationKey, true);
+    if (resolvedAnimationKey && this.scene.anims.exists(resolvedAnimationKey)) {
+      this.play(resolvedAnimationKey, true);
     } else {
       this.anims.stop();
     }
@@ -102,6 +114,9 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.setPosition(x, y);
     this.setScale(scale);
     this.setVelocityRotation(velocity, rotateToVelocity, rotationOffsetDegrees);
+    if (flipX !== undefined || flipY !== undefined) {
+      this.setFlip(flipX ?? false, flipY ?? false);
+    }
     this.setActive(true);
     this.setVisible(true);
     this.setDepth(Math.floor(y));
@@ -118,6 +133,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.ricochetTexture = ricochetTexture;
     this.hasActivatedRicochet = false;
     this.bodySize = bodySize;
+    this.bodySizeMode = bodySizeMode;
+    this.bodySizeScale = bodySizeScale;
     this.updateOrientedHitboxSize();
     this.hitEnemies.clear();
 
@@ -212,6 +229,15 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private updateBodySize() {
     const body = this.body as Phaser.Physics.Arcade.Body;
 
+    if (this.bodySizeMode === "spriteBounds") {
+      body.setSize(
+        this.width * this.bodySizeScale.width,
+        this.height * this.bodySizeScale.height,
+        true,
+      );
+      return;
+    }
+
     if (this.orientedHitbox) {
       const diagonal = Math.hypot(this.width, this.height);
       body.setSize(diagonal, diagonal, true);
@@ -265,6 +291,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.ricochetTexture = undefined;
     this.hasActivatedRicochet = false;
     this.bodySize = 0;
+    this.bodySizeMode = "fixed";
+    this.bodySizeScale = { width: 1, height: 1 };
     this.hitEnemies.clear();
 
     const body = this.body as Phaser.Physics.Arcade.Body | undefined;

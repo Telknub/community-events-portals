@@ -60,13 +60,13 @@ export interface Context {
 }
 
 const WEAPON_IDS: WeaponId[] = [
-  "hoe",
+  "banana",
   "broomScythe",
   "wateringCan",
   "corn",
   "tomato",
   "sunflower",
-  "wheat",
+  "oil",
   "pumpkin",
   "beehive",
 ];
@@ -74,12 +74,12 @@ const WEAPON_IDS: WeaponId[] = [
 const DEFAULT_WEAPON_LEVELS: Record<WeaponId, WeaponLevel> = WEAPON_IDS.reduce(
   (levels, weaponId) => ({
     ...levels,
-    [weaponId]: weaponId === "hoe" ? 1 : 0,
+    [weaponId]: weaponId === "banana" ? 1 : 0,
   }),
   {} as Record<WeaponId, WeaponLevel>,
 );
 
-const DEFAULT_HUD_WEAPONS: WeaponId[] = ["hoe"];
+const DEFAULT_HUD_WEAPONS: WeaponId[] = ["banana"];
 
 const addWeaponToHud = (hudWeapons: WeaponId[], weapon: WeaponId) => {
   const nextHudWeapons = hudWeapons.filter((id) => id !== weapon);
@@ -211,7 +211,7 @@ const resetGameTransition = {
       lives: () => GAME_LIVES,
       maxLives: () => GAME_LIVES,
       endAt: () => 0,
-      selectedWeapon: () => "hoe" as WeaponId,
+      selectedWeapon: () => "banana" as WeaponId,
       weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
       hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
       playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),
@@ -241,7 +241,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     endAt: 0,
     isTraining: false,
     validations: structuredClone(VALIDATIONS),
-    selectedWeapon: "hoe",
+    selectedWeapon: "banana",
     weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
     hudWeapons: [...DEFAULT_HUD_WEAPONS],
     playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
@@ -506,7 +506,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             collected: 1400,
             lives: GAME_LIVES,
             maxLives: GAME_LIVES,
-            selectedWeapon: "hoe",
+            selectedWeapon: "banana",
             weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
             hudWeapons: [...DEFAULT_HUD_WEAPONS],
             playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
@@ -596,7 +596,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             collected: () => 0,
             lives: () => GAME_LIVES,
             maxLives: () => GAME_LIVES,
-            selectedWeapon: () => "hoe" as WeaponId,
+            selectedWeapon: () => "banana" as WeaponId,
             weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
             hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
             playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),

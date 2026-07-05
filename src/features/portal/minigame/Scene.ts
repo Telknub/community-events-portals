@@ -44,7 +44,7 @@ import {
 //   },
 // ];
 export class Scene extends BaseScene {
-  private static readonly WEAPON_HOE_ANIMATION_KEY = "weapon_hoe_active";
+  private static readonly WEAPON_BANANA_ANIMATION_KEY = "weapon_banana_active";
   private static readonly WEAPON_SCYTHE_ANIMATION_KEY = "weapon_scythe_active";
   private static readonly WEAPON_WATERING_CAN_PROJECTILE_ANIMATION_KEY =
     "weapon_watering_can_projectile_active";
@@ -58,6 +58,18 @@ export class Scene extends BaseScene {
     "weapon_sunflower_active";
   private static readonly WEAPON_SUNFLOWER_PROJECTILE_ANIMATION_KEY =
     "weapon_sunflower_projectile_active";
+  private static readonly WEAPON_OIL_ANIMATION_KEY = "weapon_oil_active";
+  private static readonly WEAPON_HORIZONTAL_PUMPKIN_ANIMATION_KEY =
+    "weapon_horizontal_pumpkin_active";
+  private static readonly WEAPON_VERTICAL_PUMPKIN_ANIMATION_KEY =
+    "weapon_vertical_pumpkin_active";
+  private static readonly WEAPON_DIAGONAL_PUMPKIN_ANIMATION_KEY =
+    "weapon_diagonal_pumpkin_active";
+  private static readonly WEAPON_DIAGONAL_PUMPKIN_REVERSE_ANIMATION_KEY =
+    "weapon_diagonal_pumpkin_active_reverse";
+  private static readonly WEAPON_BEES_ANIMATION_KEY = "weapon_bees_active";
+  private static readonly WEAPON_BEES_SPAWN_ANIMATION_KEY =
+    "weapon_bees_spawn_active";
   private backgroundMusic!: Phaser.Sound.BaseSound;
   private obstacles: BoundingBox[] = [];
   private obstacleGroup!: Phaser.Physics.Arcade.StaticGroup;
@@ -152,7 +164,7 @@ export class Scene extends BaseScene {
     this.load.image("water", SUNNYSIDE.decorations.ocean);
 
     // Weapons
-    this.load.spritesheet("weapon_hoe", "world/portal/images/hoe.png", {
+    this.load.spritesheet("weapon_banana", "world/portal/images/banana.png", {
       frameWidth: 16,
       frameHeight: 16,
     });
@@ -216,6 +228,46 @@ export class Scene extends BaseScene {
         frameHeight: 16,
       },
     );
+    this.load.spritesheet("weapon_oil", "world/portal/images/oil.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+    this.load.spritesheet(
+      "weapon_horizontal_pumpkin",
+      "world/portal/images/horizontal_pumpkin.webp",
+      {
+        frameWidth: 32,
+        frameHeight: 48,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_vertical_pumpkin",
+      "world/portal/images/vertical_pumpkin.webp",
+      {
+        frameWidth: 32,
+        frameHeight: 48,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_diagonal_pumpkin",
+      "world/portal/images/diagonal_pumpkin.webp",
+      {
+        frameWidth: 32,
+        frameHeight: 48,
+      },
+    );
+    this.load.spritesheet(
+      "weapon_bees_spawn",
+      "world/portal/images/bees_spawn.png",
+      {
+        frameWidth: 16,
+        frameHeight: 32,
+      },
+    );
+    this.load.spritesheet("weapon_bees", "world/portal/images/bees.png", {
+      frameWidth: 16,
+      frameHeight: 32,
+    });
     // this.load.image("weapon_slash", "/world/portal/images/weapons/slash.png");
     // this.load.image(
     //   "weapon_water_drop",
@@ -231,7 +283,7 @@ export class Scene extends BaseScene {
     //   "weapon_sunflower",
     //   "/world/portal/images/weapons/sunflower.png",
     // );
-    // this.load.image("weapon_wheat", "/world/portal/images/weapons/wheat.png");
+    // this.load.image("weapon_oil", "/world/portal/images/weapons/oil.png");
     // this.load.image("weapon_bee", "/world/portal/images/weapons/bee.png");
 
     // Music
@@ -244,13 +296,13 @@ export class Scene extends BaseScene {
     this.load.audio("collect_xp", "world/portal/sfx/xp.wav");
 
     // Weapon SFX
-    this.load.audio("sfx_hoe_swing", "world/portal/sfx/hoe.wav");
+    this.load.audio("sfx_banana_swing", "world/portal/sfx/banana.wav");
     this.load.audio("sfx_slash_broom", "world/portal/sfx/broomScythe.wav");
     this.load.audio("sfx_tomato_throw", "world/portal/sfx/tomato.wav");
     this.load.audio("sfx_water_shot", "world/portal/sfx/wateringCan.wav");
     this.load.audio("sfx_explosion_pop", "world/portal/sfx/corn.wav");
     this.load.audio("sfx_light_shot", "world/portal/sfx/sunflower.wav");
-    this.load.audio("sfx_root_cast", "world/portal/sfx/wheat.wav");
+    this.load.audio("sfx_oil_cast", "world/portal/sfx/oil.wav");
     this.load.audio("sfx_pumpkin_roll", "world/portal/sfx/pumpkin.wav");
     this.load.audio("sfx_bee_spawn", "world/portal/sfx/beehive.wav");
   }
@@ -310,10 +362,10 @@ export class Scene extends BaseScene {
   }
 
   private createWeaponAnimations() {
-    if (!this.anims.exists(Scene.WEAPON_HOE_ANIMATION_KEY)) {
+    if (!this.anims.exists(Scene.WEAPON_BANANA_ANIMATION_KEY)) {
       this.anims.create({
-        key: Scene.WEAPON_HOE_ANIMATION_KEY,
-        frames: this.anims.generateFrameNumbers("weapon_hoe", {
+        key: Scene.WEAPON_BANANA_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_banana", {
           start: 0,
           end: 7,
         }),
@@ -408,6 +460,92 @@ export class Scene extends BaseScene {
         }),
         frameRate: 12,
         repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_OIL_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_OIL_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_oil", {
+          start: 0,
+          end: 9,
+        }),
+        frameRate: 12,
+        repeat: 0,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_HORIZONTAL_PUMPKIN_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_HORIZONTAL_PUMPKIN_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_horizontal_pumpkin", {
+          start: 0,
+          end: 8,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_VERTICAL_PUMPKIN_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_VERTICAL_PUMPKIN_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_vertical_pumpkin", {
+          start: 0,
+          end: 8,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_DIAGONAL_PUMPKIN_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_DIAGONAL_PUMPKIN_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_diagonal_pumpkin", {
+          start: 0,
+          end: 8,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (
+      !this.anims.exists(Scene.WEAPON_DIAGONAL_PUMPKIN_REVERSE_ANIMATION_KEY)
+    ) {
+      this.anims.create({
+        key: Scene.WEAPON_DIAGONAL_PUMPKIN_REVERSE_ANIMATION_KEY,
+        frames: Array.from({ length: 9 }, (_, index) => ({
+          key: "weapon_diagonal_pumpkin",
+          frame: 8 - index,
+        })),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_BEES_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_BEES_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_bees", {
+          start: 0,
+          end: 7,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists(Scene.WEAPON_BEES_SPAWN_ANIMATION_KEY)) {
+      this.anims.create({
+        key: Scene.WEAPON_BEES_SPAWN_ANIMATION_KEY,
+        frames: this.anims.generateFrameNumbers("weapon_bees_spawn", {
+          start: 0,
+          end: 6,
+        }),
+        frameRate: 12,
+        repeat: 0,
       });
     }
   }
@@ -664,7 +802,7 @@ export class Scene extends BaseScene {
   }
 
   private createWeaponLoadout(
-    selectedWeapon: WeaponId = "hoe",
+    selectedWeapon: WeaponId = "banana",
     selectedWeaponLevel: WeaponLoadoutItem["level"] = 1,
   ): WeaponLoadoutItem[] {
     return [

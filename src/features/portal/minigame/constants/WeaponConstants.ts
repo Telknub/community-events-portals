@@ -77,9 +77,11 @@ export const PROJECTILE_CONFIGS: Record<string, ProjectileConfig> = {
     rotationOffsetDegrees: 90,
   },
   pumpkin: {
-    texture: "weapon_pumpkin",
+    texture: "weapon_horizontal_pumpkin",
     behavior: "rolling",
     bodySize: 14,
+    bodySizeMode: "spriteBounds",
+    bodySizeScale: { width: 1, height: 2 / 3 },
   },
 };
 
@@ -90,8 +92,8 @@ export const STATUS_EFFECTS: Record<string, StatusEffectConfig> = {
     speedMultiplier: 0,
     refreshMode: "refresh",
   },
-  wheatDot: {
-    id: "wheatDot",
+  oilDot: {
+    id: "oilDot",
     durationMs: 2400,
     tickMs: 500,
     damagePerTick: 1,
@@ -100,9 +102,9 @@ export const STATUS_EFFECTS: Record<string, StatusEffectConfig> = {
 };
 
 export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
-  hoe: {
-    id: "hoe",
-    texture: "weapon_hoe",
+  banana: {
+    id: "banana",
+    texture: "weapon_banana",
     behavior: "orbital",
     damageType: "physical",
     targeting: "inRadius",
@@ -163,7 +165,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
   },
   tomato: {
     id: "tomato",
-    texture: "weapon_tomato",
+    texture: "weapon_tomato_projectile",
     behavior: "chainProjectile",
     damageType: "physical",
     targeting: "random",
@@ -197,13 +199,13 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
       angularSpeed: 0.0025,
     },
   },
-  wheat: {
-    id: "wheat",
-    texture: "weapon_wheat",
+  oil: {
+    id: "oil",
+    texture: "weapon_oil",
     behavior: "snareArea",
     damageType: "dot",
     targeting: "nearest",
-    statusEffects: [STATUS_EFFECTS.rooted, STATUS_EFFECTS.wheatDot],
+    statusEffects: [STATUS_EFFECTS.rooted, STATUS_EFFECTS.oilDot],
     baseStats: {
       ...BASE_WEAPON_STATS,
       damage: 1,
@@ -218,7 +220,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
   },
   pumpkin: {
     id: "pumpkin",
-    texture: "weapon_pumpkin",
+    texture: "weapon_horizontal_pumpkin",
     behavior: "rollingProjectile",
     damageType: "physical",
     targeting: "movementVector",
@@ -229,13 +231,13 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
       cooldownMs: 1400,
       projectileSpeed: 85,
       durationMs: 1800,
-      pierce: 8,
+      pierce: 4,
       size: 1.15,
     },
   },
   beehive: {
     id: "beehive",
-    texture: "weapon_bee",
+    texture: "weapon_bees",
     behavior: "homingSummon",
     damageType: "summon",
     targeting: "nearest",
@@ -252,7 +254,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
 };
 
 export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
-  hoe: [
+  banana: [
     {
       level: 2,
       modifiers: [{ stat: "orbitRadius", operation: "add", value: 6 }],
@@ -393,10 +395,10 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       modifiers: [{ stat: "cooldownMs", operation: "multiply", value: 0.8 }],
     },
   ],
-  wheat: [
+  oil: [
     {
       level: 2,
-      modifiers: [{ stat: "areaRadius", operation: "add", value: 6 }],
+      modifiers: [{ stat: "areaRadius", operation: "add", value: 3 }],
     },
     {
       level: 3,
@@ -412,7 +414,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     },
     {
       level: 6,
-      modifiers: [{ stat: "areaRadius", operation: "add", value: 8 }],
+      modifiers: [{ stat: "areaRadius", operation: "add", value: 4 }],
     },
     {
       level: 7,
@@ -471,5 +473,5 @@ export const COMBAT_CONFIG: CombatConfig = {
   beePoolSize: 32,
   targetScanMs: 150,
   defaultEnemyScore: 1,
-  defaultWeaponLoadout: [{ id: "hoe", level: 1 }],
+  defaultWeaponLoadout: [{ id: "banana", level: 1 }],
 };
