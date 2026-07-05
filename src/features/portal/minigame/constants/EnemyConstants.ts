@@ -22,34 +22,40 @@ export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
 // Score thresholds for boss spawns
 export const BOSS_WAVE_THRESHOLDS: BossWaveConfig[] = [
   {
-    triggerAt: 120,
+    triggerAt: 100,
     bossType: "boss1",
     totalEnemy: 1,
     flag: "bossWave1",
   },
   {
-    triggerAt: 200,
+    triggerAt: 180,
     bossType: "boss2",
     totalEnemy: 1,
     flag: "bossWave2",
   },
   {
-    triggerAt: 500,
+    triggerAt: 230,
     bossType: "boss1",
     totalEnemy: 1,
     flag: "bossWave3",
   },
   {
-    triggerAt: 700,
+    triggerAt: 230,
     bossType: "boss2",
     totalEnemy: 1,
     flag: "bossWave4",
   },
   {
-    triggerAt: 700,
-    bossType: "boss2",
+    triggerAt: 270,
+    bossType: "boss3",
     totalEnemy: 1,
     flag: "bossWave5",
+  },
+  {
+    triggerAt: 270,
+    bossType: "boss3",
+    totalEnemy: 1,
+    flag: "bossWave6",
   },
 ];
 
@@ -58,7 +64,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     triggerAt: 0,
     mobType: "mob1",
-    totalEnemy: 100,
+    totalEnemy: 120,
     batchSize: 3,
     delay: 2500,
     flag: "wave1",
@@ -66,7 +72,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     triggerAt: 80,
     mobType: "mob2",
-    totalEnemy: 120,
+    totalEnemy: 150,
     batchSize: 3,
     delay: 2200,
     flag: "wave2",
@@ -74,13 +80,13 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     triggerAt: 140,
     mobType: "mob3",
-    totalEnemy: 150,
+    totalEnemy: 200,
     batchSize: 4,
     delay: 1800,
     flag: "wave3",
   },
   {
-    triggerAt: 220,
+    triggerAt: 200,
     mobType: "mob4",
     totalEnemy: 200,
     batchSize: 5,
@@ -88,7 +94,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
     flag: "wave4",
   },
   {
-    triggerAt: 500,
+    triggerAt: 250,
     mobType: "mob5",
     totalEnemy: 300,
     batchSize: 6,
@@ -97,7 +103,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   },
   // Endless
   {
-    triggerAt: 800,
+    triggerAt: 290,
     mobType: "mob1",
     totalEnemy: 100,
     batchSize: 3,
@@ -105,7 +111,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
     flag: "endless",
   },
   {
-    triggerAt: 800,
+    triggerAt: 290,
     mobType: "mob2",
     totalEnemy: 120,
     batchSize: 3,
@@ -113,15 +119,15 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
     flag: "endless",
   },
   {
-    triggerAt: 800,
+    triggerAt: 290,
     mobType: "mob3",
     totalEnemy: 150,
     batchSize: 4,
-    delay: 1800,
+    delay: 1290,
     flag: "endless",
   },
   {
-    triggerAt: 800,
+    triggerAt: 290,
     mobType: "mob4",
     totalEnemy: 180,
     batchSize: 4,
@@ -129,7 +135,7 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
     flag: "endless",
   },
   {
-    triggerAt: 800,
+    triggerAt: 290,
     mobType: "mob5",
     totalEnemy: 250,
     batchSize: 5,
