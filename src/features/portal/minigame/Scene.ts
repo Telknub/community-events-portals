@@ -236,10 +236,7 @@ export class Scene extends BaseScene {
 
     // Music
     // Background
-    this.load.audio(
-      "backgroundMusic",
-      "/world/portal/music/background-music.mp3",
-    );
+    this.load.audio("backgroundMusic", "/world/portal/music/bg_music.mp3");
 
     // SFX
     this.load.audio("hurt", "world/portal/sfx/hurt.wav");
@@ -308,7 +305,7 @@ export class Scene extends BaseScene {
     // Background music
     this.backgroundMusic = this.sound.add("backgroundMusic", {
       loop: true,
-      volume: 0.2,
+      volume: 0.4,
     });
   }
 
@@ -716,8 +713,8 @@ export class Scene extends BaseScene {
         const boss1 = obj1 as BossEnemy;
         const boss2 = obj2 as BossEnemy;
 
-        boss1.changeDirection();
-        boss2.changeDirection();
+        boss1.separateFrom(boss1);
+        boss2.separateFrom(boss2);
       },
     );
 
