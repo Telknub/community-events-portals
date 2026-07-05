@@ -75,7 +75,7 @@ export class BossEnemy extends Phaser.GameObjects.Container {
     this.enemyBody = this.body as Phaser.Physics.Arcade.Body;
     this.enemyBody.setSize(this.config.bodyWidth, this.config.bodyHeight);
     this.enemyBody.setOffset(this.config.offsetX, this.config.offsetY);
-    this.enemyBody.setImmovable(true);
+    this.enemyBody.setImmovable(false);
 
     this.createAnim();
     this.handleMovement();
@@ -155,18 +155,6 @@ export class BossEnemy extends Phaser.GameObjects.Container {
     if (!this.player) return;
 
     this.scene.events.on("update", this.handleSceneUpdate);
-  }
-
-  separateFrom(enemy: BossEnemy) {
-    const dx = this.x - enemy.x;
-    const dy = this.y - enemy.y;
-
-    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-    this.avoidX = dx / distance;
-    this.avoidY = dy / distance;
-
-    this.avoidTimer = 20;
   }
 
   changeDirection() {

@@ -335,7 +335,7 @@ export class Scene extends BaseScene {
     this.initialiseWearables();
 
     // DEBUG
-    this.physics.world.drawDebug = true;
+    this.physics.world.drawDebug = false;
     if (this.physics.world.drawDebug) {
       const GRID_SIZE = 16;
       // Draw coordinates at each grid position
@@ -822,17 +822,7 @@ export class Scene extends BaseScene {
   }
 
   private groupCollision() {
-    this.physics.add.collider(
-      this.swarmGroup,
-      this.swarmGroup,
-      (obj1, obj2) => {
-        const enemy1 = obj1 as SwarmMob;
-        const enemy2 = obj2 as SwarmMob;
-
-        enemy1.separateFrom(enemy2);
-        enemy2.separateFrom(enemy1);
-      },
-    );
+    this.physics.add.collider(this.swarmGroup, this.swarmGroup);
 
     this.physics.add.collider(
       this.obstacleGroup,
@@ -844,17 +834,7 @@ export class Scene extends BaseScene {
       },
     );
 
-    this.physics.add.collider(
-      this.bossEnemies,
-      this.bossEnemies,
-      (obj1, obj2) => {
-        const boss1 = obj1 as BossEnemy;
-        const boss2 = obj2 as BossEnemy;
-
-        boss1.separateFrom(boss1);
-        boss2.separateFrom(boss2);
-      },
-    );
+    this.physics.add.collider(this.bossEnemies, this.bossEnemies);
 
     this.physics.add.collider(
       this.obstacleGroup,
@@ -865,11 +845,6 @@ export class Scene extends BaseScene {
         boss.changeDirection();
       },
     );
-
-    // this.physics.add.collider(
-    //   this.bossGroup,
-    //   this.swarmGroup,
-    // );
   }
 
   private scoreBaseWave() {

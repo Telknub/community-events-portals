@@ -64,7 +64,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.enemyBody = this.body as Phaser.Physics.Arcade.Body;
     this.enemyBody.setSize(this.config.bodyWidth, this.config.bodyHeight);
     this.enemyBody.setOffset(this.config.offsetX, this.config.offsetY);
-    this.enemyBody.setImmovable(true);
+    this.enemyBody.setImmovable(false);
 
     this.createAnim();
     this.handleMovement();
