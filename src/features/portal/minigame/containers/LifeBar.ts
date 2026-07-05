@@ -35,6 +35,7 @@ export class LifeBar extends Phaser.GameObjects.Container {
     this.bar = scene.add.rectangle(0, 0, width, 2, 0x00ff00);
     this.bar.setOrigin(0.5);
 
+    this.setDepth(110);
     this.setVisible(false);
     this.add([this.border, this.background, this.bar]);
   }
