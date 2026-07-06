@@ -44,6 +44,7 @@ import swordIcon from "public/world/portal/images/sword_icon.png";
 import speedIcon from "public/world/portal/images/lightning.png";
 import { BossTypes, MobTypes, WeaponId, PassiveAbilityType } from "../Types";
 import { SUNNYSIDE } from "assets/sunnyside";
+import { getWearableImage } from "features/game/lib/getWearableImage";
 
 export { PORTAL_NAME } from "./PortalConstants";
 export const PORTAL_TOKEN = "Festival of Colors Token 2026";
@@ -111,6 +112,10 @@ export const INSTRUCTIONS: {
     description: t(`${PORTAL_NAME}.instructions3`),
   },
   {
+    image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
+    description: t(`${PORTAL_NAME}.instructions8`),
+  },
+  {
     image: Orb,
     description: t(`${PORTAL_NAME}.instructions7`),
   },
@@ -132,6 +137,10 @@ export const RESOURCES_TABLE: {
   {
     image: swordIcon,
     description: t(`${PORTAL_NAME}.resource3`),
+  },
+  {
+    image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
+    description: t(`${PORTAL_NAME}.AbilityDescription`),
   },
 ];
 
