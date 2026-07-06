@@ -15,8 +15,8 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   scene: Scene;
   private player?: BumpkinContainer;
   dropItem?: DropItemType;
-  private magnetRange = 120;
-  private magnetEnabled = false;
+  private magnetRangeWithWings = 150;
+  private defaultMagnetRange = 40;
 
   constructor({ scene, x, y, player, itemKey }: Props) {
     super(scene, x, y, itemKey);
@@ -31,7 +31,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
     this.postFX.addGlow(0xffd966, 1.5, 0, false, 0.03, 24);
 
     this.handleCollision();
-    this.applyMagnetState();
+    // this.hasPassiveAbility();
   }
 
   preUpdate(time: number, delta: number) {
@@ -41,9 +41,11 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   }
 
   public updateMagnet() {
-    if (!this.player || !this.active || !this.magnetEnabled) return;
+    if (!this.player || !this.active) return;
 
-    const magnetWearable = this.player.clothing.aura;
+    const magnetRange = this.hasPassiveAbility()
+      ? this.magnetRangeWithWings
+      : this.defaultMagnetRange;
 
     const distance = Phaser.Math.Distance.Between(
       this.x,
@@ -52,7 +54,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
       this.player.y,
     );
 
-    if (distance <= this.magnetRange) {
+    if (distance <= magnetRange) {
       const speed = Phaser.Math.Clamp(800 / Math.max(distance, 20), 100, 500);
 
       this.scene.physics.moveToObject(this, this.player, speed);
@@ -78,17 +80,10 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
     );
   }
 
-  private applyMagnetState() {
-    if (!this.player) return;
+  private hasPassiveAbility() {
+    if (!this.player) return false;
 
     const item = this.player.clothing.wings;
-
-    this.magnetEnabled =
-      item != undefined && PASSIVE_ABILITY_ITEM.includes(item);
-
-    if (!this.magnetEnabled) {
-      this.magnetEnabled = false;
-      this.setVelocity(0, 0);
-    }
+    return item != undefined && PASSIVE_ABILITY_ITEM.includes(item);
   }
 }
