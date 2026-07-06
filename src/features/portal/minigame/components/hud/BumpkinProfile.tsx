@@ -1,12 +1,8 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "@xstate/react";
-import { SpringValue } from "@react-spring/web";
 
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Modal } from "components/ui/Modal";
-import Spritesheet, {
-  SpriteSheetInstance,
-} from "components/animation/SpriteAnimator";
 import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import { PortalContext } from "../../lib/PortalProvider";
 import { PortalMachineState } from "../../lib/Machine";
@@ -29,9 +25,13 @@ import {
 import { availableWardrobe } from "features/game/events/landExpansion/equip";
 import { GameState } from "features/game/types/game";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
+import { InnerPanel } from "components/ui/Panel";
+import { ResizableBar } from "components/ui/ProgressBar";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
+import { isPlayerMaxLevel, PORTAL_NAME } from "../../constants";
+import { Label } from "components/ui/Label";
 
 const DIMENSIONS = {
-  original: 80,
   scaled: 160,
   bumpkinContainer: {
     width: 130,
@@ -50,8 +50,6 @@ const DIMENSIONS = {
     marginTop: 82.5,
   },
 };
-
-const SPRITE_STEPS = 51;
 
 const getFallbackWearable = ({
   defaultEquipment,
@@ -138,47 +136,38 @@ const _profileState = (state: PortalMachineState) => ({
   activeWearables: state.context.activeWearables,
   lives: state.context.lives,
   maxLives: state.context.maxLives,
+  playerLevel: state.context.playerLevel,
+  currentXP: state.context.currentXP,
+  nextLevelXP: state.context.nextLevelXP,
+  xpPoints: state.context.xpPoints,
 });
 
 const BumpkinAvatar: React.FC<{
   bumpkinParts?: BumpkinParts;
-  healthPercent: number;
-  lives: number;
-  maxLives: number;
+  level: number;
   onClick: () => void;
-}> = ({ bumpkinParts, healthPercent, lives, maxLives, onClick }) => {
-  const progressBarEl = useRef<SpriteSheetInstance>(undefined);
-
-  const goToProgress = () => {
-    if (progressBarEl.current) {
-      const percent = Math.max(0, Math.min(healthPercent, 100)) / 100;
-      const scaledToProgress = percent * (SPRITE_STEPS - 1);
-      progressBarEl.current.goToAndPause(Math.floor(scaledToProgress));
-    }
-  };
-
-  useEffect(() => {
-    goToProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [healthPercent]);
-
+}> = ({ bumpkinParts, level, onClick }) => {
   if (!bumpkinParts) return null;
 
   return (
     <div
-      className="grid absolute z-40 top-0 cursor-pointer hover:img-highlight"
+      className="relative z-40 -left-2 cursor-pointer hover:img-highlight"
       onClick={onClick}
+      style={{
+        width: `${DIMENSIONS.scaled}px`,
+        height: `${DIMENSIONS.scaled}px`,
+      }}
     >
       <img
         src={SUNNYSIDE.ui.whiteBg}
-        className="col-start-1 row-start-1 opacity-40"
+        className="opacity-40"
         style={{
           width: `${DIMENSIONS.scaled}px`,
           height: `${DIMENSIONS.scaled}px`,
         }}
       />
       <div
-        className="col-start-1 row-start-1 overflow-hidden z-0"
+        className="absolute top-2 overflow-hidden z-0"
         style={{
           width: `${DIMENSIONS.bumpkinContainer.width}px`,
           height: `${DIMENSIONS.bumpkinContainer.height}px`,
@@ -199,28 +188,9 @@ const BumpkinAvatar: React.FC<{
           />
         </div>
       </div>
-      <Spritesheet
-        className="col-start-1 row-start-1 z-10"
-        style={{
-          width: `${DIMENSIONS.scaled}px`,
-          imageRendering: "pixelated",
-          filter: "hue-rotate(-20deg)",
-        }}
-        image={SUNNYSIDE.ui.progressBarSprite}
-        widthFrame={DIMENSIONS.original}
-        heightFrame={DIMENSIONS.original}
-        zoomScale={new SpringValue(0.7)}
-        fps={10}
-        steps={SPRITE_STEPS}
-        autoplay={false}
-        getInstance={(spritesheet) => {
-          progressBarEl.current = spritesheet;
-          goToProgress();
-        }}
-      />
       <div
-        id="progress-bar"
-        className="col-start-1 row-start-1 flex justify-center z-20 text-xs"
+        id="level"
+        className="absolute top-2 z-30"
         style={{
           width: `${DIMENSIONS.level.width}px`,
           height: `${DIMENSIONS.level.height}px`,
@@ -228,8 +198,80 @@ const BumpkinAvatar: React.FC<{
           marginTop: `${DIMENSIONS.level.marginTop}px`,
         }}
       >
-        {`${lives}/${maxLives}`}
+        <Label className="absolute z-30 justify-center text-xs min-w-6">
+          {level}
+        </Label>
       </div>
+    </div>
+    // <div
+    //   className="grid absolute z-40 top-0 cursor-pointer hover:img-highlight"
+    //   onClick={onClick}
+    // >
+    //   {/* <img
+    //     src={SUNNYSIDE.ui.whiteBg}
+    //     className="col-start-1 row-start-1 opacity-40"
+    //     style={{
+    //       width: `${DIMENSIONS.scaled + 500}px`,
+    //       height: `${DIMENSIONS.scaled}px`,
+    //     }}
+    //   /> */}
+    //   {/* <div
+    //     className="col-start-1 row-start-1 overflow-hidden z-0"
+    //     style={{
+    //       width: `${DIMENSIONS.bumpkinContainer.width}px`,
+    //       height: `${DIMENSIONS.bumpkinContainer.height}px`,
+    //       borderBottomLeftRadius: `${DIMENSIONS.bumpkinContainer.radiusBottomLeft}px`,
+    //       borderBottomRightRadius: `${DIMENSIONS.bumpkinContainer.radiusBottomRight}px`,
+    //     }}
+    //   >
+    //     <div
+    //       style={{
+    //         width: `${DIMENSIONS.bumpkin.width}px`,
+    //         marginLeft: `${DIMENSIONS.bumpkin.marginLeft}px`,
+    //       }}
+    //     >
+    //       <DynamicNFT
+    //         key={JSON.stringify(bumpkinParts)}
+    //         bumpkinParts={bumpkinParts}
+    //         showTools={false}
+    //       />
+    //     </div>
+    //   </div> */}
+    //   {/* <div
+    //     id="level"
+    //     className="col-start-1 row-start-1 z-30"
+    //     style={{
+    //       width: `${DIMENSIONS.level.width}px`,
+    //       height: `${DIMENSIONS.level.height}px`,
+    //       marginLeft: `${DIMENSIONS.level.marginLeft}px`,
+    //       marginTop: `${DIMENSIONS.level.marginTop}px`,
+    //     }}
+    //   >
+    //     <Label className="absolute z-30 justify-center text-xs min-w-6">
+    //       {level}
+    //     </Label>
+    //   </div> */}
+    // </div>
+  );
+};
+
+const StatusBar: React.FC<{
+  icon: string;
+  value: string;
+  percentage: number;
+  type: "error" | "progress" | "health";
+}> = ({ icon, value, percentage, type }) => {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-center gap-1 text-xxs">
+        <img src={icon} className="h-3 object-contain pixelated" />
+        <span>{value}</span>
+      </div>
+      <ResizableBar
+        percentage={percentage}
+        type={type}
+        outerDimensions={{ width: 42, height: 7.5 }}
+      />
     </div>
   );
 };
@@ -256,6 +298,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   onBack,
 }) => {
   const { portalService } = useContext(PortalContext);
+  const { t } = useAppTranslation();
   const [internalShowModal, setInternalShowModal] = useState(false);
   const [currentTab, setCurrentTab] = useState<WearableLoadoutSlot>("I");
   const [profilePanelTab, setProfilePanelTab] = useState<ProfilePanelTab>(
@@ -275,11 +318,14 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
     activeWearables,
     lives,
     maxLives,
+    playerLevel,
+    currentXP,
+    nextLevelXP,
+    xpPoints,
   } = useSelector(portalService, _profileState);
 
   const bumpkinEquipment = gameState?.bumpkin?.equipped as
-    | BumpkinParts
-    | undefined;
+    BumpkinParts | undefined;
 
   useEffect(() => {
     if (!bumpkinEquipment || !gameState) return;
@@ -301,6 +347,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
       loadouts,
     });
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDefaultEquipment(stored.defaultEquipment);
     setLoadouts(loadouts);
     setEquipped(loadouts[currentTab]);
@@ -314,6 +361,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
     if (!loadouts) return;
 
     const nextEquipment = loadouts[currentTab];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEquipped(nextEquipment);
     portalService.send("SET_ACTIVE_WEARABLES", { wearables: nextEquipment });
   }, [currentTab, loadouts, portalService]);
@@ -392,6 +440,16 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   };
 
   const healthPercent = maxLives > 0 ? (lives / maxLives) * 100 : 0;
+  const isMaxLevel = isPlayerMaxLevel(playerLevel);
+  const xpPercent =
+    isMaxLevel || nextLevelXP === undefined
+      ? 100
+      : nextLevelXP > 0
+        ? (currentXP / nextLevelXP) * 100
+        : 0;
+  const xpValue = isMaxLevel
+    ? t(`${PORTAL_NAME}.maxLevel`)
+    : `${currentXP} / ${nextLevelXP}`;
   const bumpkinParts = activeWearables ?? bumpkin?.equipped;
   const isControlled = showModal !== undefined;
   const isModalOpen = showModal ?? internalShowModal;
@@ -413,29 +471,54 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   };
 
   useEffect(() => {
-    if (!isModalOpen) return;
-
-    setProfilePanelTab(mode === "preGame" ? "wearables" : "weapons");
-  }, [isModalOpen, mode]);
+    portalService.send("SET_GAMEPLAY_PAUSED", { isPaused: isModalOpen });
+  }, [isModalOpen, portalService]);
 
   return (
     <>
       {showAvatar && (
-        <div
-          className="relative"
-          style={{
-            width: "100px",
-            height: "95px",
-          }}
-        >
-          <div className="scale-[0.7] absolute left-0 top-0 width-100">
-            <BumpkinAvatar
-              bumpkinParts={bumpkinParts}
-              healthPercent={healthPercent}
-              lives={lives}
-              maxLives={maxLives}
-              onClick={openModal}
-            />
+        <div className="relative">
+          <BumpkinAvatar
+            bumpkinParts={bumpkinParts}
+            level={playerLevel}
+            onClick={openModal}
+          />
+          <div className="absolute top-6 left-[70px] z-0 overflow-hidden">
+            <InnerPanel className="flex w-[188px] h-[110px] justify-end">
+              <div className="flex flex-col items-center justify-between h-full">
+                <StatusBar
+                  icon={SUNNYSIDE.icons.heart}
+                  value={`${lives} / ${maxLives}`}
+                  percentage={healthPercent}
+                  type="error"
+                />
+                <StatusBar
+                  icon={SUNNYSIDE.icons.xpIcon}
+                  value={xpValue}
+                  percentage={xpPercent}
+                  type="health"
+                />
+                <div className="flex w-full items-center justify-center gap-1 text-xxs">
+                  <Label
+                    style={{
+                      fontSize: "20px",
+                      lineHeight: "12px",
+                    }}
+                    type={xpPoints > 0 ? "warning" : "default"}
+                  >
+                    {t(`${PORTAL_NAME}.xpPoints`, {
+                      points: xpPoints,
+                    })}
+                  </Label>
+                  {xpPoints > 0 ? (
+                    <img
+                      src={SUNNYSIDE.icons.expression_alerted}
+                      className="h-4 object-contain pixelated"
+                    />
+                  ) : null}
+                </div>
+              </div>
+            </InnerPanel>
           </div>
         </div>
       )}
@@ -471,6 +554,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
             equipped={equipped}
             availableWearableCounts={availableWearableCounts}
             onEquipWearable={equipWearable}
+            onClose={closeModal}
           />
         </div>
       </Modal>

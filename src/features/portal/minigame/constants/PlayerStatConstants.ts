@@ -1,6 +1,7 @@
 import { PlayerStatId, PlayerStatLevel, PlayerStatLevels } from "../Types";
 
 export const PLAYER_STAT_INITIAL_LEVEL: PlayerStatLevel = 1;
+export const PLAYER_STAT_BASE_LEVEL: PlayerStatLevel = 0;
 export const PLAYER_STAT_MAX_LEVEL: PlayerStatLevel = 10;
 export const PLAYER_WATER_SPEED_MULTIPLIER = 0.6;
 
@@ -11,40 +12,43 @@ export const PLAYER_STAT_VALUES: Record<
   Record<PlayerStatLevel, number>
 > = {
   health: {
-    1: 100,
-    2: 110,
-    3: 120,
-    4: 130,
-    5: 140,
-    6: 150,
-    7: 160,
-    8: 170,
-    9: 180,
-    10: 190,
+    0: 100,
+    1: 110,
+    2: 120,
+    3: 130,
+    4: 140,
+    5: 150,
+    6: 160,
+    7: 170,
+    8: 180,
+    9: 190,
+    10: 200,
   },
   speed: {
-    1: 50,
-    2: 55,
-    3: 60,
-    4: 65,
-    5: 70,
-    6: 75,
-    7: 80,
-    8: 85,
-    9: 90,
-    10: 95,
+    0: 50,
+    1: 55,
+    2: 60,
+    3: 65,
+    4: 70,
+    5: 75,
+    6: 80,
+    7: 85,
+    8: 90,
+    9: 95,
+    10: 100,
   },
   damage: {
-    1: 0,
-    2: 1,
-    3: 2,
-    4: 3,
-    5: 4,
-    6: 5,
-    7: 6,
-    8: 7,
-    9: 8,
-    10: 9,
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10,
   },
 };
 
@@ -52,6 +56,7 @@ export const PLAYER_STAT_UPGRADE_XP_COSTS: Record<
   PlayerStatLevel,
   number | null
 > = {
+  0: null,
   1: null,
   2: 20,
   3: 20,
@@ -65,9 +70,9 @@ export const PLAYER_STAT_UPGRADE_XP_COSTS: Record<
 };
 
 export const DEFAULT_PLAYER_STAT_LEVELS: PlayerStatLevels = {
-  health: PLAYER_STAT_INITIAL_LEVEL,
-  speed: PLAYER_STAT_INITIAL_LEVEL,
-  damage: PLAYER_STAT_INITIAL_LEVEL,
+  health: PLAYER_STAT_BASE_LEVEL,
+  speed: PLAYER_STAT_BASE_LEVEL,
+  damage: PLAYER_STAT_BASE_LEVEL,
 };
 
 export const getPlayerStatValue = (

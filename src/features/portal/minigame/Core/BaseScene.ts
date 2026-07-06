@@ -24,6 +24,7 @@ import {
   MachineInterpreter as MMOMachineInterpreter,
   SceneId,
 } from "features/world/mmoMachine";
+import type { MachineInterpreter as PortalMachineInterpreter } from "../lib/Machine";
 import { Player, PlazaRoomState } from "features/world/types/Room";
 import { FactionName, GameState, IslandType } from "features/game/types/game";
 import { translate } from "lib/i18n/translate";
@@ -316,6 +317,10 @@ export abstract class BaseScene extends Phaser.Scene {
         spawn = SPAWNS()[this.sceneId][from] ?? SPAWNS()[this.sceneId].default;
       }
 
+      const activeWearables = this.portalService?.state.context.activeWearables;
+      const playerClothing =
+        activeWearables ?? (this.gameState.bumpkin?.equipped as BumpkinParts);
+
       this.createPlayer({
         x: spawn.x ?? 0,
         y: spawn.y ?? 0,
@@ -326,7 +331,7 @@ export abstract class BaseScene extends Phaser.Scene {
         isCurrentPlayer: true,
         // gameService
         clothing: {
-          ...(this.gameState.bumpkin?.equipped as BumpkinParts),
+          ...playerClothing,
           updatedAt: 0,
         },
         experience: this.gameState.bumpkin?.experience ?? 0,
@@ -758,6 +763,10 @@ export abstract class BaseScene extends Phaser.Scene {
 
   public get gameService() {
     return this.registry.get("gameService") as MachineInterpreter;
+  }
+
+  public get portalService() {
+    return this.registry.get("portalService") as PortalMachineInterpreter;
   }
 
   public get authService() {

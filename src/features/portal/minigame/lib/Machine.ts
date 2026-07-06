@@ -10,8 +10,15 @@ import {
   PORTAL_NAME,
   DROP_ITEM_XP_VALUES,
   DEFAULT_PLAYER_STAT_LEVELS,
+  getLevelUpChoice,
+  getNextLevelXP,
+  getNextPlayerStatLevel,
   getPlayerStatValueIncrease,
-  resolvePlayerStatUpgrade,
+  getUnlockedWeapons,
+  isPlayerMaxLevel,
+  LEVEL_UP_WEAPON_IDS,
+  PLAYER_INITIAL_LEVEL,
+  shouldGrantXPPoint,
   ENEMY_BALANCE_STATS,
 } from "../constants";
 import { GameState } from "features/game/types/game";
@@ -25,12 +32,12 @@ import { getAttemptsLeft } from "./Utils";
 import {
   DropItemType,
   EnemyType,
+  LevelUpChoice,
   PlayerStatId,
   PlayerStatLevels,
   WeaponId,
   WeaponLevel,
 } from "../Types";
-import { WEAPON_UPGRADE_XP_COSTS } from "../constants/WeaponConstants";
 
 const getJWT = () => {
   const code = new URLSearchParams(window.location.search).get("jwt");
@@ -52,41 +59,27 @@ export interface Context {
   validations: Record<string, boolean>;
   isTraining: boolean;
 
-  selectedWeapon: WeaponId;
+  playerLevel: number;
+  currentXP: number;
+  nextLevelXP?: number;
+  xpPoints: number;
+  selectedStat?: PlayerStatId;
+  pendingLevelUpChoice?: LevelUpChoice;
+  isGameplayPaused: boolean;
   weaponLevels: Record<WeaponId, WeaponLevel>;
   hudWeapons: WeaponId[];
   playerStatLevels: PlayerStatLevels;
   activeWearables?: BumpkinParts;
 }
 
-const WEAPON_IDS: WeaponId[] = [
-  "banana",
-  "broomScythe",
-  "wateringCan",
-  "corn",
-  "tomato",
-  "sunflower",
-  "oil",
-  "pumpkin",
-  "beehive",
-];
-
-const DEFAULT_WEAPON_LEVELS: Record<WeaponId, WeaponLevel> = WEAPON_IDS.reduce(
-  (levels, weaponId) => ({
-    ...levels,
-    [weaponId]: weaponId === "banana" ? 1 : 0,
-  }),
-  {} as Record<WeaponId, WeaponLevel>,
-);
-
-const DEFAULT_HUD_WEAPONS: WeaponId[] = ["banana"];
-
-const addWeaponToHud = (hudWeapons: WeaponId[], weapon: WeaponId) => {
-  const nextHudWeapons = hudWeapons.filter((id) => id !== weapon);
-  nextHudWeapons.push(weapon);
-
-  return nextHudWeapons.slice(-3);
-};
+const DEFAULT_WEAPON_LEVELS: Record<WeaponId, WeaponLevel> =
+  LEVEL_UP_WEAPON_IDS.reduce(
+    (levels, weaponId) => ({
+      ...levels,
+      [weaponId]: 0,
+    }),
+    {} as Record<WeaponId, WeaponLevel>,
+  );
 
 const getNextWeaponLevel = (level: WeaponLevel) => {
   if (level >= 8) return undefined;
@@ -94,8 +87,90 @@ const getNextWeaponLevel = (level: WeaponLevel) => {
   return (level + 1) as WeaponLevel;
 };
 
-const canUseWeapon = (context: Context, weapon: WeaponId) => {
-  return context.weaponLevels[weapon] > 0;
+const getInitialProgression = ({
+  withInitialWeaponChoice = false,
+}: {
+  withInitialWeaponChoice?: boolean;
+} = {}) => {
+  const weaponLevels = { ...DEFAULT_WEAPON_LEVELS };
+  const pendingLevelUpChoice = withInitialWeaponChoice
+    ? getLevelUpChoice({
+        level: PLAYER_INITIAL_LEVEL,
+        weaponLevels,
+      })
+    : undefined;
+
+  return {
+    collected: 0,
+    playerLevel: PLAYER_INITIAL_LEVEL,
+    currentXP: 0,
+    nextLevelXP: getNextLevelXP(PLAYER_INITIAL_LEVEL),
+    xpPoints: 0,
+    selectedStat: undefined,
+    pendingLevelUpChoice,
+    isGameplayPaused: !!pendingLevelUpChoice,
+    weaponLevels,
+    hudWeapons: [] as WeaponId[],
+    playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
+  };
+};
+
+const resolveXPProgression = ({
+  context,
+  gainedXP,
+}: {
+  context: Context;
+  gainedXP: number;
+}): Partial<Context> => {
+  if (context.pendingLevelUpChoice) return {};
+  if (isPlayerMaxLevel(context.playerLevel)) {
+    return {
+      collected: context.collected + gainedXP,
+    };
+  }
+
+  let playerLevel = context.playerLevel;
+  let currentXP = context.currentXP + gainedXP;
+  let nextLevelXP = getNextLevelXP(playerLevel);
+  let xpPoints = context.xpPoints;
+  let pendingLevelUpChoice: LevelUpChoice | undefined;
+
+  while (
+    nextLevelXP !== undefined &&
+    currentXP >= nextLevelXP &&
+    !pendingLevelUpChoice
+  ) {
+    currentXP -= nextLevelXP;
+    playerLevel += 1;
+    nextLevelXP = getNextLevelXP(playerLevel);
+
+    const choice = getLevelUpChoice({
+      level: playerLevel,
+      weaponLevels: context.weaponLevels,
+    });
+
+    if (choice) {
+      pendingLevelUpChoice = choice;
+    } else if (shouldGrantXPPoint(playerLevel)) {
+      xpPoints += 1;
+    }
+
+    if (isPlayerMaxLevel(playerLevel)) {
+      currentXP = 0;
+      pendingLevelUpChoice = undefined;
+      break;
+    }
+  }
+
+  return {
+    collected: context.collected + gainedXP,
+    playerLevel,
+    currentXP,
+    nextLevelXP,
+    xpPoints,
+    pendingLevelUpChoice,
+    isGameplayPaused: pendingLevelUpChoice ? true : context.isGameplayPaused,
+  };
 };
 
 // type UnlockAchievementsEvent = {
@@ -133,11 +208,6 @@ type SetValidationsEvent = {
   validation: string;
 };
 
-type SetSelectedWeaponEvent = {
-  type: "SET_SELECTED_WEAPON";
-  weapon: WeaponId;
-};
-
 type UpgradeWeaponEvent = {
   type: "UPGRADE_WEAPON";
   weapon: WeaponId;
@@ -146,6 +216,21 @@ type UpgradeWeaponEvent = {
 type UpgradePlayerStatEvent = {
   type: "UPGRADE_PLAYER_STAT";
   stat: PlayerStatId;
+};
+
+type SelectLevelUpWeaponEvent = {
+  type: "SELECT_LEVEL_UP_WEAPON";
+  weapon: WeaponId;
+};
+
+type SelectLevelUpStatEvent = {
+  type: "SELECT_LEVEL_UP_STAT";
+  stat: PlayerStatId;
+};
+
+type SetGameplayPausedEvent = {
+  type: "SET_GAMEPLAY_PAUSED";
+  isPaused: boolean;
 };
 
 type SetActiveWearablesEvent = {
@@ -169,9 +254,11 @@ export type PortalEvent =
   | LoseLifeEvent
   | SetValidationsEvent
   | CollectItemEvent
-  | SetSelectedWeaponEvent
   | UpgradeWeaponEvent
   | UpgradePlayerStatEvent
+  | SelectLevelUpWeaponEvent
+  | SelectLevelUpStatEvent
+  | SetGameplayPausedEvent
   | SetActiveWearablesEvent;
 
 export type PortalState = {
@@ -206,18 +293,15 @@ const VALIDATIONS = {};
 const resetGameTransition = {
   RETRY: {
     target: "starting",
-    actions: assign({
-      score: () => 0,
-      lives: () => GAME_LIVES,
-      maxLives: () => GAME_LIVES,
-      endAt: () => 0,
-      selectedWeapon: () => "banana" as WeaponId,
-      weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
-      hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
-      playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),
-      activeWearables: (context: Context) => context.activeWearables,
-      validations: () => structuredClone(VALIDATIONS),
-    }) as any,
+    actions: assign((context: Context): Partial<Context> => ({
+      score: 0,
+      lives: GAME_LIVES,
+      maxLives: GAME_LIVES,
+      endAt: 0,
+      ...getInitialProgression(),
+      activeWearables: context.activeWearables,
+      validations: structuredClone(VALIDATIONS),
+    })) as any,
   },
 };
 
@@ -233,7 +317,6 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     state: CONFIG.API_URL ? undefined : OFFLINE_FARM,
 
     score: 0,
-    collected: 0,
     lastScore: 0,
     lives: GAME_LIVES,
     maxLives: GAME_LIVES,
@@ -241,10 +324,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     endAt: 0,
     isTraining: false,
     validations: structuredClone(VALIDATIONS),
-    selectedWeapon: "banana",
-    weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
-    hudWeapons: [...DEFAULT_HUD_WEAPONS],
-    playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
+    ...getInitialProgression(),
 
     // Portal minigame
   },
@@ -263,78 +343,42 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         },
       }),
     },
-    SET_SELECTED_WEAPON: {
+    SET_GAMEPLAY_PAUSED: {
       actions: assign({
-        selectedWeapon: (context: Context, event: SetSelectedWeaponEvent) => {
-          if (!canUseWeapon(context, event.weapon)) {
-            return context.selectedWeapon;
-          }
+        isGameplayPaused: (context: Context, event: SetGameplayPausedEvent) => {
+          if (context.pendingLevelUpChoice) return true;
 
-          return event.weapon;
-        },
-        hudWeapons: (context: Context, event: SetSelectedWeaponEvent) => {
-          if (!canUseWeapon(context, event.weapon)) return context.hudWeapons;
-
-          return addWeaponToHud(context.hudWeapons, event.weapon);
+          return event.isPaused;
         },
       }),
     },
     UPGRADE_WEAPON: {
-      actions: assign({
-        collected: (context: Context, event: UpgradeWeaponEvent) => {
-          const currentLevel = context.weaponLevels[event.weapon];
-          const nextLevel = getNextWeaponLevel(currentLevel);
-          if (!nextLevel) return context.collected;
+      actions: assign((context: Context, event: UpgradeWeaponEvent) => {
+        const currentLevel = context.weaponLevels[event.weapon];
+        const nextLevel = getNextWeaponLevel(currentLevel);
+        const canUpgrade =
+          currentLevel > 0 && nextLevel !== undefined && context.xpPoints > 0;
+        if (!canUpgrade) return {};
 
-          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
-          if (context.collected < cost) return context.collected;
-
-          return context.collected - cost;
-        },
-        weaponLevels: (context: Context, event: UpgradeWeaponEvent) => {
-          const currentLevel = context.weaponLevels[event.weapon];
-          const nextLevel = getNextWeaponLevel(currentLevel);
-          if (!nextLevel) return context.weaponLevels;
-
-          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
-          if (context.collected < cost) return context.weaponLevels;
-
-          return {
+        return {
+          xpPoints: context.xpPoints - 1,
+          weaponLevels: {
             ...context.weaponLevels,
             [event.weapon]: nextLevel,
-          };
-        },
-        selectedWeapon: (context: Context, event: UpgradeWeaponEvent) => {
-          const currentLevel = context.weaponLevels[event.weapon];
-          const nextLevel = getNextWeaponLevel(currentLevel);
-          if (!nextLevel) return context.selectedWeapon;
-
-          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
-          if (context.collected < cost) return context.selectedWeapon;
-
-          return event.weapon;
-        },
-        hudWeapons: (context: Context, event: UpgradeWeaponEvent) => {
-          const currentLevel = context.weaponLevels[event.weapon];
-          const nextLevel = getNextWeaponLevel(currentLevel);
-          if (!nextLevel) return context.hudWeapons;
-
-          const cost = WEAPON_UPGRADE_XP_COSTS[nextLevel] ?? 0;
-          if (context.collected < cost) return context.hudWeapons;
-
-          return addWeaponToHud(context.hudWeapons, event.weapon);
-        },
+          },
+        };
       }),
     },
     UPGRADE_PLAYER_STAT: {
       actions: assign(
         (context: Context, event: UpgradePlayerStatEvent): Partial<Context> => {
           const level = context.playerStatLevels[event.stat];
-          const upgrade = resolvePlayerStatUpgrade({
-            level,
-            xp: context.collected,
-          });
-          if (!upgrade.upgraded) return {};
+          const nextLevel = getNextPlayerStatLevel(level);
+          const canUpgrade =
+            context.selectedStat === event.stat &&
+            nextLevel !== undefined &&
+            context.xpPoints > 0;
+          if (!canUpgrade) return {};
 
           const healthIncrease =
             event.stat === "health"
@@ -342,10 +386,10 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               : 0;
 
           return {
-            collected: upgrade.xp,
+            xpPoints: context.xpPoints - 1,
             playerStatLevels: {
               ...context.playerStatLevels,
-              [event.stat]: upgrade.level,
+              [event.stat]: nextLevel,
             },
             maxLives: context.maxLives + healthIncrease,
             lives: context.lives + healthIncrease,
@@ -500,18 +544,8 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
       on: {
         START: {
           target: "playing",
-          actions: assign({
-            endAt: () => Date.now() + GAME_SECONDS * 1000,
-            score: 0,
-            collected: 1400,
-            lives: GAME_LIVES,
-            maxLives: GAME_LIVES,
-            selectedWeapon: "banana",
-            weaponLevels: { ...DEFAULT_WEAPON_LEVELS },
-            hudWeapons: [...DEFAULT_HUD_WEAPONS],
-            playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
-            validations: structuredClone(VALIDATIONS),
-            state: (context: Context) => {
+          actions: assign((context: Context): Partial<Context> => {
+            const state = (() => {
               if (context.isTraining) return context.state;
               startAttempt();
               return startMinigameAttempt({
@@ -521,18 +555,90 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
                   id: PORTAL_NAME,
                 },
               });
-            },
-            attemptsLeft: (context: Context) => {
-              if (context.isTraining) return context.attemptsLeft;
-              return context.attemptsLeft - 1;
-            },
-          }),
+            })();
+
+            return {
+              endAt: 0,
+              score: 0,
+              lives: GAME_LIVES,
+              maxLives: GAME_LIVES,
+              ...getInitialProgression({ withInitialWeaponChoice: true }),
+              validations: structuredClone(VALIDATIONS),
+              state,
+              attemptsLeft: context.isTraining
+                ? context.attemptsLeft
+                : context.attemptsLeft - 1,
+            };
+          }) as any,
         },
       },
     },
 
     playing: {
       on: {
+        SELECT_LEVEL_UP_WEAPON: {
+          actions: assign(
+            (
+              context: Context,
+              event: SelectLevelUpWeaponEvent,
+            ): Partial<Context> => {
+              const choice = context.pendingLevelUpChoice;
+              if (choice?.type !== "weapon") return {};
+              if (!choice.options.includes(event.weapon)) return {};
+              if (context.weaponLevels[event.weapon] > 0) return {};
+
+              const weaponLevels = {
+                ...context.weaponLevels,
+                [event.weapon]: 1 as WeaponLevel,
+              };
+              const hudWeapons = getUnlockedWeapons(weaponLevels);
+
+              return {
+                weaponLevels,
+                hudWeapons,
+                pendingLevelUpChoice: undefined,
+                isGameplayPaused: false,
+                endAt:
+                  context.endAt > 0
+                    ? context.endAt
+                    : Date.now() + GAME_SECONDS * 1000,
+              };
+            },
+          ),
+        },
+        SELECT_LEVEL_UP_STAT: {
+          actions: assign(
+            (
+              context: Context,
+              event: SelectLevelUpStatEvent,
+            ): Partial<Context> => {
+              const choice = context.pendingLevelUpChoice;
+              if (choice?.type !== "stat") return {};
+              if (!choice.options.includes(event.stat)) return {};
+
+              const level = context.playerStatLevels[event.stat];
+              const nextLevel = getNextPlayerStatLevel(level);
+              if (nextLevel === undefined) return {};
+
+              const healthIncrease =
+                event.stat === "health"
+                  ? getPlayerStatValueIncrease("health", level)
+                  : 0;
+
+              return {
+                selectedStat: event.stat,
+                playerStatLevels: {
+                  ...context.playerStatLevels,
+                  [event.stat]: nextLevel,
+                },
+                maxLives: context.maxLives + healthIncrease,
+                lives: context.lives + healthIncrease,
+                pendingLevelUpChoice: undefined,
+                isGameplayPaused: false,
+              };
+            },
+          ),
+        },
         GAIN_POINTS: {
           actions: assign({
             score: (context: Context, event: GainPointsEvent) => {
@@ -542,12 +648,10 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           }),
         },
         COLLECT_ITEM: {
-          actions: assign({
-            collected: (context: Context, event: CollectItemEvent) => {
-              return (
-                context.collected + (DROP_ITEM_XP_VALUES[event.itemKey] ?? 1)
-              );
-            },
+          actions: assign((context: Context, event: CollectItemEvent) => {
+            const gainedXP = DROP_ITEM_XP_VALUES[event.itemKey] ?? 1;
+
+            return resolveXPProgression({ context, gainedXP });
           }),
         },
         LOSE_LIFE: {
@@ -592,20 +696,14 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         },
         GAME_OVER: {
           target: "gameOver",
-          actions: assign({
-            collected: () => 0,
-            lives: () => GAME_LIVES,
-            maxLives: () => GAME_LIVES,
-            selectedWeapon: () => "banana" as WeaponId,
-            weaponLevels: () => ({ ...DEFAULT_WEAPON_LEVELS }),
-            hudWeapons: () => [...DEFAULT_HUD_WEAPONS],
-            playerStatLevels: () => ({ ...DEFAULT_PLAYER_STAT_LEVELS }),
-            validations: () => structuredClone(VALIDATIONS),
-            lastScore: (context: Context) => {
-              if (context.isTraining) return context.lastScore;
-              return context.score;
-            },
-            state: (context: Context) => {
+          actions: assign((context: Context): Partial<Context> => ({
+            endAt: 0,
+            lives: GAME_LIVES,
+            maxLives: GAME_LIVES,
+            ...getInitialProgression(),
+            validations: structuredClone(VALIDATIONS),
+            lastScore: context.isTraining ? context.lastScore : context.score,
+            state: (() => {
               if (context.isTraining) return context.state;
               submitScore({ score: context.score });
               return submitMinigameScore({
@@ -616,8 +714,8 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
                   id: PORTAL_NAME,
                 },
               });
-            },
-          }),
+            })(),
+          })) as any,
         },
       },
     },

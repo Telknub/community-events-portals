@@ -7,11 +7,7 @@ import { PIXEL_SCALE } from "features/game/lib/constants";
 import { progressBarBorderStyle } from "features/game/lib/style";
 
 export type ProgressType =
-  | "progress"
-  | "health"
-  | "error"
-  | "buff"
-  | "quantity";
+  "progress" | "health" | "error" | "buff" | "quantity";
 
 interface ProgressBarProps extends React.HTMLAttributes<HTMLDivElement> {
   percentage: number;

@@ -7,10 +7,11 @@ import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import {
   getPlayerStatValue,
-  PLAYER_STAT_INITIAL_LEVEL,
+  PLAYER_STAT_BASE_LEVEL,
   PLAYER_WATER_SPEED_MULTIPLIER,
   PORTAL_NAME,
   WALKING_SPEED,
+  GAME_SECONDS,
 } from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -28,6 +29,7 @@ import {
   DropItemType,
   BossTypes,
   MobTypes,
+  WeaponLevel,
 } from "./Types";
 import { BossEnemy } from "./containers/BossEnemyContainer";
 import {
@@ -81,8 +83,6 @@ export class Scene extends BaseScene {
   swarmGroup!: Phaser.Physics.Arcade.Group;
   bossEnemies: BossEnemy[] = [];
   bossGroup!: Phaser.Physics.Arcade.Group;
-  private gameStartTime = Date.now();
-
   sceneId: SceneId = PORTAL_NAME;
 
   constructor() {
@@ -101,6 +101,10 @@ export class Scene extends BaseScene {
 
   private get isGamePlaying() {
     return this.portalService?.state.matches("playing") === true;
+  }
+
+  private get isGameplayPaused() {
+    return this.portalService?.state.context.isGameplayPaused === true;
   }
 
   public get portalService() {
@@ -551,19 +555,30 @@ export class Scene extends BaseScene {
   }
 
   update(time = this.time.now, delta = this.game.loop.delta) {
-    if (this.isGamePlaying) {
+    this.syncPhysicsPause();
+
+    if (this.isGamePlaying && !this.isGameplayPaused) {
       // The game has started
       this.velocity = this.getPlayerMovementSpeed();
       this.loadBumpkinAnimations();
       this.handlePlayerOutOfWater();
       this.weaponManager?.update(time, delta);
-      this.timeBaseWave();
+      this.processTimeWaves();
       // this.scoreBaseWave();
       this.swarmEnemies.forEach((mob) => {
         mob.setSwarmMove(true);
       });
       this.bossEnemies.forEach((boss) => {
         boss.setMove(true);
+      });
+    } else if (this.isGamePlaying && this.isGameplayPaused) {
+      this.velocity = 0;
+      this.currentPlayer?.idle?.();
+      this.swarmEnemies.forEach((mob) => {
+        mob.setSwarmMove(false);
+      });
+      this.bossEnemies.forEach((boss) => {
+        boss.setMove(false);
       });
     } else if (this.isGameReady) {
       this.portalService?.send("START");
@@ -576,6 +591,19 @@ export class Scene extends BaseScene {
     super.update();
   }
 
+  private syncPhysicsPause() {
+    if (this.isGamePlaying && this.isGameplayPaused) {
+      if (!this.physics.world.isPaused) {
+        this.physics.world.pause();
+      }
+      return;
+    }
+
+    if (this.physics.world.isPaused) {
+      this.physics.world.resume();
+    }
+  }
+
   private initialiseProperties() {
     this.velocity = 0;
   }
@@ -583,7 +611,7 @@ export class Scene extends BaseScene {
   private getPlayerMovementSpeed() {
     const speedLevel =
       this.portalService?.state.context.playerStatLevels.speed ??
-      PLAYER_STAT_INITIAL_LEVEL;
+      PLAYER_STAT_BASE_LEVEL;
     const speed = getPlayerStatValue("speed", speedLevel);
 
     return this.currentPlayer?.isSwimming
@@ -717,13 +745,10 @@ export class Scene extends BaseScene {
 
     const portalService = this.portalService;
     const portalContext = portalService?.state.context;
-    let weaponLoadout = this.createWeaponLoadout(
-      portalContext?.selectedWeapon,
-      portalContext
-        ? portalContext.weaponLevels[portalContext.selectedWeapon]
-        : undefined,
+    let weaponLoadout = this.createWeaponLoadout(portalContext?.weaponLevels);
+    this.currentPlayer.setEquippedWeapon(
+      this.getDisplayedWeapon(weaponLoadout),
     );
-    this.currentPlayer.setEquippedWeapon(portalContext?.selectedWeapon);
 
     this.weaponManager = new WeaponManager({
       scene: this,
@@ -735,15 +760,16 @@ export class Scene extends BaseScene {
 
     const subscription = portalService?.subscribe((state) => {
       const nextWeaponLoadout = this.createWeaponLoadout(
-        state.context.selectedWeapon,
-        state.context.weaponLevels[state.context.selectedWeapon],
+        state.context.weaponLevels,
       );
       if (JSON.stringify(nextWeaponLoadout) === JSON.stringify(weaponLoadout)) {
         return;
       }
 
       weaponLoadout = nextWeaponLoadout;
-      this.currentPlayer?.setEquippedWeapon(state.context.selectedWeapon);
+      this.currentPlayer?.setEquippedWeapon(
+        this.getDisplayedWeapon(nextWeaponLoadout),
+      );
       this.weaponManager?.reset(nextWeaponLoadout);
     });
 
@@ -802,15 +828,21 @@ export class Scene extends BaseScene {
   }
 
   private createWeaponLoadout(
-    selectedWeapon: WeaponId = "banana",
-    selectedWeaponLevel: WeaponLoadoutItem["level"] = 1,
+    weaponLevels: Record<WeaponId, WeaponLevel> = {} as Record<
+      WeaponId,
+      WeaponLevel
+    >,
   ): WeaponLoadoutItem[] {
-    return [
-      {
-        id: selectedWeapon,
-        level: Math.max(1, selectedWeaponLevel) as WeaponLoadoutItem["level"],
-      },
-    ];
+    return Object.entries(weaponLevels)
+      .filter((entry): entry is [WeaponId, WeaponLevel] => entry[1] > 0)
+      .map(([id, level]) => ({
+        id,
+        level,
+      }));
+  }
+
+  private getDisplayedWeapon(loadout: WeaponLoadoutItem[]) {
+    return loadout.find(({ id }) => id === "wateringCan")?.id;
   }
 
   private groupPhysics() {
@@ -857,17 +889,15 @@ export class Scene extends BaseScene {
     });
   }
 
-  private timeBaseWave() {
-    this.time.addEvent({
-      delay: 1000,
-      loop: true,
-      callback: () => {
-        const elapsedTime = (Date.now() - this.gameStartTime) / 1000;
+  private processTimeWaves() {
+    const endAt = this.portalService?.state.context.endAt ?? 0;
+    if (!endAt) return;
 
-        this.spawnBoss(elapsedTime);
-        this.spawnSwarmMob(elapsedTime);
-      },
-    });
+    const secondsLeft = Math.max(endAt - Date.now(), 0) / 1000;
+    const elapsedTime = GAME_SECONDS - secondsLeft;
+
+    this.spawnBoss(elapsedTime);
+    this.spawnSwarmMob(elapsedTime);
   }
 
   private createObstacles() {

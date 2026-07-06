@@ -20,9 +20,21 @@ export type WeaponLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type PlayerStatId = "health" | "speed" | "damage";
 
-export type PlayerStatLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type PlayerStatLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export type PlayerStatLevels = Record<PlayerStatId, PlayerStatLevel>;
+
+export type LevelUpChoice =
+  | {
+      type: "weapon";
+      level: number;
+      options: WeaponId[];
+    }
+  | {
+      type: "stat";
+      level: number;
+      options: PlayerStatId[];
+    };
 
 export type DamageType =
   "physical" | "water" | "explosion" | "light" | "dot" | "summon";

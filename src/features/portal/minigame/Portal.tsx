@@ -17,6 +17,12 @@ import { NoAttemptsPanel } from "./components/panels/NoAttemptsPanel";
 import { Hud } from "./components/hud/Hud";
 import { Phaser } from "./Phaser";
 import { BumpkinProfile } from "./components/hud/BumpkinProfile";
+import { StatCard } from "./components/hud/StatCard";
+import { PORTAL_NAME, WEAPON_ICONS, WEAPON_NAMES } from "./constants";
+import { PlayerStatId } from "./Types";
+import { SUNNYSIDE } from "assets/sunnyside";
+import swordIcon from "public/world/portal/images/sword_icon.png";
+import speedIcon from "public/world/portal/images/lightning.png";
 
 const _sflBalance = (state: PortalMachineState) => state.context.state?.balance;
 const _isError = (state: PortalMachineState) => state.matches("error");
@@ -30,6 +36,14 @@ const _isIntroduction = (state: PortalMachineState) =>
 const _isLoser = (state: PortalMachineState) => state.matches("loser");
 const _isWinner = (state: PortalMachineState) => state.matches("winner");
 const _isComplete = (state: PortalMachineState) => state.matches("complete");
+const _pendingLevelUpChoice = (state: PortalMachineState) =>
+  state.context.pendingLevelUpChoice;
+
+const STAT_ICONS: Record<PlayerStatId, { src: string; width?: number }> = {
+  health: { src: SUNNYSIDE.icons.heart },
+  speed: { src: speedIcon, width: 14 },
+  damage: { src: swordIcon },
+};
 
 /**
  * A Portal Example which demonstrates basic state management
@@ -48,6 +62,10 @@ export const Portal: React.FC = () => {
   const isWinner = useSelector(portalService, _isWinner);
   const isLoser = useSelector(portalService, _isLoser);
   const isComplete = useSelector(portalService, _isComplete);
+  const pendingLevelUpChoice = useSelector(
+    portalService,
+    _pendingLevelUpChoice,
+  );
 
   useEffect(() => {
     // If a player tries to quit while playing, mark it as an attempt
@@ -183,6 +201,48 @@ export const Portal: React.FC = () => {
           />
         </Modal>
       )}
+
+      <Modal
+        show={!!pendingLevelUpChoice}
+        backdrop="static"
+        dialogClassName="max-w-[620px]"
+      >
+        <div className="flex items-center justify-center gap-3 p-2">
+          {pendingLevelUpChoice?.type === "weapon"
+            ? pendingLevelUpChoice.options.map((weapon) => (
+                <StatCard
+                  key={weapon}
+                  title={t(WEAPON_NAMES[weapon])}
+                  label={{
+                    value: t(`${PORTAL_NAME}.weaponLevel`, { level: 1 }),
+                    type: "info",
+                  }}
+                  img={{ src: WEAPON_ICONS[weapon] }}
+                  className="min-h-[96px] w-[150px]"
+                  onClick={() =>
+                    portalService.send("SELECT_LEVEL_UP_WEAPON", { weapon })
+                  }
+                />
+              ))
+            : pendingLevelUpChoice?.options.map((stat) => (
+                <StatCard
+                  key={stat}
+                  title={t(
+                    `${PORTAL_NAME}.${stat === "health" ? "lives" : stat}`,
+                  )}
+                  label={{
+                    value: t(`${PORTAL_NAME}.weaponLevel`, { level: 1 }),
+                    type: "info",
+                  }}
+                  img={STAT_ICONS[stat]}
+                  className="min-h-[96px] w-[150px]"
+                  onClick={() =>
+                    portalService.send("SELECT_LEVEL_UP_STAT", { stat })
+                  }
+                />
+              ))}
+        </div>
+      </Modal>
 
       {sflBalance && (
         <>

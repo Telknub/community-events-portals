@@ -48,7 +48,7 @@ export const Hud: React.FC = () => {
     <HudContainer>
       <div>
         <div
-          className="absolute pointer-events-none"
+          className="absolute"
           style={{
             top: `${PIXEL_SCALE * 4}px`,
             left: `${PIXEL_SCALE * 6}px`,
@@ -56,11 +56,13 @@ export const Hud: React.FC = () => {
         >
           {isPlaying && (
             <>
-              {/* <Target /> */}
-              <Timer />
-              {/* <Lives /> */}
-              <Score />
-              <ColletedItems />
+              <BumpkinProfile />
+              <div className="pointer-events-none">
+                {/* <Target /> */}
+                {/* <Lives /> */}
+                {/* <Score /> */}
+                <ColletedItems />
+              </div>
             </>
           )}
         </div>
@@ -73,7 +75,7 @@ export const Hud: React.FC = () => {
         >
           {isPlaying && (
             <>
-              <BumpkinProfile />
+              <Timer />
               <Codex />
               <HudWeapons />
             </>

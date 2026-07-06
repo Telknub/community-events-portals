@@ -3,11 +3,12 @@ import classNames from "classnames";
 
 import { ModalOverlay } from "components/ui/ModalOverlay";
 import { Label } from "components/ui/Label";
-import { ButtonPanel, OuterPanel } from "components/ui/Panel";
+import { ButtonPanel, InnerPanel, OuterPanel } from "components/ui/Panel";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import {
-  WEAPON_UPGRADE_XP_COSTS,
+  PORTAL_NAME,
+  WEAPON_DESCRIPTIONS,
   WEAPON_ICONS,
   WEAPON_IDS,
   WEAPON_NAMES,
@@ -22,7 +23,7 @@ import {
 } from "./weaponStats";
 import infoIcon from "assets/icons/info.webp";
 
-const PANEL_CONTENT_HEIGHT = "h-[400px]";
+const PANEL_CONTENT_HEIGHT = "h-[385px]";
 const GUIDE_LEVELS: WeaponLevel[] = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const WeaponsGuide: React.FC = () => {
@@ -30,7 +31,6 @@ export const WeaponsGuide: React.FC = () => {
   const [selectedWeapon, setSelectedWeapon] = useState<WeaponId>("banana");
   const [selectedLevel, setSelectedLevel] = useState<WeaponLevel>(1);
   const [selectedStat, setSelectedStat] = useState<keyof WeaponRuntimeStats>();
-  const selectedLevelXp = WEAPON_UPGRADE_XP_COSTS[selectedLevel] ?? 0;
 
   const stats = useMemo(() => {
     const weaponStats = resolveWeaponStats(selectedWeapon, selectedLevel);
@@ -66,8 +66,10 @@ export const WeaponsGuide: React.FC = () => {
       </div>
 
       <OuterPanel className="flex h-full flex-1 gap-3 p-2">
-        <div className="flex w-[38%] flex-col items-center justify-center text-center">
-          <p className="mb-4 text-lg px-2">{t(WEAPON_NAMES[selectedWeapon])}</p>
+        <div className="flex h-full w-[38%] flex-col items-center gap-10">
+          <Label className="w-full text-sm">
+            {t(WEAPON_NAMES[selectedWeapon])}
+          </Label>
           <div className="relative flex items-center justify-center">
             <div
               className="absolute bottom-4 h-12 w-28 rounded-full opacity-70 blur-md"
@@ -82,26 +84,26 @@ export const WeaponsGuide: React.FC = () => {
               className="relative z-10 h-28 w-28 object-contain pixelated drop-shadow-[0_0_8px_rgba(255,235,160,0.85)]"
             />
           </div>
+          <InnerPanel className="flex items-center flex-1">
+            <p className="px-1 text-center text-xs leading-tight">
+              {t(WEAPON_DESCRIPTIONS[selectedWeapon])}
+            </p>
+          </InnerPanel>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center pr-4">
-          <div>
-            <div className="grid grid-cols-4 gap-1">
-              {GUIDE_LEVELS.map((level) => (
-                <ButtonPanel
-                  key={level}
-                  selected={selectedLevel === level}
-                  className="flex h-8 items-center justify-center text-xs"
-                  onClick={() => setSelectedLevel(level)}
-                >
-                  {`Lvl ${level}`}
-                </ButtonPanel>
-              ))}
-            </div>
-
-            <div className="mt-2 flex justify-center">
-              <Label type="default">{`XP: ${selectedLevelXp}`}</Label>
-            </div>
+        <div className="flex min-w-0 flex-1 flex-col justify-center">
+          <div className="grid grid-cols-4 gap-1">
+            {GUIDE_LEVELS.map((level) => (
+              <ButtonPanel
+                key={level}
+                selected={selectedLevel === level}
+                className="flex flex-col h-12 w-100 items-center justify-center text-xs text-center"
+                onClick={() => setSelectedLevel(level)}
+              >
+                <span>{t(`${PORTAL_NAME}.level`)}</span>
+                <span>{`${level}`}</span>
+              </ButtonPanel>
+            ))}
           </div>
 
           <table className="mt-3 w-full table-fixed border-collapse text-xs">

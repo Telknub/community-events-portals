@@ -1066,6 +1066,7 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   }
 
   public hurt(enemyType: EnemyType) {
+    if (this.portalService?.state.context.isGameplayPaused) return;
     if (this.isHurting) return;
 
     const damage = ENEMY_BALANCE_STATS[enemyType].DAMAGE;

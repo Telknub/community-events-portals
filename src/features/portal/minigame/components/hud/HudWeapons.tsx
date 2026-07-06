@@ -9,19 +9,18 @@ import { WEAPON_ICONS } from "../../constants";
 
 const _weaponsState = (state: PortalMachineState) => ({
   hudWeapons: state.context.hudWeapons,
-  selectedWeapon: state.context.selectedWeapon,
   weaponLevels: state.context.weaponLevels,
 });
 
 export const HudWeapons: React.FC = () => {
   const { portalService } = useContext(PortalContext);
-  const { hudWeapons, selectedWeapon, weaponLevels } = useSelector(
+  const { hudWeapons, weaponLevels } = useSelector(
     portalService,
     _weaponsState,
   );
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-end">
       {hudWeapons.map((weapon) => {
         const level = weaponLevels[weapon];
         const isLocked = level === 0;
@@ -30,13 +29,9 @@ export const HudWeapons: React.FC = () => {
           <Box
             key={weapon}
             image={WEAPON_ICONS[weapon]}
-            isSelected={weapon === selectedWeapon}
             count={new Decimal(level)}
             countLabelType="info"
             locked={isLocked}
-            onClick={() =>
-              portalService.send("SET_SELECTED_WEAPON", { weapon })
-            }
           />
         );
       })}

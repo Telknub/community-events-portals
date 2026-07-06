@@ -22,12 +22,14 @@ import { Button } from "components/ui/Button";
 
 import swordIcon from "public/world/portal/images/sword_icon.png";
 import speedIcon from "public/world/portal/images/lightning.png";
+import powerupIcon from "assets/icons/level_up.png";
 import { Label } from "components/ui/Label";
 import { PortalContext } from "../../lib/PortalProvider";
 import { PortalMachineState } from "../../lib/Machine";
 import {
-  getPlayerStatUpgradeCost,
+  getNextPlayerStatLevel,
   getPlayerStatValue,
+  getPlayerStatValueIncrease,
   PLAYER_STAT_IDS,
 } from "../../constants";
 import { PlayerStatId } from "../../Types";
@@ -83,7 +85,8 @@ const getStorageKey = (farmId: number) =>
   `portal:${PORTAL_NAME}:wearableLoadouts:${farmId}`;
 
 const _playerStatsState = (state: PortalMachineState) => ({
-  collected: state.context.collected,
+  xpPoints: state.context.xpPoints,
+  selectedStat: state.context.selectedStat,
   playerStatLevels: state.context.playerStatLevels,
 });
 
@@ -203,8 +206,7 @@ export const loadStoredLoadouts = ({
     if (!value || typeof value !== "object") return undefined;
 
     const parsed = value as
-      | Partial<WearableLoadouts>
-      | Partial<StoredWearableLoadouts>;
+      Partial<WearableLoadouts> | Partial<StoredWearableLoadouts>;
 
     return "loadouts" in parsed
       ? (parsed.loadouts as Partial<WearableLoadouts> | undefined)
@@ -306,7 +308,7 @@ export const Profile: React.FC<{
 }) => {
   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
-  const { collected, playerStatLevels } = useSelector(
+  const { xpPoints, selectedStat, playerStatLevels } = useSelector(
     portalService,
     _playerStatsState,
   );
@@ -334,12 +336,15 @@ export const Profile: React.FC<{
       <InnerPanel className="flex mt-2 gap-2 w-full">
         {PLAYER_STAT_IDS.map((stat) => {
           const level = playerStatLevels[stat];
-          const cost = getPlayerStatUpgradeCost(level);
-          const canUpgrade = cost !== undefined && collected >= cost;
+          const nextLevel = getNextPlayerStatLevel(level);
+          const canUpgrade =
+            selectedStat === stat && nextLevel !== undefined && xpPoints > 0;
+          const isDisabled = selectedStat !== stat || nextLevel === undefined;
           const value =
             stat === "health"
               ? `${lives}/${maxLives}`
               : getPlayerStatValue(stat, level);
+          const statIncrease = getPlayerStatValueIncrease(stat, level);
 
           return (
             <StatCard
@@ -347,20 +352,25 @@ export const Profile: React.FC<{
               title={statTitles[stat]}
               label={{ value, type: statLabelTypes[stat] }}
               img={statIcons[stat]}
-              progress={
-                cost === undefined
-                  ? undefined
-                  : {
-                      percentage: Math.min(100, (collected / cost) * 100),
-                      type: canUpgrade ? "health" : "progress",
-                      currentXp: collected,
-                      requiredXp: cost,
-                    }
+              warningLabel={
+                nextLevel === undefined ? (
+                  t(`${PORTAL_NAME}.maxShort`)
+                ) : selectedStat === stat && xpPoints > 0 ? (
+                  <span className="flex items-center justify-center gap-1">
+                    <img
+                      src={powerupIcon}
+                      className="h-3 object-contain pixelated"
+                    />
+                    {`+${statIncrease}`}
+                  </span>
+                ) : undefined
               }
+              disabled={isDisabled}
               onClick={() => {
                 if (!canUpgrade) return;
                 portalService.send("UPGRADE_PLAYER_STAT", { stat });
               }}
+              showLabelAboveDisabled
               className="w-full"
             />
           );
@@ -423,8 +433,22 @@ export const Profile: React.FC<{
                 <div className="absolute w-8 h-8 bottom-4 right-4">
                   <NPCIcon parts={equipped} key={JSON.stringify(equipped)} />
                 </div>
+                {username && (
+                  <div className="absolute left-2 top-2">
+                    <Label>
+                      <span
+                        className="block max-w-[136px] overflow-hidden text-ellipsis whitespace-nowrap"
+                        title={username}
+                      >
+                        {username}
+                      </span>
+                    </Label>
+                  </div>
+                )}
               </div>
-              {username && <Label>{username}</Label>}
+              <Label type={xpPoints > 0 ? "warning" : "default"}>
+                {t(`${PORTAL_NAME}.xpPoints`, { points: xpPoints })}
+              </Label>
             </div>
             <BumpkinPartGroup
               bumpkinParts={RIGHT_EQUIPMENT}
@@ -434,34 +458,6 @@ export const Profile: React.FC<{
               gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
             />
           </div>
-          {/* <div className="flex w-full mt-2 gap-2 justify-between">
-            <BumpkinPartGroup
-              bumpkinParts={BOTTOM_EQUIPMENT}
-              equipped={equipped}
-              selected={selectedBumpkinPart}
-              onSelect={onSelectBumpkinPart}
-              gridStyling="grid grid-cols-2 gap-2 max-w-[110px]"
-            />
-            <div className="flex justify-end ml-auto divide-x-2 divide-white">
-              {REQUIRED_BUT_INCOMPATIBLE.map((parts, index) => (
-                <div
-                  key={parts.join(",")}
-                  className={classNames({
-                    "pr-1": index === 0,
-                    "pl-1": index > 0,
-                  })}
-                >
-                  <BumpkinPartGroup
-                    bumpkinParts={BOTTOM_EQUIPMENT_2}
-                    equipped={equipped}
-                    selected={selectedBumpkinPart}
-                    onSelect={onSelectBumpkinPart}
-                    gridStyling={`grid ${index === 0 ? "grid-cols-2" : "grid-cols-1"} gap-2`}
-                  />
-                </div>
-              ))}
-            </div>
-          </div> */}
         </div>
       </CloseButtonPanel>
     </div>

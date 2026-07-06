@@ -39,6 +39,18 @@ export const WEAPON_NAMES: Record<WeaponId, TranslationKeys> = {
   beehive: `${PORTAL_NAME}.weapon.beehive`,
 };
 
+export const WEAPON_DESCRIPTIONS: Record<WeaponId, TranslationKeys> = {
+  banana: `${PORTAL_NAME}.weapon.description.banana`,
+  broomScythe: `${PORTAL_NAME}.weapon.description.broomScythe`,
+  wateringCan: `${PORTAL_NAME}.weapon.description.wateringCan`,
+  corn: `${PORTAL_NAME}.weapon.description.corn`,
+  tomato: `${PORTAL_NAME}.weapon.description.tomato`,
+  sunflower: `${PORTAL_NAME}.weapon.description.sunflower`,
+  oil: `${PORTAL_NAME}.weapon.description.oil`,
+  pumpkin: `${PORTAL_NAME}.weapon.description.pumpkin`,
+  beehive: `${PORTAL_NAME}.weapon.description.beehive`,
+};
+
 export const WEAPON_STAT_LABELS: Record<
   keyof WeaponRuntimeStats,
   TranslationKeys

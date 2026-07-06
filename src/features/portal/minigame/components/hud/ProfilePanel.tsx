@@ -22,6 +22,7 @@ export const ProfilePanel: React.FC<{
   equipped?: BumpkinParts;
   availableWearableCounts: Partial<Record<BumpkinItem, number>>;
   onEquipWearable: (wearable: BumpkinItem) => void;
+  onClose?: () => void;
   tabs?: ProfilePanelTab[];
 }> = ({
   currentTab,
@@ -30,6 +31,7 @@ export const ProfilePanel: React.FC<{
   equipped,
   availableWearableCounts,
   onEquipWearable,
+  onClose,
   tabs = ["wearables", "weapons", "guide"],
 }) => {
   const { t } = useAppTranslation();
@@ -57,6 +59,7 @@ export const ProfilePanel: React.FC<{
       tabs={panelTabs}
       currentTab={currentTab}
       setCurrentTab={setCurrentTab}
+      onClose={onClose}
       className="h-full w-[min(94vw,620px)] relative -left-1"
     >
       {currentTab === "wearables" ? (

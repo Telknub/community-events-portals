@@ -4,7 +4,10 @@ import { EventBus } from "../EventBus";
 import { isEnemyAlive } from "./geometry";
 import type { StatusEffectSystem } from "./StatusEffectSystem";
 import { COMBAT_CONFIG } from "../../constants";
-import { resolvePlayerDamage } from "../../constants/PlayerStatConstants";
+import {
+  PLAYER_STAT_BASE_LEVEL,
+  resolvePlayerDamage,
+} from "../../constants/PlayerStatConstants";
 
 export class DamageSystem {
   private statusEffectSystem?: StatusEffectSystem;
@@ -24,7 +27,8 @@ export class DamageSystem {
     if (!isEnemyAlive(enemy)) return false;
 
     const damageLevel =
-      this.portalService?.state.context.playerStatLevels.damage ?? 1;
+      this.portalService?.state.context.playerStatLevels.damage ??
+      PLAYER_STAT_BASE_LEVEL;
     const resolvedPayload = {
       ...payload,
       amount: resolvePlayerDamage(payload.amount, damageLevel),

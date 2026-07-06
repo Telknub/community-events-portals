@@ -11,7 +11,7 @@ import { WEAPON_CONFIGS, WEAPON_UPGRADES } from "./WeaponConstants";
 import { PORTAL_NAME } from "./PortalConstants";
 import {
   getPlayerStatValue,
-  PLAYER_STAT_INITIAL_LEVEL,
+  PLAYER_STAT_BASE_LEVEL,
 } from "./PlayerStatConstants";
 
 import banana_icon from "public/world/portal/images/banana_icon.webp";
@@ -50,15 +50,12 @@ export const PORTAL_TOKEN = "Festival of Colors Token 2026";
 
 // Game config
 export const GAME_SECONDS = 300;
-export const GAME_LIVES = getPlayerStatValue(
-  "health",
-  PLAYER_STAT_INITIAL_LEVEL,
-);
+export const GAME_LIVES = getPlayerStatValue("health", PLAYER_STAT_BASE_LEVEL);
 
 // Player
 export const WALKING_SPEED = getPlayerStatValue(
   "speed",
-  PLAYER_STAT_INITIAL_LEVEL,
+  PLAYER_STAT_BASE_LEVEL,
 );
 
 // Attempts

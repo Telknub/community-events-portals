@@ -12,21 +12,22 @@ import {
 
 describe("PlayerStatConstants", () => {
   it("defines ten balanced levels for each player stat", () => {
-    expect(getPlayerStatValue("health", 1)).toBe(100);
-    expect(getPlayerStatValue("health", 10)).toBe(190);
-    expect(getPlayerStatValue("speed", 1)).toBe(50);
-    expect(getPlayerStatValue("speed", 10)).toBe(95);
-    expect(getPlayerStatValue("damage", 1)).toBe(0);
-    expect(getPlayerStatValue("damage", 10)).toBe(9);
+    expect(getPlayerStatValue("health", 0)).toBe(100);
+    expect(getPlayerStatValue("health", 10)).toBe(200);
+    expect(getPlayerStatValue("speed", 0)).toBe(50);
+    expect(getPlayerStatValue("speed", 10)).toBe(100);
+    expect(getPlayerStatValue("damage", 0)).toBe(0);
+    expect(getPlayerStatValue("damage", 10)).toBe(10);
   });
 
   it("resolves upgrade levels and costs", () => {
-    expect(getNextPlayerStatLevel(1)).toBe(2);
+    expect(getNextPlayerStatLevel(0)).toBe(1);
     expect(getNextPlayerStatLevel(PLAYER_STAT_MAX_LEVEL)).toBeUndefined();
     expect(getPlayerStatUpgradeCost(1)).toBe(20);
     expect(getPlayerStatUpgradeCost(9)).toBe(450);
     expect(getPlayerStatUpgradeCost(10)).toBeUndefined();
     expect(PLAYER_STAT_UPGRADE_XP_COSTS).toEqual({
+      0: null,
       1: null,
       2: 20,
       3: 20,
@@ -40,11 +41,11 @@ describe("PlayerStatConstants", () => {
     });
   });
 
-  it("starts every stat at level one", () => {
+  it("starts every stat at level zero", () => {
     expect(DEFAULT_PLAYER_STAT_LEVELS).toEqual({
-      health: 1,
-      speed: 1,
-      damage: 1,
+      health: 0,
+      speed: 0,
+      damage: 0,
     });
   });
 
@@ -67,8 +68,8 @@ describe("PlayerStatConstants", () => {
   });
 
   it("resolves health increases and global damage bonuses", () => {
-    expect(getPlayerStatValueIncrease("health", 1)).toBe(10);
+    expect(getPlayerStatValueIncrease("health", 0)).toBe(10);
     expect(getPlayerStatValueIncrease("health", 10)).toBe(0);
-    expect(resolvePlayerDamage(2, 4)).toBe(5);
+    expect(resolvePlayerDamage(2, 4)).toBe(6);
   });
 });

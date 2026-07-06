@@ -37,6 +37,11 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta);
 
+    if (this.scene.portalService?.state.context.isGameplayPaused) {
+      this.setVelocity(0, 0);
+      return;
+    }
+
     this.updateMagnet();
   }
 
@@ -69,6 +74,8 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
       this,
       this.player,
       () => {
+        if (this.scene.portalService?.state.context.isGameplayPaused) return;
+
         this.scene.sound.play("collect_xp", { volume: 0.2 });
         this.destroy();
         scene.portalService?.send("COLLECT_ITEM", { itemKey: this.dropItem! });
