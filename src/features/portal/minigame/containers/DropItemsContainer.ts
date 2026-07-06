@@ -15,7 +15,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   scene: Scene;
   private player?: BumpkinContainer;
   dropItem?: DropItemType;
-  private magnetRangeWithWings = 150;
+  private magnetRangeWithWings = 50;
   private defaultMagnetRange = 40;
   private readonly destroyOrb = 10000;
 

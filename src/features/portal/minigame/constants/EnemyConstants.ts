@@ -12,51 +12,45 @@ export const ORB_DEPTH = 70;
 
 // XP values for each drop item type
 export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
-  blueOrb: 2,
-  greenOrb: 4,
-  grayOrb: 8,
-  yellowOrb: 40,
-  purpleOrb: 80,
+  blueOrb: 5,
+  greenOrb: 12,
+  grayOrb: 26,
+  yellowOrb: 65,
+  purpleOrb: 125,
 };
 
 // Score thresholds for boss spawns
 export const BOSS_WAVE_THRESHOLDS: BossWaveConfig[] = [
-  {
-    triggerAt: 100,
-    bossType: "boss1",
-    totalEnemy: 1,
-    flag: "bossWave1",
-  },
-  {
-    triggerAt: 180,
-    bossType: "boss2",
-    totalEnemy: 1,
-    flag: "bossWave2",
-  },
-  {
-    triggerAt: 230,
-    bossType: "boss1",
-    totalEnemy: 1,
-    flag: "bossWave3",
-  },
-  {
-    triggerAt: 230,
-    bossType: "boss2",
-    totalEnemy: 1,
-    flag: "bossWave4",
-  },
-  {
-    triggerAt: 270,
-    bossType: "boss3",
-    totalEnemy: 1,
-    flag: "bossWave5",
-  },
-  {
-    triggerAt: 270,
-    bossType: "boss3",
-    totalEnemy: 1,
-    flag: "bossWave6",
-  },
+  { triggerAt: 30, bossType: "boss1", totalEnemy: 1, flag: "bossWave1" },
+  { triggerAt: 60, bossType: "boss2", totalEnemy: 1, flag: "bossWave2" },
+  { triggerAt: 90, bossType: "boss3", totalEnemy: 1, flag: "bossWave3" },
+  { triggerAt: 120, bossType: "boss1", totalEnemy: 2, flag: "bossWave4" },
+  { triggerAt: 150, bossType: "boss2", totalEnemy: 2, flag: "bossWave5" },
+  { triggerAt: 180, bossType: "boss3", totalEnemy: 2, flag: "bossWave6" },
+
+  { triggerAt: 210, bossType: "boss1", totalEnemy: 1, flag: "bossWave7_a" },
+  { triggerAt: 210, bossType: "boss2", totalEnemy: 1, flag: "bossWave7_b" },
+
+  { triggerAt: 240, bossType: "boss2", totalEnemy: 2, flag: "bossWave8_a" },
+  { triggerAt: 240, bossType: "boss3", totalEnemy: 1, flag: "bossWave8_b" },
+
+  { triggerAt: 270, bossType: "boss1", totalEnemy: 2, flag: "bossWave9_a" },
+  { triggerAt: 270, bossType: "boss3", totalEnemy: 2, flag: "bossWave9_b" },
+
+  { triggerAt: 275, bossType: "boss2", totalEnemy: 4, flag: "bossWave10_a" },
+  { triggerAt: 275, bossType: "boss3", totalEnemy: 4, flag: "bossWave10_b" },
+
+  { triggerAt: 280, bossType: "boss1", totalEnemy: 10, flag: "bossWave11_a" },
+  { triggerAt: 280, bossType: "boss2", totalEnemy: 5, flag: "bossWave11_b" },
+  { triggerAt: 280, bossType: "boss3", totalEnemy: 3, flag: "bossWave11_c" },
+
+  { triggerAt: 285, bossType: "boss1", totalEnemy: 10, flag: "bossWave12_a" },
+  { triggerAt: 285, bossType: "boss2", totalEnemy: 7, flag: "bossWave12_b" },
+  { triggerAt: 285, bossType: "boss3", totalEnemy: 3, flag: "bossWave12_c" },
+
+  { triggerAt: 290, bossType: "boss1", totalEnemy: 10, flag: "bossWave13_a" },
+  { triggerAt: 290, bossType: "boss2", totalEnemy: 10, flag: "bossWave13_b" },
+  { triggerAt: 290, bossType: "boss3", totalEnemy: 10, flag: "bossWave13_c" },
 ];
 
 // Score thresholds for mob spawn
@@ -64,42 +58,74 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     triggerAt: 0,
     mobType: "mob1",
-    totalEnemy: 120,
-    batchSize: 3,
-    delay: 2500,
+    totalEnemy: 40,
+    batchSize: 2,
+    delay: 2000,
     flag: "wave1",
   },
   {
-    triggerAt: 80,
+    triggerAt: 30,
     mobType: "mob2",
-    totalEnemy: 150,
+    totalEnemy: 60,
     batchSize: 3,
-    delay: 2200,
+    delay: 1800,
     flag: "wave2",
   },
   {
-    triggerAt: 140,
-    mobType: "mob3",
-    totalEnemy: 200,
-    batchSize: 4,
-    delay: 1800,
+    triggerAt: 60,
+    mobType: "mob1",
+    totalEnemy: 70,
+    batchSize: 3,
+    delay: 1400,
     flag: "wave3",
   },
   {
-    triggerAt: 200,
-    mobType: "mob4",
-    totalEnemy: 200,
-    batchSize: 5,
-    delay: 1400,
+    triggerAt: 90,
+    mobType: "mob3",
+    totalEnemy: 85,
+    batchSize: 4,
+    delay: 1200,
     flag: "wave4",
   },
   {
-    triggerAt: 250,
-    mobType: "mob5",
-    totalEnemy: 300,
-    batchSize: 6,
+    triggerAt: 120,
+    mobType: "mob2",
+    totalEnemy: 110,
+    batchSize: 4,
     delay: 1000,
     flag: "wave5",
+  },
+  {
+    triggerAt: 150,
+    mobType: "mob4",
+    totalEnemy: 110,
+    batchSize: 4,
+    delay: 900,
+    flag: "wave6",
+  },
+  {
+    triggerAt: 180,
+    mobType: "mob3",
+    totalEnemy: 180,
+    batchSize: 5,
+    delay: 800,
+    flag: "wave7",
+  },
+  {
+    triggerAt: 210,
+    mobType: "mob4",
+    totalEnemy: 150,
+    batchSize: 6,
+    delay: 800,
+    flag: "wave8",
+  },
+  {
+    triggerAt: 240,
+    mobType: "mob5",
+    totalEnemy: 180,
+    batchSize: 7,
+    delay: 700,
+    flag: "wave9",
   },
   // Endless
   {
@@ -146,47 +172,15 @@ export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
 
 // Balance enemy stats
 export const ENEMY_BALANCE_STATS = {
-  mob1: {
-    HP: 1,
-    SPEED: 15,
-    DAMAGE: 2,
-  },
-  mob2: {
-    HP: 1,
-    SPEED: 15,
-    DAMAGE: 2,
-  },
-  mob3: {
-    HP: 2,
-    SPEED: 20,
-    DAMAGE: 3,
-  },
-  mob4: {
-    HP: 3,
-    SPEED: 20,
-    DAMAGE: 3,
-  },
-  mob5: {
-    HP: 4,
-    SPEED: 25,
-    DAMAGE: 5,
-  },
+  mob1: { HP: 4, SPEED: 20, DAMAGE: 1 },
+  mob2: { HP: 8, SPEED: 25, DAMAGE: 3 },
+  mob3: { HP: 15, SPEED: 30, DAMAGE: 5 },
+  mob4: { HP: 30, SPEED: 20, DAMAGE: 7 },
+  mob5: { HP: 50, SPEED: 35, DAMAGE: 10 },
 
-  boss1: {
-    HP: 200,
-    SPEED: 30,
-    DAMAGE: 10,
-  },
-  boss2: {
-    HP: 300,
-    SPEED: 25,
-    DAMAGE: 15,
-  },
-  boss3: {
-    HP: 150,
-    SPEED: 27,
-    DAMAGE: 20,
-  },
+  boss1: { HP: 150, SPEED: 25, DAMAGE: 10 },
+  boss2: { HP: 350, SPEED: 30, DAMAGE: 12 },
+  boss3: { HP: 600, SPEED: 30, DAMAGE: 15 },
 } as const;
 
 // Mob configurations
