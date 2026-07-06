@@ -17,6 +17,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   dropItem?: DropItemType;
   private magnetRangeWithWings = 150;
   private defaultMagnetRange = 40;
+  private readonly destroyOrb = 10000;
 
   constructor({ scene, x, y, player, itemKey }: Props) {
     super(scene, x, y, itemKey);
@@ -32,6 +33,12 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
 
     this.handleCollision();
     // this.hasPassiveAbility();
+
+    scene.time.delayedCall(this.destroyOrb, () => {
+      if (this.active) {
+        this.destroy();
+      }
+    });
   }
 
   preUpdate(time: number, delta: number) {
