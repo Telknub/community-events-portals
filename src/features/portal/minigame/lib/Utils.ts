@@ -1,4 +1,4 @@
-import { Minigame } from "features/game/types/game";
+import type { Minigame } from "features/game/types/game";
 import {
   UNLIMITED_ATTEMPTS_SFL,
   FREE_DAILY_ATTEMPTS,

@@ -1,8 +1,8 @@
-import { Scene } from "../Scene";
-import { BumpkinContainer } from "../Core/BumpkinContainer";
-import { MachineInterpreter } from "../lib/Machine";
-import { DamagePayload, MobTypes } from "../Types";
-import { EnemyConfig } from "../Types";
+import type { Scene } from "../Scene";
+import type { BumpkinContainer } from "../Core/BumpkinContainer";
+import type { MachineInterpreter } from "../lib/Machine";
+import type { DamagePayload, MobTypes } from "../Types";
+import type { EnemyConfig } from "../Types";
 import { MOB_CONFIGS } from "../constants/EnemyConstants";
 import { WEAPON_SFX, WEAPON_SFX_VOL } from "../constants";
 
@@ -50,8 +50,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
 
   public get portalService() {
     return this.scene.registry.get("portalService") as
-      | MachineInterpreter
-      | undefined;
+      MachineInterpreter | undefined;
   }
 
   createEnemy() {

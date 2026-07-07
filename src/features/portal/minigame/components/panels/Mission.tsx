@@ -8,7 +8,7 @@ import { Label } from "components/ui/Label";
 import { Attempts } from "./Attempts";
 import { getAttemptsLeft, isWithinRange } from "../../lib/Utils";
 import { goHome } from "features/portal/lib/portalUtil";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { PORTAL_NAME } from "../../constants";
 import { decodeToken } from "features/auth/actions/login";
 import { getUrl } from "features/portal/actions/loadPortal";

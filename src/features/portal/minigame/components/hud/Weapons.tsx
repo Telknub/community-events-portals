@@ -7,7 +7,7 @@ import { Label } from "components/ui/Label";
 import { OuterPanel } from "components/ui/Panel";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import {
   PORTAL_NAME,
   WEAPON_ICONS,
@@ -15,7 +15,7 @@ import {
   WEAPON_NAMES,
   WEAPON_STAT_LABELS,
 } from "../../constants";
-import { WeaponId, WeaponLevel } from "../../Types";
+import type { WeaponId, WeaponLevel } from "../../Types";
 import { StatCard } from "./StatCard";
 import {
   formatStatValue,

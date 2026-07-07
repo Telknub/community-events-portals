@@ -1,5 +1,5 @@
-import { TranslationKeys } from "lib/i18n/dictionaries/types";
-import { WeaponId, WeaponRuntimeStats } from "../Types";
+import type { TranslationKeys } from "lib/i18n/dictionaries/types";
+import type { WeaponId, WeaponRuntimeStats } from "../Types";
 import { PORTAL_NAME } from "./PortalConstants";
 import { WEAPON_CONFIGS } from "./WeaponConstants";
 

@@ -4,7 +4,7 @@ import { useSelector } from "@xstate/react";
 
 import { Box } from "components/ui/Box";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { WEAPON_ICONS } from "../../constants";
 
 const _weaponsState = (state: PortalMachineState) => ({

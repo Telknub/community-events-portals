@@ -1,4 +1,4 @@
-import { NPCName, acknowledgeNPC } from "lib/npcs";
+import { type NPCName, acknowledgeNPC } from "lib/npcs";
 import React, { useEffect, useState } from "react";
 import { Modal } from "components/ui/Modal";
 import { NPCS_WITH_ALERTS } from "../../Core/BumpkinContainer";

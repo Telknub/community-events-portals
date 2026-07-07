@@ -1,4 +1,4 @@
-import { Scene } from "../Scene";
+import type { Scene } from "../Scene";
 
 interface Props {
   x: number;

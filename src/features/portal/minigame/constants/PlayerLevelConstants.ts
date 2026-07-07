@@ -1,4 +1,9 @@
-import { LevelUpChoice, PlayerStatId, WeaponId, WeaponLevel } from "../Types";
+import type {
+  LevelUpChoice,
+  PlayerStatId,
+  WeaponId,
+  WeaponLevel,
+} from "../Types";
 import { PLAYER_STAT_IDS } from "./PlayerStatConstants";
 import { WEAPON_CONFIGS } from "./WeaponConstants";
 

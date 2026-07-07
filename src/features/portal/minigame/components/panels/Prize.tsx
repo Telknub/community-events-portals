@@ -4,7 +4,7 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { OuterPanel } from "components/ui/Panel";
 import { Label } from "components/ui/Label";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
 import { secondsToString } from "lib/utils/time";

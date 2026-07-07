@@ -5,25 +5,25 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { Modal } from "components/ui/Modal";
 import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { PortalMachineState } from "../../lib/Machine";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import {
   loadStoredLoadouts,
   LOADOUT_SLOTS,
   Profile,
   saveStoredLoadouts,
-  WearableLoadouts,
-  WearableLoadoutSlot,
+  type WearableLoadouts,
+  type WearableLoadoutSlot,
 } from "./Profile";
-import { ProfilePanel, ProfilePanelTab } from "./ProfilePanel";
+import { ProfilePanel, type ProfilePanelTab } from "./ProfilePanel";
 import { WEARABLES_TAB_ITEMS } from "./Wearables";
 import {
   BUMPKIN_ITEM_PART,
-  BumpkinItem,
-  BumpkinPart,
+  type BumpkinItem,
+  type BumpkinPart,
 } from "features/game/types/bumpkin";
 import { availableWardrobe } from "features/game/events/landExpansion/equip";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { InnerPanel } from "components/ui/Panel";
 import { ResizableBar } from "components/ui/ProgressBar";

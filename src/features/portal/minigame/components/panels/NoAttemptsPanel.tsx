@@ -6,11 +6,10 @@ import { Button } from "components/ui/Button";
 import { PortalContext } from "../../lib/PortalProvider";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import {
   PANEL_NPC_WEARABLES,
-  PORTAL_NAME,
   RESTOCK_ATTEMPTS,
   UNLIMITED_ATTEMPTS_SFL,
 } from "../../constants";

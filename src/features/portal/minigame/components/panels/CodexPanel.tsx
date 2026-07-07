@@ -12,7 +12,7 @@ import weaponIcon from "public/world/portal/images/banana_icon.webp";
 import dropItemIcon from "public/world/portal/images/dropItem1.webp";
 
 import { DropItemsXP, Enemies, Skills } from "./CodexCategories";
-import { CodexCategoryName } from "../../Types";
+import type { CodexCategoryName } from "../../Types";
 
 interface Props {
   show: boolean;

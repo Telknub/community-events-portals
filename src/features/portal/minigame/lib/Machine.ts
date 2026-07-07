@@ -1,5 +1,5 @@
 import { OFFLINE_FARM } from "features/game/lib/landData";
-import { assign, createMachine, Interpreter, State } from "xstate";
+import { assign, createMachine, type Interpreter, type State } from "xstate";
 import { CONFIG } from "lib/config";
 import { decodeToken } from "features/auth/actions/login";
 import {
@@ -21,15 +21,15 @@ import {
   shouldGrantXPPoint,
   ENEMY_BALANCE_STATS,
 } from "../constants";
-import { GameState } from "features/game/types/game";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { GameState } from "features/game/types/game";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { purchaseMinigameItem } from "features/game/events/minigames/purchaseMinigameItem";
 import { startMinigameAttempt } from "features/game/events/minigames/startMinigameAttempt";
 import { submitMinigameScore } from "features/game/events/minigames/submitMinigameScore";
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
 import { getAttemptsLeft } from "./Utils";
-import {
+import type {
   DropItemType,
   EnemyType,
   LevelUpChoice,

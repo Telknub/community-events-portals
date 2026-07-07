@@ -1,9 +1,9 @@
 import mapJson from "assets/map/emptyMap.json";
 // import tilesetconfig from "assets/map/tileset.json";
-import { SceneId } from "features/world/mmoMachine";
+import type { SceneId } from "features/world/mmoMachine";
 import { BaseScene } from "./Core/BaseScene";
-import { MachineInterpreter } from "./lib/Machine";
-import { EventObject } from "xstate";
+import type { MachineInterpreter } from "./lib/Machine";
+import type { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import {
   getPlayerStatValue,
@@ -15,15 +15,15 @@ import {
 } from "./constants";
 import { EventBus } from "./lib/EventBus";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { BoundingBox } from "./lib/collisionDetection";
+import type { BoundingBox } from "./lib/collisionDetection";
 import { addStaticObstacle } from "./containers/ObstaclesContainer";
 import { WeaponManager } from "./lib/combat/WeaponManager";
-import { BumpkinContainer } from "./Core/BumpkinContainer";
+import type { BumpkinContainer } from "./Core/BumpkinContainer";
 import { OBSTACLES_LAYOUT } from "./constants";
 import { SwarmMob } from "./containers/SwarmMobContainer";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import { DropItem } from "./containers/DropItemsContainer";
-import {
+import type {
   WeaponId,
   WeaponLoadoutItem,
   DropItemType,

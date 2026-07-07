@@ -3,7 +3,7 @@ import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { HudContainer } from "components/ui/HudContainer";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 // import { Score } from "./Score";
 import { Settings } from "./Settings";
 import { Travel } from "./Travel";

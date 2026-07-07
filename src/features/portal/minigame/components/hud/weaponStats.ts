@@ -2,7 +2,7 @@ import {
   WEAPON_CONFIGS,
   WEAPON_UPGRADES,
 } from "features/portal/minigame/constants";
-import {
+import type {
   PlayerStatLevel,
   WeaponId,
   WeaponRuntimeStats,

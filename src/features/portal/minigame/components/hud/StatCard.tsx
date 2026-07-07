@@ -1,10 +1,9 @@
 import React from "react";
 
-import { Label, LabelType } from "components/ui/Label";
+import { Label, type LabelType } from "components/ui/Label";
 import { ButtonPanel } from "components/ui/Panel";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { SUNNYSIDE } from "assets/sunnyside";
-import powerupIcon from "assets/icons/level_up.png";
 
 type StatCardImg = {
   src: string;

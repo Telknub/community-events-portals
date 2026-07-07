@@ -1,4 +1,4 @@
-import { WeaponId, WeaponLevel } from "../Types";
+import type { WeaponId, WeaponLevel } from "../Types";
 import {
   getAvailableWeaponChoices,
   getLevelUpChoice,

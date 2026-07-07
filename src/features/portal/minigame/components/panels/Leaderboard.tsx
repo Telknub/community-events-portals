@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { PortalLeaderboard } from "features/world/ui/portals/PortalLeaderboard";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { PortalContext } from "../../lib/PortalProvider";
 import { decodeToken } from "features/auth/actions/login";
 import { useSelector } from "@xstate/react";

@@ -10,11 +10,11 @@ import { SquareIcon } from "components/ui/SquareIcon";
 import { SUNNYSIDE } from "assets/sunnyside";
 import {
   BUMPKIN_ITEM_PART,
-  BumpkinItem,
-  BumpkinPart,
+  type BumpkinItem,
+  type BumpkinPart,
 } from "features/game/types/bumpkin";
 import { getWearableImage } from "features/game/lib/getWearableImage";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PORTAL_NAME } from "../../constants";
 

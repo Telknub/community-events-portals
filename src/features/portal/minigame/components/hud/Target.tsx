@@ -4,7 +4,7 @@ import { PortalContext } from "../../lib/PortalProvider";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { PORTAL_NAME } from "../../constants";
 import item from "public/world/portal/images/ExpOrb_combined.webp";
 

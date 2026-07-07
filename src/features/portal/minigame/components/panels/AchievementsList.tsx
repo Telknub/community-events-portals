@@ -2,8 +2,11 @@ import React, { useContext } from "react";
 
 import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
-import { AVAILABLE_ACHIEVEMENTS, AchievementsName } from "../../Achievements";
+import type { PortalMachineState } from "../../lib/Machine";
+import {
+  AVAILABLE_ACHIEVEMENTS,
+  type AchievementsName,
+} from "../../Achievements";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { InnerPanel, OuterPanel } from "components/ui/Panel";
 import { SUNNYSIDE } from "assets/sunnyside";

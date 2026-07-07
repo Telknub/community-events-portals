@@ -1,4 +1,4 @@
-import { PlayerStatId, PlayerStatLevel, PlayerStatLevels } from "../Types";
+import type { PlayerStatId, PlayerStatLevel, PlayerStatLevels } from "../Types";
 
 export const PLAYER_STAT_INITIAL_LEVEL: PlayerStatLevel = 1;
 export const PLAYER_STAT_BASE_LEVEL: PlayerStatLevel = 0;

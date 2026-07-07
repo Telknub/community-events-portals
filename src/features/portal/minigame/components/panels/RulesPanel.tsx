@@ -4,7 +4,6 @@ import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { Mission } from "./Mission";
 import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../constants";
 import { Guide } from "./Guide";
-import { Leaderboard } from "./Leaderboard";
 
 import misionIcon from "public/world/page.png";
 import guideIcon from "public/world/page.png";

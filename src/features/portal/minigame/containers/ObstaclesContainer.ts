@@ -1,7 +1,7 @@
-import { Scene } from "../Scene";
-import { ObstacleName } from "../Types";
+import type { Scene } from "../Scene";
+import type { ObstacleName } from "../Types";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
-import { BoundingBox } from "../lib/collisionDetection";
+import type { BoundingBox } from "../lib/collisionDetection";
 
 interface Props {
   name: ObstacleName;

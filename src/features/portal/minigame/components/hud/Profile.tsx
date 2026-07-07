@@ -8,11 +8,11 @@ import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import { BumpkinPartGroup } from "features/bumpkins/components/BumpkinPartGroup";
 import {
   BUMPKIN_ITEM_PART,
-  BumpkinItem,
-  BumpkinPart,
+  type BumpkinItem,
+  type BumpkinPart,
 } from "features/game/types/bumpkin";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
-import { Wardrobe } from "features/game/types/game";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { Wardrobe } from "features/game/types/game";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { PORTAL_NAME } from "../../constants";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
@@ -25,14 +25,14 @@ import speedIcon from "public/world/portal/images/lightning.png";
 import powerupIcon from "assets/icons/level_up.png";
 import { Label } from "components/ui/Label";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import {
   getNextPlayerStatLevel,
   getPlayerStatValue,
   getPlayerStatValueIncrease,
   PLAYER_STAT_IDS,
 } from "../../constants";
-import { PlayerStatId } from "../../Types";
+import type { PlayerStatId } from "../../Types";
 
 export type WearableLoadoutSlot = "I" | "II" | "III";
 export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;

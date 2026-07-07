@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { getWearableImage } from "features/game/lib/getWearableImage";
 import { STATIC_OFFLINE_FARM } from "features/game/lib/landDataStatic";
-import { Equipped } from "features/game/types/bumpkin";
+import type { Equipped } from "features/game/types/bumpkin";
 import { OuterPanel } from "components/ui/Panel";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";

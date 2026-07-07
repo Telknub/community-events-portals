@@ -2,19 +2,13 @@ import React from "react";
 
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { Label } from "components/ui/Label";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { useSound } from "lib/utils/hooks/useSound";
 import { OuterPanel } from "components/ui/Panel";
 import { isTouchDevice } from "features/world/lib/device";
-import { PORTAL_NAME } from "../../constants";
 
 import moveControls1 from "public/world/minigame/base/move_controls_1.png";
 import moveControls2 from "public/world/minigame/base/move_controls_2.png";
-import spaceKey from "public/world/minigame/base/space_key.png";
-import qKey from "public/world/minigame/base/q_key.png";
-import eKey from "public/world/minigame/base/e_key.png";
-import vKey from "public/world/minigame/base/v_key.png";
 import joystick from "public/world/minigame/base/joystick.png";
 // import useToolButton from "public/world/use_tool_button.webp";
 // import changeToolButton from "public/world/change_tool_button.webp";

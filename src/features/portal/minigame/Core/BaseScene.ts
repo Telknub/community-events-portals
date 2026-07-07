@@ -1,40 +1,44 @@
-import Phaser, { Physics } from "phaser";
+import Phaser, { type Physics } from "phaser";
 
 import VirtualJoystick from "phaser3-rex-plugins/plugins/virtualjoystick.js";
 
 import { SQUARE_WIDTH } from "features/game/lib/constants";
 import { BumpkinContainer } from "./BumpkinContainer";
 import { PetContainer } from "features/world/containers/PetContainer";
-import { PetNFTType } from "features/game/types/pets";
+import type { PetNFTType } from "features/game/types/pets";
 import { interactableModalManager } from "features/world/ui/InteractableModals";
-import { NPCName, NPC_WEARABLES } from "lib/npcs";
+import { type NPCName, NPC_WEARABLES } from "lib/npcs";
 import { npcModalManager } from "features/world/ui/NPCModals";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
-import { EventObject } from "xstate";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import { SPAWNS } from "features/world/lib/spawn";
 import {
-  AudioController,
+  type AudioController,
   WalkAudioController,
 } from "features/world/lib/AudioController";
 import { createErrorLogger } from "lib/errorLogger";
-import { Coordinates } from "features/game/expansion/components/MapPlacement";
-import { Footsteps } from "assets/sound-effects/soundEffects";
-import {
+import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import type { Footsteps } from "assets/sound-effects/soundEffects";
+import type {
   MachineInterpreter as MMOMachineInterpreter,
   SceneId,
 } from "features/world/mmoMachine";
 import type { MachineInterpreter as PortalMachineInterpreter } from "../lib/Machine";
-import { Player, PlazaRoomState } from "features/world/types/Room";
-import { FactionName, GameState, IslandType } from "features/game/types/game";
+import type { Player, PlazaRoomState } from "features/world/types/Room";
+import type {
+  FactionName,
+  GameState,
+  IslandType,
+} from "features/game/types/game";
 import { translate } from "lib/i18n/translate";
-import { Room } from "colyseus.js";
+import type { Room } from "colyseus.js";
 
 import defaultTilesetConfig from "assets/map/tileset.json";
 
-import { MachineInterpreter } from "features/game/lib/gameMachine";
-import { MachineInterpreter as AuthMachineInterpreter } from "features/auth/lib/authMachine";
-import { PhaserNavMesh } from "phaser-navmesh";
+import type { MachineInterpreter } from "features/game/lib/gameMachine";
+import type { MachineInterpreter as AuthMachineInterpreter } from "features/auth/lib/authMachine";
+import type { PhaserNavMesh } from "phaser-navmesh";
 import {
   AUDIO_MUTED_EVENT,
   getAudioMutedSetting,
@@ -42,7 +46,7 @@ import {
 import { NightShaderPipeline } from "features/world/shaders/nightShader";
 import {
   PLAZA_SHADER_EVENT,
-  PlazaShader,
+  type PlazaShader,
   PlazaShaders,
   getPlazaShaderSetting,
 } from "lib/utils/hooks/usePlazaShader";
@@ -1190,16 +1194,14 @@ export abstract class BaseScene extends Phaser.Scene {
     server.state.players.forEach((player, sessionId) => {
       if (this.playerEntities[sessionId]) {
         const nameTag = this.playerEntities[sessionId].getByName("nameTag") as
-          | Phaser.GameObjects.Text
-          | undefined;
+          Phaser.GameObjects.Text | undefined;
 
         if (nameTag && player.username && nameTag.text !== player.username) {
           nameTag.setText(player.username);
         }
       } else if (sessionId === server.sessionId) {
         const nameTag = this.currentPlayer?.getByName("nameTag") as
-          | Phaser.GameObjects.Text
-          | undefined;
+          Phaser.GameObjects.Text | undefined;
 
         if (nameTag && player.username && nameTag.text !== player.username) {
           nameTag.setText(player.username);
@@ -1210,8 +1212,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
   checkAndUpdateNameColor(entity: BumpkinContainer, color: string) {
     const nameTag = entity.getByName("nameTag") as
-      | Phaser.GameObjects.Text
-      | undefined;
+      Phaser.GameObjects.Text | undefined;
 
     if (nameTag && nameTag.style.color !== color) {
       nameTag.setColor(color);

@@ -1,4 +1,4 @@
-import { Obstacle } from "../Types";
+import type { Obstacle } from "../Types";
 
 export const OBSTACLES_LAYOUT = {
   obstacle1: [

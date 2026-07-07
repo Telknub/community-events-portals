@@ -15,7 +15,7 @@ import {
   WEAPON_STAT_DESCRIPTIONS,
   WEAPON_STAT_LABELS,
 } from "../../constants";
-import { WeaponId, WeaponLevel, WeaponRuntimeStats } from "../../Types";
+import type { WeaponId, WeaponLevel, WeaponRuntimeStats } from "../../Types";
 import {
   formatStatValue,
   getWeaponDetailStats,

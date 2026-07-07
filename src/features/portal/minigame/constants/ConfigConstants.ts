@@ -1,4 +1,4 @@
-import { BumpkinWings, Equipped } from "features/game/types/bumpkin";
+import type { BumpkinWings, Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import { NPC_WEARABLES } from "lib/npcs";
 import {
@@ -42,7 +42,12 @@ import icon_boss3 from "public/world/portal/images/icon_boss_3.webp";
 import tooltip_icon from "public/world/portal/images/ExpOrb_combined.webp";
 import swordIcon from "public/world/portal/images/sword_icon.png";
 import speedIcon from "public/world/portal/images/lightning.png";
-import { BossTypes, MobTypes, WeaponId, PassiveAbilityType } from "../Types";
+import type {
+  BossTypes,
+  MobTypes,
+  WeaponId,
+  PassiveAbilityType,
+} from "../Types";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { getWearableImage } from "features/game/lib/getWearableImage";
 

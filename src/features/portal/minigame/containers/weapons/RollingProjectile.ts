@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Projectile, ProjectileSpawnProps } from "./Projectile";
+import { Projectile, type ProjectileSpawnProps } from "./Projectile";
 
 const HORIZONTAL_PUMPKIN_TEXTURE_KEY = "weapon_horizontal_pumpkin";
 const VERTICAL_PUMPKIN_TEXTURE_KEY = "weapon_vertical_pumpkin";

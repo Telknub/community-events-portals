@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "components/ui/Box";
 import { InnerPanel } from "components/ui/Panel";
 import { IMMUNITY_TOOLTIP } from "../../constants";
-import { PassiveAbilityType } from "../../Types";
+import type { PassiveAbilityType } from "../../Types";
 
 interface ImmunityTooltipProps {
   id: PassiveAbilityType;

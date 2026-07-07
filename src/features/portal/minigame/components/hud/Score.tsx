@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useSelector } from "@xstate/react";
 import { PortalContext } from "../../lib/PortalProvider";
-import { PortalMachineState } from "../../lib/Machine";
+import type { PortalMachineState } from "../../lib/Machine";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PORTAL_NAME } from "../../constants";
 

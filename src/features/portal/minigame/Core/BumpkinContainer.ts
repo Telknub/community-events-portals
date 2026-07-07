@@ -4,22 +4,22 @@ import { buildNPCSheets } from "features/bumpkins/actions/buildNPCSheets";
 import { tokenUriBuilder } from "lib/utils/tokenUriBuilder";
 import { Label } from "features/world/containers/Label";
 import debounce from "lodash.debounce";
-import { Player } from "features/world/types/Room";
-import { NPCName, acknowledgedNPCs } from "lib/npcs";
-import { ReactionName } from "features/pumpkinPlaza/components/Reactions";
+import type { Player } from "features/world/types/Room";
+import { type NPCName, acknowledgedNPCs } from "lib/npcs";
+import type { ReactionName } from "features/pumpkinPlaza/components/Reactions";
 import { getAnimationUrl } from "features/world/lib/animations";
-import {
+import type {
   FactionName,
   InventoryItemName,
   IslandType,
 } from "features/game/types/game";
-import { BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
+import { type BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
 import { CONFIG } from "lib/config";
 import { formatNumber } from "lib/utils/formatNumber";
 import { KNOWN_IDS } from "features/game/types";
 import { getTradeableDisplay } from "features/marketplace/lib/tradeables";
-import { MachineInterpreter } from "../lib/Machine";
-import { EnemyType, WeaponId } from "../Types";
+import type { MachineInterpreter } from "../lib/Machine";
+import type { EnemyType, WeaponId } from "../Types";
 import { ENEMY_BALANCE_STATS } from "../constants";
 
 const NAME_ALIASES: Partial<Record<NPCName, string>> = {

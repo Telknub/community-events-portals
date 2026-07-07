@@ -1,6 +1,6 @@
-import { Scene } from "../Scene";
-import { BumpkinContainer } from "../Core/BumpkinContainer";
-import { DropItemType } from "../Types";
+import type { Scene } from "../Scene";
+import type { BumpkinContainer } from "../Core/BumpkinContainer";
+import type { DropItemType } from "../Types";
 import { PASSIVE_ABILITY_ITEM, ORB_DEPTH } from "../constants";
 
 interface Props {
