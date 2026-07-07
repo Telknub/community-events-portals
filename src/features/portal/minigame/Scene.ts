@@ -573,7 +573,9 @@ export class Scene extends BaseScene {
       });
     } else if (this.isGamePlaying && this.isGameplayPaused) {
       this.velocity = 0;
-      this.currentPlayer?.idle?.();
+      if (!this.currentPlayer?.isHurting) {
+        this.currentPlayer?.idle?.();
+      }
       this.swarmEnemies.forEach((mob) => {
         mob.setSwarmMove(false);
       });

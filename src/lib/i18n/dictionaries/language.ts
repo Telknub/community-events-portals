@@ -40,6 +40,32 @@ export type LanguageCode =
 
 export type TranslationResource = Partial<Record<TranslationKeys, string>>;
 
+const MINIGAME_TRANSLATION_ALIASES = [
+  { from: "festival-of-colors", to: "colors-2026" },
+] as const;
+
+const withMinigameAliases = (
+  terms: TranslationResource,
+): TranslationResource => {
+  const translation: TranslationResource = { ...terms };
+
+  Object.entries(terms).forEach(([key, value]) => {
+    MINIGAME_TRANSLATION_ALIASES.forEach(({ from, to }) => {
+      const prefix = `${from}.`;
+
+      if (!key.startsWith(prefix)) {
+        return;
+      }
+
+      const aliasKey = key.replace(prefix, `${to}.`) as TranslationKeys;
+
+      translation[aliasKey] ??= value;
+    });
+  });
+
+  return translation;
+};
+
 interface LanguageDetails {
   languageName: string;
   languageImage: string[];
@@ -107,15 +133,15 @@ export const LANGUAGE_DETAILS: Record<LanguageCode, LanguageDetails> = {
 export const resources: Partial<
   Record<LanguageCode, { translation: TranslationResource }>
 > = {
-  en: { translation: ENGLISH_TERMS },
-  de: { translation: GERMAN_TERMS },
-  es: { translation: SPANISH_TERMS },
-  fr: { translation: FRENCH_TERMS },
-  id: { translation: INDONESIAN_TERMS },
-  it: { translation: ITALIAN_TERMS },
-  ja: { translation: JAPANESE_TERMS },
-  "pt-BR": { translation: PORTUGUESE_TERMS },
-  ru: { translation: RUSSIAN_TERMS },
-  tr: { translation: TURKISH_TERMS },
-  "zh-CN": { translation: CHINESE_SIMPLIFIED_TERMS },
+  en: { translation: withMinigameAliases(ENGLISH_TERMS) },
+  de: { translation: withMinigameAliases(GERMAN_TERMS) },
+  es: { translation: withMinigameAliases(SPANISH_TERMS) },
+  fr: { translation: withMinigameAliases(FRENCH_TERMS) },
+  id: { translation: withMinigameAliases(INDONESIAN_TERMS) },
+  it: { translation: withMinigameAliases(ITALIAN_TERMS) },
+  ja: { translation: withMinigameAliases(JAPANESE_TERMS) },
+  "pt-BR": { translation: withMinigameAliases(PORTUGUESE_TERMS) },
+  ru: { translation: withMinigameAliases(RUSSIAN_TERMS) },
+  tr: { translation: withMinigameAliases(TURKISH_TERMS) },
+  "zh-CN": { translation: withMinigameAliases(CHINESE_SIMPLIFIED_TERMS) },
 };

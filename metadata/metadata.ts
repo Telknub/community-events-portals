@@ -12764,6 +12764,17 @@ export const OPEN_SEA_COLLECTIBLES: Record<InventoryItemName, Metadata> = {
     external_url: "https://docs.sunflower-land.com/getting-started/about",
     name: "Colors Token 2025",
   },
+  "Colors Token 2026": {
+    description:
+      "Use this in the festival of colors event shop before the event ends!",
+    decimals: 0,
+    attributes: [
+      { trait_type: "Purpose", value: "Coupon" },
+      { trait_type: "Tradable", value: "No" },
+    ],
+    external_url: "https://docs.sunflower-land.com/getting-started/about",
+    name: "Colors Token 2026",
+  },
   "Colors Ticket 2025": {
     description:
       "Hold this for a chance to win $FLOWER after the festival of colors event ends!",

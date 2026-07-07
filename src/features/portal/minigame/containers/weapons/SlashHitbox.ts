@@ -6,6 +6,7 @@ import {
   normalizeVector,
   type Vector,
 } from "../../lib/combat/geometry";
+import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 type SlashHitboxSpawnProps = {
   x: number;
@@ -126,7 +127,7 @@ export class SlashHitbox extends Phaser.Physics.Arcade.Sprite {
     this.setRotation(Math.atan2(this.direction.y, this.direction.x));
     this.setActive(true);
     this.setVisible(true);
-    this.setDepth(Math.floor(y) + 2);
+    this.setDepth(getWeaponVisualDepth(y));
     this.setAlpha(0.7);
 
     this.scene.tweens.add({
@@ -170,7 +171,7 @@ export class SlashHitbox extends Phaser.Physics.Arcade.Sprite {
     this.setRotation(startRotation);
     this.setActive(true);
     this.setVisible(true);
-    this.setDepth(Math.floor(this.attackOrigin.y) + 2);
+    this.setDepth(getWeaponVisualDepth(this.attackOrigin.y));
     this.setAlpha(1);
 
     this.scene.tweens.add({
@@ -239,7 +240,7 @@ export class SlashHitbox extends Phaser.Physics.Arcade.Sprite {
       origin.x + this.direction.x * this.range * 0.12,
       origin.y + this.direction.y * this.range * 0.12,
     );
-    this.setDepth(Math.floor(origin.y) + 2);
+    this.setDepth(getWeaponVisualDepth(origin.y));
   }
 
   private setScytheBroadphaseBody(

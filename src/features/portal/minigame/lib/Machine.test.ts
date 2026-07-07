@@ -17,7 +17,7 @@ jest.mock("features/game/events/minigames/startMinigameAttempt", () => ({
 }));
 
 jest.mock("features/game/events/minigames/submitMinigameScore", () => ({
-  submitMinigameScore: ({ state }: { state: unknown }) => state,
+  submitMinigameScore: jest.fn(({ state }: { state: unknown }) => state),
 }));
 
 jest.mock("features/game/events/minigames/purchaseMinigameItem", () => ({
@@ -54,7 +54,7 @@ jest.mock("../constants", () => {
     INITIAL_DATE: "2026-01-01",
     ATTEMPTS_BETA_TESTERS: 0,
     BETA_TESTERS: [],
-    PORTAL_NAME: "festival-of-colors",
+    PORTAL_NAME: "colors-2026",
     RESTOCK_ATTEMPTS: [],
     UNLIMITED_ATTEMPTS_SFL: 150,
   };
@@ -70,6 +70,11 @@ const { interpret } = require("xstate");
 const { portalMachine } = require("./Machine");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { getNextLevelXP, PLAYER_MAX_LEVEL } = require("../constants");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { submitScore } = require("features/portal/lib/portalUtil");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const submitMinigameScoreModule = require("features/game/events/minigames/submitMinigameScore");
+const { submitMinigameScore } = submitMinigameScoreModule;
 
 describe("portalMachine progression flow", () => {
   it("does not show the initial weapon choice before the game starts", () => {
@@ -170,6 +175,53 @@ describe("portalMachine progression flow", () => {
     expect(service.state.context.nextLevelXP).toBeUndefined();
     expect(service.state.context.xpPoints).toBe(3);
     expect(service.state.context.collected).toBe(initialCollected + 10);
+
+    service.stop();
+  });
+
+  it("uses collected as the submitted score and winner target score", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        state: {
+          minigames: {
+            games: {
+              "colors-2026": {
+                history: {},
+                highscore: 0,
+                purchases: [],
+              },
+            },
+            prizes: {
+              "colors-2026": {
+                coins: 0,
+                items: {},
+                wearables: {},
+                score: 10,
+                startAt: 0,
+                endAt: Date.now() + 1000,
+              },
+            },
+          },
+        },
+        score: 1,
+        collected: 10,
+        isTraining: false,
+      }),
+    ).start("playing");
+
+    service.send("GAME_OVER");
+
+    expect(service.state.matches("winner")).toBe(true);
+    expect(service.state.context.lastScore).toBe(10);
+    expect(submitScore).toHaveBeenCalledWith({ score: 10 });
+    expect(submitMinigameScore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({
+          score: 10,
+        }),
+      }),
+    );
 
     service.stop();
   });

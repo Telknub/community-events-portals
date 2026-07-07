@@ -306,6 +306,7 @@ export type Coupons =
   | "Easter Ticket 2025"
   | "Colors Token 2025"
   | "Colors Ticket 2025"
+  | "Colors Token 2026"
   | "Halloween Token 2025"
   | "Halloween Ticket 2025"
   | "Holiday Token 2025"
@@ -453,6 +454,9 @@ export const COUPONS: Record<Coupons, { description: string }> = {
   },
   "Colors Ticket 2025": {
     description: translate("description.colorTicket2025"),
+  },
+  "Colors Token 2026": {
+    description: translate("description.colorToken2025"),
   },
   Bracelet: { description: "" },
   Cheer: { description: translate("description.cheer") },

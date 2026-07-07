@@ -1258,6 +1258,7 @@ export const ITEM_TRADE_TYPES: {
     "Giant Kale": "instant",
     "Mini Floating Island": "instant",
     "Colors Token 2025": "onchain",
+    "Colors Token 2026": "onchain",
     "Colors Ticket 2025": "onchain",
     "Paint Buckets": "instant",
     "Rainbow Well": "instant",

@@ -9,6 +9,7 @@ export type MinigameName =
   | "chicken-rescue-v2"
   | "nightshade-arcade"
   | "festival-of-colors"
+  | "colors-2026"
   | "crops-and-chickens"
   | "farmer-football"
   | "fruit-dash"
@@ -16,7 +17,6 @@ export type MinigameName =
   | "christmas-delivery"
   | "easter-eggstravaganza"
   | "mine-whack"
-  | "festival-of-colors"
   | "holiday-puzzle-2025"
   | "april-fools"
   | "memory"
@@ -32,6 +32,7 @@ export const SUPPORTED_MINIGAMES: MinigameName[] = [
   "chicken-rescue",
   "chicken-rescue-v2",
   "festival-of-colors",
+  "colors-2026",
   "crops-and-chickens",
   "farmer-football",
   "fruit-dash",
@@ -39,7 +40,6 @@ export const SUPPORTED_MINIGAMES: MinigameName[] = [
   "christmas-delivery",
   "easter-eggstravaganza",
   "mine-whack",
-  "festival-of-colors",
   "holiday-puzzle-2025",
   "nightshade-arcade",
   "april-fools",

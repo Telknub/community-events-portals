@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import type { DamagePayload, EnemyLike } from "../../Types";
 import type { TargetingSystem } from "../../lib/combat/TargetingSystem";
 import { enemyCenter } from "../../lib/combat/geometry";
+import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 const WEAPON_BEES_TEXTURE_KEY = "weapon_bees";
 const WEAPON_BEES_ANIMATION_KEY = "weapon_bees_active";
@@ -60,7 +61,7 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.applyBeePresentation(this.movementRotation);
     this.setActive(true);
     this.setVisible(true);
-    this.setDepth(Math.floor(y) + 2);
+    this.setDepth(getWeaponVisualDepth(y));
     if (this.scene.anims.exists(WEAPON_BEES_ANIMATION_KEY)) {
       this.play(WEAPON_BEES_ANIMATION_KEY, true);
     } else {
@@ -125,7 +126,7 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
       Math.cos(this.movementRotation) * this.speed,
       Math.sin(this.movementRotation) * this.speed,
     );
-    this.setDepth(Math.floor(this.y) + 2);
+    this.setDepth(getWeaponVisualDepth(this.y));
     this.syncSpawnSprite();
   }
 
@@ -178,7 +179,7 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.spawnSprite.setPosition(this.x, this.y);
     this.spawnSprite.setRotation(this.rotation);
     this.spawnSprite.setFlip(this.flipX, this.flipY);
-    this.spawnSprite.setDepth(this.depth + 1);
+    this.spawnSprite.setDepth(this.depth);
   }
 
   private applyBeePresentation(rotation: number) {

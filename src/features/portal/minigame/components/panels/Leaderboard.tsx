@@ -31,6 +31,7 @@ export const Leaderboard: React.FC = () => {
         farmId={Number(farmId)}
         // formatPoints={(points) => {}}
         jwt={jwt as string}
+        onBack={() => null}
       />
     </div>
   );

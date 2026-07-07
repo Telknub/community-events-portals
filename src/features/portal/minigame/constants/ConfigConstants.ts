@@ -47,7 +47,6 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { getWearableImage } from "features/game/lib/getWearableImage";
 
 export { PORTAL_NAME } from "./PortalConstants";
-export const PORTAL_TOKEN = "Festival of Colors Token 2026";
 
 // Game config
 export const GAME_SECONDS = 300;
@@ -63,7 +62,7 @@ export const WALKING_SPEED = getPlayerStatValue(
 export const INITIAL_DATE = "2025-10-28"; // YYYY-MM-DD
 export const INITIAL_DATE_LEADERBOARD = "2025-10-29"; // YYYY-MM-DD
 export const ATTEMPTS_BETA_TESTERS = 100;
-export const UNLIMITED_ATTEMPTS_SFL = 150; // If this value is less than 0, the option disappears
+export const UNLIMITED_ATTEMPTS_SFL = 200; // If this value is less than 0, the option disappears
 export const FREE_DAILY_ATTEMPTS = 1;
 export const RESTOCK_ATTEMPTS = [
   { attempts: 1, sfl: 3 },

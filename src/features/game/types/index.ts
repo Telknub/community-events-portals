@@ -510,6 +510,7 @@ export const KNOWN_IDS: Record<InventoryItemName, number> = {
   "Ammonite Shell": 773,
   "April Fools Token 2026": 774,
   "Skill Reset Ticket": 775,
+  "Colors Token 2026": 776,
 
   "Australian Flag": 801,
   "Belgian Flag": 802,

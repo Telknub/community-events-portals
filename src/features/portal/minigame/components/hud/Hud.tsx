@@ -4,7 +4,7 @@ import { PortalContext } from "../../lib/PortalProvider";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { HudContainer } from "components/ui/HudContainer";
 import { PortalMachineState } from "../../lib/Machine";
-import { Score } from "./Score";
+// import { Score } from "./Score";
 import { Settings } from "./Settings";
 import { Travel } from "./Travel";
 import { Timer } from "./Timer";
@@ -12,6 +12,7 @@ import { ColletedItems } from "./CollectedItems";
 import { Codex } from "./Codex";
 import { BumpkinProfile } from "./BumpkinProfile";
 import { HudWeapons } from "./HudWeapons";
+import { Target } from "./Target";
 
 const _isJoystickActive = (state: PortalMachineState) =>
   state.context.isJoystickActive;
@@ -58,7 +59,7 @@ export const Hud: React.FC = () => {
             <>
               <BumpkinProfile />
               <div className="pointer-events-none">
-                {/* <Target /> */}
+                <Target />
                 {/* <Lives /> */}
                 {/* <Score /> */}
                 <ColletedItems />

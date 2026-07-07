@@ -5,12 +5,12 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PortalMachineState } from "../../lib/Machine";
-import { millisecondsToString } from "lib/utils/time";
 import { PORTAL_NAME } from "../../constants";
+import item from "public/world/portal/images/ExpOrb_combined.webp";
 
 const _target = (state: PortalMachineState) =>
   state.context.state?.minigames.prizes[PORTAL_NAME]?.score ?? 0;
-const _score = (state: PortalMachineState) => state.context.score;
+const _score = (state: PortalMachineState) => state.context.collected;
 
 export const Target: React.FC = () => {
   const { portalService } = useContext(PortalContext);
@@ -23,14 +23,13 @@ export const Target: React.FC = () => {
 
   return (
     <Label
-      icon={SUNNYSIDE.resource.pirate_bounty}
+      icon={item}
       secondaryIcon={isTargetReached ? SUNNYSIDE.icons.confirm : undefined}
       type={isTargetReached ? "success" : "vibrant"}
+      className="mb-3"
     >
       {t(`${PORTAL_NAME}.targetScore`, {
-        target: millisecondsToString(target, {
-          length: "full",
-        }),
+        target: target,
       })}
     </Label>
   );

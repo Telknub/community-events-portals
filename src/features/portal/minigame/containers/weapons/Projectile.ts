@@ -6,6 +6,7 @@ import type {
   WeaponId,
 } from "../../Types";
 import { enemyCenter } from "../../lib/combat/geometry";
+import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 const WEAPON_WATERING_CAN_PROJECTILE_TEXTURE_KEY =
   "weapon_watering_can_projectile";
@@ -119,7 +120,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     }
     this.setActive(true);
     this.setVisible(true);
-    this.setDepth(Math.floor(y));
+    this.setDepth(getWeaponVisualDepth(y));
     this.payload = payload;
     this.ownerWeaponId = ownerWeaponId;
     this.behavior = behavior;

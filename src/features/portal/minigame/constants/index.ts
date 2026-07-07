@@ -6,3 +6,4 @@ export * from "./WeaponConstants";
 export * from "./WeaponUIConstants";
 export * from "./PlayerStatConstants";
 export * from "./PlayerLevelConstants";
+export * from "./DepthConstants";

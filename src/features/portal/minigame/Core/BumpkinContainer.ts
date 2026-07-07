@@ -34,6 +34,8 @@ export const NPCS_WITH_ALERTS: Partial<Record<NPCName, boolean>> = {
   "rocket man": true,
 };
 
+const HURT_INVINCIBILITY_MS = 800;
+
 export class BumpkinContainer extends Phaser.GameObjects.Container {
   public sprite: Phaser.GameObjects.Sprite | undefined;
   public shadow: Phaser.GameObjects.Sprite | undefined;
@@ -86,6 +88,9 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   // Festival of Colors
   isSwimming = false;
   isHurting = false;
+  private hurtInvincibilityTimer: Phaser.Time.TimerEvent | undefined;
+  private hurtAnimationCompleteHandler:
+    ((animation: Phaser.Animations.Animation) => void) | undefined;
 
   constructor({
     scene,
@@ -1078,9 +1083,14 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     if (this.isGameOver) return;
 
-    this.playHurtAnimation(() => {
-      this.isHurting = false;
-    });
+    this.hurtInvincibilityTimer?.remove(false);
+    this.hurtInvincibilityTimer = this.scene.time.delayedCall(
+      HURT_INVINCIBILITY_MS,
+      () => {
+        this.finishHurt();
+      },
+    );
+    this.playHurtAnimation();
   }
 
   private playHurtSound() {
@@ -1130,29 +1140,58 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     });
   }
 
-  private playHurtAnimation(onComplete: () => void) {
+  private finishHurt() {
+    if (this.hurtInvincibilityTimer) {
+      this.hurtInvincibilityTimer.remove(false);
+      this.hurtInvincibilityTimer = undefined;
+    }
+
+    if (this.hurtAnimationCompleteHandler) {
+      this.sprite?.off("animationcomplete", this.hurtAnimationCompleteHandler);
+      this.hurtAnimationCompleteHandler = undefined;
+    }
+
+    if (!this.isHurting) return;
+
+    this.isHurting = false;
+
+    if (!this.active || this.destroyed) return;
+
+    if (this.isSwimming) {
+      this.swim();
+    } else {
+      this.idle();
+    }
+  }
+
+  private playHurtAnimation() {
     const canPlayHurtAnimation =
       this.sprite?.anims &&
       this.scene?.anims.exists(this.hurtAnimationKey as string) &&
       this.sprite?.anims.getName() !== this.hurtAnimationKey;
 
     if (!canPlayHurtAnimation) {
-      this.scene.time.delayedCall(2500, onComplete);
       return;
     }
 
     try {
+      if (this.hurtAnimationCompleteHandler) {
+        this.sprite?.off(
+          "animationcomplete",
+          this.hurtAnimationCompleteHandler,
+        );
+      }
+
+      this.hurtAnimationCompleteHandler = (animation) => {
+        if (animation.key !== this.hurtAnimationKey) return;
+
+        this.finishHurt();
+      };
+
       this.sprite?.anims.play(this.hurtAnimationKey as string, true);
-      this.sprite?.once("animationcomplete", () => {
-        if (this.isSwimming) {
-          this.swim();
-        } else {
-          this.idle();
-        }
-        onComplete();
-      });
+      this.sprite?.on("animationcomplete", this.hurtAnimationCompleteHandler);
     } catch (e) {
-      onComplete();
+      this.finishHurt();
       // eslint-disable-next-line no-console
       console.log("Bumpkin Container: Error playing hurt animation: ", e);
     }

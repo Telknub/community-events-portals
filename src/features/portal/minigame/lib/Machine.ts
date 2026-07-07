@@ -44,6 +44,8 @@ const getJWT = () => {
   return code;
 };
 
+const getRunScore = (context: Context) => context.collected;
+
 export interface Context {
   id: number;
   jwt: string | null;
@@ -677,16 +679,18 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             endAt: () => Date.now(),
             lastScore: (context: Context) => {
               if (context.isTraining) return context.lastScore;
-              return context.score;
+              return getRunScore(context);
             },
             state: (context: Context) => {
               if (context.isTraining) return context.state;
-              submitScore({ score: context.score });
+              const score = getRunScore(context);
+
+              submitScore({ score });
               return submitMinigameScore({
                 state: context.state as GameState,
                 action: {
                   type: "minigame.scoreSubmitted",
-                  score: Math.round(context.score),
+                  score: Math.round(score),
                   id: PORTAL_NAME,
                 },
               });
@@ -701,16 +705,21 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             lives: GAME_LIVES,
             maxLives: GAME_LIVES,
             ...getInitialProgression(),
+            collected: getRunScore(context),
             validations: structuredClone(VALIDATIONS),
-            lastScore: context.isTraining ? context.lastScore : context.score,
+            lastScore: context.isTraining
+              ? context.lastScore
+              : getRunScore(context),
             state: (() => {
               if (context.isTraining) return context.state;
-              submitScore({ score: context.score });
+              const score = getRunScore(context);
+
+              submitScore({ score });
               return submitMinigameScore({
                 state: context.state as GameState,
                 action: {
                   type: "minigame.scoreSubmitted",
-                  score: Math.round(context.score),
+                  score: Math.round(score),
                   id: PORTAL_NAME,
                 },
               });
@@ -749,7 +758,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               return false;
             }
 
-            return context.score >= prize.score;
+            return getRunScore(context) >= prize.score;
           },
         },
         {

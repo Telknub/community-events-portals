@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { DamagePayload, EnemyLike } from "../../Types";
 import { distanceBetween, enemyCenter } from "../../lib/combat/geometry";
+import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 type AreaHitboxShape = "circle" | "spriteBounds";
 type AreaHitboxSize = { width: number; height: number };
@@ -57,7 +58,7 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     this.setDisplaySize(radius * 2, radius * 2);
     this.setActive(true);
     this.setVisible(true);
-    this.setDepth(Math.floor(y) + 1);
+    this.setDepth(getWeaponVisualDepth(y));
     this.setAlpha(animationKey ? 1 : persistent ? 0.45 : 0.65);
     this.payload = payload;
     this.expiresAt = expiresAt;

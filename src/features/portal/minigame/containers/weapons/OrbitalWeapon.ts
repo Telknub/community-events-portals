@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { DamagePayload, EnemyLike, WeaponId } from "../../Types";
+import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 type OrbitalWeaponSpawnProps = {
   ownerWeaponId: WeaponId;
@@ -87,7 +88,7 @@ export class OrbitalWeapon extends Phaser.Physics.Arcade.Sprite {
 
     this.setPosition(x, y);
     // this.setRotation(angle);
-    this.setDepth(Math.floor(y) + 1);
+    this.setDepth(getWeaponVisualDepth(y));
   }
 
   public canHit(enemy: EnemyLike, time: number) {
