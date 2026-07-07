@@ -246,7 +246,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
     targeting: "nearest",
     baseStats: {
       ...BASE_WEAPON_STATS,
-      damage: 3,
+      damage: 2,
       cooldownMs: 1100,
       projectileCount: 2,
       homingSpeed: 110,
@@ -372,7 +372,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 3,
       modifiers: [
-        { stat: "damage", operation: "add", value: 2 },
+        { stat: "damage", operation: "add", value: 3 },
         { stat: "pierce", operation: "add", value: 1 },
       ],
     },
@@ -380,7 +380,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 4,
       modifiers: [
         { stat: "projectileCount", operation: "add", value: 1 },
-        { stat: "cooldownMs", operation: "multiply", value: 0.9 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.8 },
       ],
     },
     {
@@ -394,22 +394,22 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 6,
       modifiers: [
         { stat: "projectileCount", operation: "add", value: 1 },
-        { stat: "damage", operation: "add", value: 3 },
+        { stat: "damage", operation: "add", value: 4 },
       ],
     },
     {
       level: 7,
       modifiers: [
-        { stat: "pierce", operation: "add", value: 2 },
-        { stat: "cooldownMs", operation: "multiply", value: 0.8 },
+        { stat: "pierce", operation: "add", value: 5 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.7 },
       ],
     },
     {
       level: 8,
       modifiers: [
-        { stat: "projectileCount", operation: "add", value: 2 },
-        { stat: "damage", operation: "add", value: 5 },
-        { stat: "pierce", operation: "add", value: 3 },
+        { stat: "projectileCount", operation: "add", value: 1 },
+        { stat: "damage", operation: "add", value: 6 },
+        { stat: "pierce", operation: "add", value: 5 },
       ],
     },
   ],
@@ -418,7 +418,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 2,
       modifiers: [
         { stat: "areaRadius", operation: "add", value: 2 },
-        { stat: "damage", operation: "add", value: 2 },
+        { stat: "damage", operation: "add", value: 1 },
       ],
     },
     {
@@ -432,13 +432,13 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 4,
       modifiers: [
         { stat: "areaRadius", operation: "add", value: 3 },
-        { stat: "damage", operation: "add", value: 3 },
+        { stat: "damage", operation: "add", value: 2 },
       ],
     },
     {
       level: 5,
       modifiers: [
-        { stat: "damage", operation: "add", value: 4 },
+        { stat: "damage", operation: "add", value: 3 },
         { stat: "durationMs", operation: "add", value: 300 },
       ],
     },
@@ -459,9 +459,9 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 8,
       modifiers: [
-        { stat: "projectileCount", operation: "add", value: 1 },
+        { stat: "projectileSpeed", operation: "add", value: 50 },
         { stat: "areaRadius", operation: "add", value: 5 },
-        { stat: "damage", operation: "add", value: 8 },
+        { stat: "damage", operation: "add", value: 10 },
       ],
     },
   ],
@@ -684,7 +684,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 3,
       modifiers: [
-        { stat: "damage", operation: "add", value: 2 },
+        { stat: "damage", operation: "add", value: 1 },
         { stat: "hitCooldownMs", operation: "multiply", value: 0.85 },
       ],
     },
@@ -705,23 +705,23 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 6,
       modifiers: [
-        { stat: "projectileCount", operation: "add", value: 2 },
+        { stat: "projectileCount", operation: "add", value: 1 },
         { stat: "cooldownMs", operation: "multiply", value: 0.9 },
       ],
     },
     {
       level: 7,
       modifiers: [
-        { stat: "damage", operation: "add", value: 4 },
+        { stat: "damage", operation: "add", value: 3 },
         { stat: "hitCooldownMs", operation: "multiply", value: 0.8 },
       ],
     },
     {
       level: 8,
       modifiers: [
-        { stat: "projectileCount", operation: "add", value: 4 },
+        { stat: "projectileCount", operation: "add", value: 3 },
         { stat: "homingSpeed", operation: "add", value: 40 },
-        { stat: "damage", operation: "add", value: 5 },
+        { stat: "damage", operation: "add", value: 3 },
       ],
     },
   ],
