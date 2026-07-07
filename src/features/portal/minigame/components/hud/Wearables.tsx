@@ -83,6 +83,21 @@ export const WEARABLES_TAB_ITEMS: BumpkinItem[] = [
   "Glitch Aura",
 ];
 
+const NEW_WEARABLES = new Set<BumpkinItem>([
+  "Green Slime Hair",
+  "Blue Slime Shirt",
+  "Slime Splattered Shirt",
+  "Sad Slime Pants",
+  "Red Jelly Pants",
+  "Yellow Slime Puppet",
+  "Blue Jelly Shoes",
+  "Sad Slime Slippers",
+  "Sad Slime Hat",
+  "Slime Wall Background",
+  "Rainbow Wings",
+  "Butterfly Aura",
+]);
+
 export const WearablesTab: React.FC<{
   selectedBumpkinPart: BumpkinPart;
   equipped?: BumpkinParts;
@@ -126,6 +141,9 @@ export const WearablesTab: React.FC<{
     !!effectiveSelectedWearable &&
     equipped?.[BUMPKIN_ITEM_PART[effectiveSelectedWearable]] ===
       effectiveSelectedWearable;
+
+  const isSelectedWearableNew =
+    !!effectiveSelectedWearable && NEW_WEARABLES.has(effectiveSelectedWearable);
 
   const selectedWearableImageClassName = classNames(
     "h-full w-full object-contain pixelated",
@@ -179,6 +197,9 @@ export const WearablesTab: React.FC<{
       </OuterPanel>
 
       <OuterPanel className="flex h-full flex-col items-center p-2 text-center flex-1">
+        <Label type="default" className="text-sm w-full">
+          {effectiveSelectedWearable}
+        </Label>
         <div className="flex w-24 h-24 items-center justify-center rounded-md overflow-hidden mt-2">
           <img
             src={getWearableImage(effectiveSelectedWearable)}
@@ -186,7 +207,11 @@ export const WearablesTab: React.FC<{
             className={selectedWearableImageClassName}
           />
         </div>
-        <p className="mt-2 text-sm">{effectiveSelectedWearable}</p>
+        {isSelectedWearableNew && (
+          <Label type="info" className="mt-2">
+            {t("wearables.new")}
+          </Label>
+        )}
         <p className="mt-2 text-xs">
           {t(`${PORTAL_NAME}.wearablePowerComingSoon`)}
         </p>

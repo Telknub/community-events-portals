@@ -411,6 +411,18 @@ export const PORTAL_MINIGAME_WARDROBE: Partial<Record<BumpkinItem, number>> = {
   "Aether Specs": 1,
   "Cardboard Wings": 1,
   "Glitch Aura": 1,
+  "Green Slime Hair": 1,
+  "Blue Slime Shirt": 1,
+  "Slime Splattered Shirt": 1,
+  "Sad Slime Pants": 1,
+  "Red Jelly Pants": 1,
+  "Yellow Slime Puppet": 1,
+  "Blue Jelly Shoes": 1,
+  "Sad Slime Slippers": 1,
+  "Sad Slime Hat": 1,
+  "Slime Wall Background": 1,
+  "Rainbow Wings": 1,
+  "Butterfly Aura": 1,
 };
 
 export const INITIAL_CHORE_BOARD: ChoreBoard = {

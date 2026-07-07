@@ -22,6 +22,7 @@
   "spices": "Spices",
   "giveUp": "Give up",
   "new": "New",
+  "wearables.new": "New",
   "renew": "Renew",
   "confirm.renew": "Confirm Renew",
   "confirm.renew.message": "Are you sure you want to renew {{name}}?",
