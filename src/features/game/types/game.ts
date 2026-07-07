@@ -329,6 +329,8 @@ export type Coupons =
   | "Holiday Ticket 2025"
   | "April Fools Token 2026"
   | "April Fools Ticket 2026"
+  | "Colors Token 2026"
+  | "Colors Ticket 2026"
   | "Cheer"
   | "CluckCoin"
   | Keys
@@ -506,6 +508,12 @@ export const COUPONS: Record<Coupons, { description: string }> = {
   "Salt Rock": { description: "Collected during the Salt Awakening." },
   "Salt Awakening Raffle Ticket": {
     description: "A raffle ticket for the Salt Awakening chapter.",
+  },
+  "Colors Token 2026": {
+    description: translate("description.colorsToken2026"),
+  },
+  "Colors Ticket 2026": {
+    description: translate("description.colorsTicket2026"),
   },
 };
 
@@ -1006,6 +1014,15 @@ export type LayoutPlacement = Pick<PlacedItem, "id" | "flipped"> & {
 };
 
 /**
+ * A restorable position for a placeable that can also be flipped (the player's
+ * Bumpkin and FarmHands). Buds/Pet NFTs aren't flippable so they store bare
+ * {@link LayoutCoordinates} instead.
+ */
+export type LayoutFlippablePlacement = LayoutCoordinates & {
+  flipped?: boolean;
+};
+
+/**
  * A named snapshot of the player's farm arrangement (`location: "farm"`).
  * Items are keyed by `id` so applying a layout repositions the player's
  * existing items. Collectibles/buildings mirror the live `name -> PlacedItem[]`
@@ -1032,6 +1049,24 @@ export type SavedLayout = {
     beehives: Record<string, LayoutCoordinates>;
     flowerBeds: Record<string, LayoutCoordinates>;
     lavaPits: Record<string, LayoutCoordinates>;
+  };
+  /** Placed Buds, keyed by bud id (not flippable). Farm-placed only. */
+  buds?: Record<string, LayoutCoordinates>;
+  /** Placed Pet NFTs, keyed by pet nft id (not flippable). Farm-placed only. */
+  petNFTs?: Record<string, LayoutCoordinates>;
+  /** Placed FarmHands (extra bumpkins), keyed by id. Farm-placed only. */
+  farmHands?: Record<string, LayoutFlippablePlacement>;
+  /** The player's own Bumpkin (single). Present only when placed on the farm. */
+  bumpkin?: LayoutFlippablePlacement;
+  /**
+   * Land extent at save time, so a preview can size itself to the land and draw
+   * the right biome art even after the farm later expands or ascends.
+   */
+  land?: {
+    /** Land expansion count (`inventory["Basic Land"]`) — picks the image level. */
+    expansions: number;
+    /** Island/biome — resolves the land sprite via `getCurrentBiome`. */
+    island: GameState["island"];
   };
 };
 
@@ -1545,7 +1580,8 @@ export type Currency =
   | "Colors Token 2025"
   | "Halloween Token 2025"
   | "Holiday Token 2025"
-  | "April Fools Token 2026";
+  | "April Fools Token 2026"
+  | "Colors Token 2026";
 
 export type ShopItemBase = {
   shortDescription: string;

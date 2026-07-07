@@ -40,6 +40,7 @@ export type Scenes = {
   love_island: Room<PlazaRoomState> | undefined;
   "festival-of-colors": Room<PlazaRoomState> | undefined;
   "colors-2026": Room<PlazaRoomState> | undefined;
+  colors_island_2026: Room<PlazaRoomState> | undefined;
 };
 
 export type SceneId = keyof Scenes;
