@@ -19,7 +19,6 @@ export const DROP_ITEM_XP_VALUES: Record<DropItemType, number> = {
   purpleOrb: 125,
 };
 
-// Score thresholds for boss spawns
 export const BOSS_WAVE_THRESHOLDS: BossWaveConfig[] = [
   { triggerAt: 30, bossType: "boss1", totalEnemy: 1, flag: "bossWave1" },
   { triggerAt: 60, bossType: "boss2", totalEnemy: 1, flag: "bossWave2" },
@@ -53,7 +52,6 @@ export const BOSS_WAVE_THRESHOLDS: BossWaveConfig[] = [
   { triggerAt: 290, bossType: "boss3", totalEnemy: 10, flag: "bossWave13_c" },
 ];
 
-// Score thresholds for mob spawn
 export const MOB_WAVE_THRESHOLDS: MobWaveConfig[] = [
   {
     triggerAt: 0,

@@ -29,7 +29,6 @@ import greenOrb from "public/world/portal/images/dropItem2.webp";
 import grayOrb from "public/world/portal/images/dropItem3.webp";
 import yellowOrb from "public/world/portal/images/dropItem4.webp";
 import purpleOrb from "public/world/portal/images/dropItem5.webp";
-import Orb from "public/world/portal/images/ExpOrb_combined.webp";
 
 import icon_mob1 from "public/world/portal/images/icon_mob_1.webp";
 import icon_mob2 from "public/world/portal/images/icon_mob_2.webp";
@@ -120,8 +119,12 @@ export const INSTRUCTIONS: {
     description: t(`${PORTAL_NAME}.instructions8`),
   },
   {
-    image: Orb,
+    image: SUNNYSIDE.icons.xpIcon,
     description: t(`${PORTAL_NAME}.instructions7`),
+  },
+  {
+    image: SUNNYSIDE.icons.upgrade_disc,
+    description: t(`${PORTAL_NAME}.instructions4`),
   },
 ];
 
@@ -360,7 +363,7 @@ export const DROP_ITEMS_XP_TABLE: {
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
 
 // SFX
-export const WEAPON_SFX_VOL = 0.3;
+export const WEAPON_SFX_VOL = 0.1;
 export const WEAPON_SFX: Record<WeaponId, { activate: string }> = {
   banana: { activate: "sfx_banana_swing" },
   broomScythe: { activate: "sfx_slash_broom" },
