@@ -122,6 +122,162 @@ describe("portalMachine progression flow", () => {
     service.stop();
   });
 
+  it("extends endAt by the paused duration when gameplay resumes", () => {
+    const nowSpy = jest.spyOn(Date, "now").mockReturnValue(1000);
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        endAt: 301000,
+        isGameplayPaused: false,
+        pendingLevelUpChoice: undefined,
+      }),
+    ).start("playing");
+
+    service.send("SET_GAMEPLAY_PAUSED", { isPaused: true });
+
+    expect(service.state.context.isGameplayPaused).toBe(true);
+    expect(service.state.context.gameplayPausedAt).toBe(1000);
+    expect(service.state.context.endAt).toBe(301000);
+
+    nowSpy.mockReturnValue(6000);
+    service.send("SET_GAMEPLAY_PAUSED", { isPaused: false });
+
+    expect(service.state.context.isGameplayPaused).toBe(false);
+    expect(service.state.context.gameplayPausedAt).toBeUndefined();
+    expect(service.state.context.endAt).toBe(306000);
+
+    service.stop();
+    nowSpy.mockRestore();
+  });
+
+  it("does not create an endAt when pausing before the timer starts", () => {
+    const nowSpy = jest.spyOn(Date, "now").mockReturnValue(1000);
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        attemptsLeft: 1,
+      }),
+    ).start("ready");
+
+    service.send("START");
+    service.send("SET_GAMEPLAY_PAUSED", { isPaused: true });
+
+    expect(service.state.context.endAt).toBe(0);
+    expect(service.state.context.gameplayPausedAt).toBeUndefined();
+
+    nowSpy.mockReturnValue(6000);
+    service.send("SET_GAMEPLAY_PAUSED", { isPaused: false });
+
+    expect(service.state.context.endAt).toBe(0);
+    expect(service.state.context.isGameplayPaused).toBe(true);
+
+    service.stop();
+    nowSpy.mockRestore();
+  });
+
+  it("extends endAt when resolving a level-up choice after a pause", () => {
+    const nowSpy = jest.spyOn(Date, "now").mockReturnValue(2000);
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        endAt: 302000,
+        currentXP: 9,
+        nextLevelXP: 10,
+        isGameplayPaused: false,
+        pendingLevelUpChoice: undefined,
+      }),
+    ).start("playing");
+
+    service.send("COLLECT_ITEM", { itemKey: "purpleOrb" });
+
+    expect(service.state.context.pendingLevelUpChoice?.type).toBe("stat");
+    expect(service.state.context.isGameplayPaused).toBe(true);
+    expect(service.state.context.gameplayPausedAt).toBe(2000);
+
+    nowSpy.mockReturnValue(7000);
+    service.send("SELECT_LEVEL_UP_STAT", { stat: "damage" });
+
+    expect(service.state.context.pendingLevelUpChoice).toBeUndefined();
+    expect(service.state.context.isGameplayPaused).toBe(false);
+    expect(service.state.context.gameplayPausedAt).toBeUndefined();
+    expect(service.state.context.endAt).toBe(307000);
+
+    service.stop();
+    nowSpy.mockRestore();
+  });
+
+  it("does not resume gameplay while a level-up choice is pending", () => {
+    const nowSpy = jest.spyOn(Date, "now").mockReturnValue(1000);
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        endAt: 301000,
+        isGameplayPaused: true,
+        pendingLevelUpChoice: {
+          type: "stat",
+          level: 2,
+          options: ["damage", "speed"],
+        },
+      }),
+    ).start("playing");
+
+    service.send("SET_GAMEPLAY_PAUSED", { isPaused: false });
+
+    expect(service.state.context.isGameplayPaused).toBe(true);
+    expect(service.state.context.gameplayPausedAt).toBe(1000);
+    expect(service.state.context.endAt).toBe(301000);
+
+    service.stop();
+    nowSpy.mockRestore();
+  });
+
+  it("applies health wearable buffs when active wearables change", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+      }),
+    ).start("playing");
+
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { tool: "Handheld Bunny" },
+    });
+
+    expect(service.state.context.maxLives).toBe(120);
+    expect(service.state.context.lives).toBe(120);
+
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { pants: "Comfy Xmas Pants" },
+    });
+
+    expect(service.state.context.maxLives).toBe(125);
+    expect(service.state.context.lives).toBe(125);
+
+    service.send("LOSE_LIFE", { enemyType: "mob1" });
+    service.send("SET_ACTIVE_WEARABLES", { wearables: {} });
+
+    expect(service.state.context.maxLives).toBe(100);
+    expect(service.state.context.lives).toBe(100);
+
+    service.stop();
+  });
+
+  it("starts runs with active health wearable buffs applied", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        activeWearables: { tool: "Handheld Bunny" },
+        attemptsLeft: 1,
+      }),
+    ).start("ready");
+
+    service.send("START");
+
+    expect(service.state.context.maxLives).toBe(120);
+    expect(service.state.context.lives).toBe(120);
+
+    service.stop();
+  });
+
   it("clears pending choices when retrying after a game over", () => {
     const service = interpret(
       portalMachine.withContext({

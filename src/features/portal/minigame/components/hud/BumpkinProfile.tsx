@@ -16,7 +16,6 @@ import {
   type WearableLoadoutSlot,
 } from "./Profile";
 import { ProfilePanel, type ProfilePanelTab } from "./ProfilePanel";
-import { WEARABLES_TAB_ITEMS } from "./Wearables";
 import {
   BUMPKIN_ITEM_PART,
   type BumpkinItem,
@@ -28,7 +27,11 @@ import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { InnerPanel } from "components/ui/Panel";
 import { ResizableBar } from "components/ui/ProgressBar";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { isPlayerMaxLevel, PORTAL_NAME } from "../../constants";
+import {
+  isPlayerMaxLevel,
+  PORTAL_NAME,
+  WEARABLES_TAB_ITEMS,
+} from "../../constants";
 import { Label } from "components/ui/Label";
 
 const DIMENSIONS = {

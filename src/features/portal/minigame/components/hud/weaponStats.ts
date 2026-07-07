@@ -1,64 +1,72 @@
-import {
-  WEAPON_CONFIGS,
-  WEAPON_UPGRADES,
-} from "features/portal/minigame/constants";
+import { WEAPON_UPGRADES } from "features/portal/minigame/constants/WeaponConstants";
 import type {
   PlayerStatLevel,
   WeaponId,
   WeaponRuntimeStats,
 } from "features/portal/minigame/Types";
 import { resolvePlayerDamage } from "features/portal/minigame/constants/PlayerStatConstants";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import { getActiveWearableBuffs } from "features/portal/minigame/constants/WearableConstants";
+import type {
+  WearableBuff,
+  WearableBuffTarget,
+} from "features/portal/minigame/constants/WearableConstants";
 
-export const resolveWeaponStats = (
-  id: WeaponId,
-  level: number,
-): WeaponRuntimeStats => {
-  const stats = { ...WEAPON_CONFIGS[id].baseStats };
+const isWeaponStatBuff = (
+  buff: WearableBuff,
+): buff is WearableBuff & {
+  target: Extract<WearableBuffTarget, { type: "weaponStat" }>;
+} => buff.target.type === "weaponStat";
 
-  WEAPON_UPGRADES[id]
-    .filter((upgrade) => upgrade.level <= level)
-    .forEach((upgrade) => {
-      upgrade.modifiers.forEach(({ stat, operation, value }) => {
-        if (operation === "add") {
-          stats[stat] += value;
-        } else if (operation === "multiply") {
-          stats[stat] *= value;
-        } else {
-          stats[stat] = value;
-        }
-      });
-    });
-
-  stats.cooldownMs = Math.max(80, Math.round(stats.cooldownMs));
-  stats.projectileCount = Math.max(1, Math.round(stats.projectileCount));
-  stats.orbitalCount = Math.max(1, Math.round(stats.orbitalCount));
-  stats.pierce = Math.round(stats.pierce);
-  stats.bounceCount = Math.round(stats.bounceCount);
-
-  return stats;
-};
-
-export const getWeaponDetailStats = (id: WeaponId) => {
-  const upgradeStats = WEAPON_UPGRADES[id].flatMap((upgrade) =>
-    upgrade.modifiers.map(({ stat }) => stat),
+export const getUpgradeableWeaponStats = (id: WeaponId) =>
+  Array.from(
+    new Set<keyof WeaponRuntimeStats>(
+      WEAPON_UPGRADES[id].flatMap((upgrade) =>
+        upgrade.modifiers.map(({ stat }) => stat),
+      ),
+    ),
   );
 
-  return Array.from(new Set<keyof WeaponRuntimeStats>(upgradeStats));
+export const getBuffedWeaponStats = (
+  id: WeaponId,
+  activeWearables?: BumpkinParts,
+) =>
+  Array.from(
+    new Set<keyof WeaponRuntimeStats>(
+      getActiveWearableBuffs(activeWearables)
+        .filter(isWeaponStatBuff)
+        .filter((buff) => buff.target.weapon === id)
+        .map((buff) => buff.target.stat),
+    ),
+  );
+
+export const getWeaponDetailStats = (
+  id: WeaponId,
+  activeWearables?: BumpkinParts,
+) => {
+  const upgradeStats = getUpgradeableWeaponStats(id);
+  const buffStats = getBuffedWeaponStats(id, activeWearables);
+
+  return Array.from(
+    new Set<keyof WeaponRuntimeStats>([...upgradeStats, ...buffStats]),
+  );
 };
 
 export const resolveDisplayedWeaponStatValue = ({
   stat,
   value,
   damageLevel,
+  activeWearables,
 }: {
   stat: keyof WeaponRuntimeStats;
   value?: number;
   damageLevel: PlayerStatLevel;
+  activeWearables?: BumpkinParts;
 }) => {
   const receivesBaseDamage = stat === "damage" || stat === "dotDamage";
   if (value === undefined || !receivesBaseDamage) return value;
 
-  return resolvePlayerDamage(value, damageLevel);
+  return resolvePlayerDamage(value, damageLevel, activeWearables);
 };
 
 const formatNumber = (value: number) => {

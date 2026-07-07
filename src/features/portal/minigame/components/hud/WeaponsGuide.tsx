@@ -8,6 +8,7 @@ import { SquareIcon } from "components/ui/SquareIcon";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import {
   PORTAL_NAME,
+  resolveWeaponStats,
   WEAPON_DESCRIPTIONS,
   WEAPON_ICONS,
   WEAPON_IDS,
@@ -16,11 +17,7 @@ import {
   WEAPON_STAT_LABELS,
 } from "../../constants";
 import type { WeaponId, WeaponLevel, WeaponRuntimeStats } from "../../Types";
-import {
-  formatStatValue,
-  getWeaponDetailStats,
-  resolveWeaponStats,
-} from "./weaponStats";
+import { formatStatValue, getUpgradeableWeaponStats } from "./weaponStats";
 import infoIcon from "assets/icons/info.webp";
 
 const PANEL_CONTENT_HEIGHT = "h-[385px]";
@@ -35,7 +32,7 @@ export const WeaponsGuide: React.FC = () => {
   const stats = useMemo(() => {
     const weaponStats = resolveWeaponStats(selectedWeapon, selectedLevel);
 
-    return getWeaponDetailStats(selectedWeapon).map((stat) => ({
+    return getUpgradeableWeaponStats(selectedWeapon).map((stat) => ({
       stat,
       value: weaponStats[stat],
     }));

@@ -10,6 +10,7 @@ import { PortalContext } from "../../lib/PortalProvider";
 import type { PortalMachineState } from "../../lib/Machine";
 import {
   PORTAL_NAME,
+  resolveWeaponStats,
   WEAPON_ICONS,
   WEAPON_IDS,
   WEAPON_NAMES,
@@ -22,15 +23,15 @@ import {
   getWeaponDetailStats,
   hasStatImproved,
   resolveDisplayedWeaponStatValue,
-  resolveWeaponStats,
 } from "./weaponStats";
 import powerupIcon from "assets/icons/level_up.png";
 
-const PANEL_CONTENT_HEIGHT = "h-[385px]";
+const PANEL_CONTENT_HEIGHT = "h-[430px]";
 
 const _weaponPanelState = (state: PortalMachineState) => ({
   weaponLevels: state.context.weaponLevels,
   damageLevel: state.context.playerStatLevels.damage,
+  activeWearables: state.context.activeWearables,
   xpPoints: state.context.xpPoints,
 });
 
@@ -60,7 +61,7 @@ export const WeaponsTab: React.FC = () => {
   const { portalService } = useContext(PortalContext);
   const [inspectedWeapon, setInspectedWeapon] = useState<WeaponId>();
 
-  const { weaponLevels, damageLevel, xpPoints } = useSelector(
+  const { weaponLevels, damageLevel, activeWearables, xpPoints } = useSelector(
     portalService,
     _weaponPanelState,
   );
@@ -92,25 +93,33 @@ export const WeaponsTab: React.FC = () => {
   const detailStats = useMemo(() => {
     if (!selectedWeapon || inspectedLevel === undefined) return [];
 
-    const currentStats = resolveWeaponStats(selectedWeapon, inspectedLevel);
+    const currentStats = resolveWeaponStats(
+      selectedWeapon,
+      inspectedLevel,
+      activeWearables,
+    );
     const nextStats = nextLevel
-      ? resolveWeaponStats(selectedWeapon, nextLevel)
+      ? resolveWeaponStats(selectedWeapon, nextLevel, activeWearables)
       : undefined;
 
-    return getWeaponDetailStats(selectedWeapon).map((stat) => ({
-      stat,
-      currentValue: resolveDisplayedWeaponStatValue({
+    return getWeaponDetailStats(selectedWeapon, activeWearables).map(
+      (stat) => ({
         stat,
-        value: currentStats?.[stat],
-        damageLevel,
+        currentValue: resolveDisplayedWeaponStatValue({
+          stat,
+          value: currentStats?.[stat],
+          damageLevel,
+          activeWearables,
+        }),
+        nextValue: resolveDisplayedWeaponStatValue({
+          stat,
+          value: nextStats?.[stat],
+          damageLevel,
+          activeWearables,
+        }),
       }),
-      nextValue: resolveDisplayedWeaponStatValue({
-        stat,
-        value: nextStats?.[stat],
-        damageLevel,
-      }),
-    }));
-  }, [damageLevel, inspectedLevel, nextLevel, selectedWeapon]);
+    );
+  }, [activeWearables, damageLevel, inspectedLevel, nextLevel, selectedWeapon]);
 
   const handleUpgrade = () => {
     if (!selectedWeapon || !canUpgrade) return;

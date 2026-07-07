@@ -1,4 +1,6 @@
 import type { PlayerStatId, PlayerStatLevel, PlayerStatLevels } from "../Types";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import { getActivePlayerStatBuff } from "./WearableConstants";
 
 export const PLAYER_STAT_INITIAL_LEVEL: PlayerStatLevel = 1;
 export const PLAYER_STAT_BASE_LEVEL: PlayerStatLevel = 0;
@@ -78,7 +80,10 @@ export const DEFAULT_PLAYER_STAT_LEVELS: PlayerStatLevels = {
 export const getPlayerStatValue = (
   stat: PlayerStatId,
   level: PlayerStatLevel,
-) => PLAYER_STAT_VALUES[stat][level];
+  activeWearables?: BumpkinParts,
+) =>
+  PLAYER_STAT_VALUES[stat][level] +
+  getActivePlayerStatBuff(stat, activeWearables);
 
 export const getNextPlayerStatLevel = (
   level: PlayerStatLevel,
@@ -129,4 +134,5 @@ export const getPlayerStatValueIncrease = (
 export const resolvePlayerDamage = (
   baseDamage: number,
   damageLevel: PlayerStatLevel,
-) => baseDamage + getPlayerStatValue("damage", damageLevel);
+  activeWearables?: BumpkinParts,
+) => baseDamage + getPlayerStatValue("damage", damageLevel, activeWearables);

@@ -1,8 +1,8 @@
 import type Phaser from "phaser";
 import {
   COMBAT_CONFIG,
+  resolveWeaponStats,
   WEAPON_CONFIGS,
-  WEAPON_UPGRADES,
 } from "../../constants";
 import type { MachineInterpreter } from "../Machine";
 import type {
@@ -158,7 +158,11 @@ export class WeaponManager {
       id,
       level,
       config,
-      stats: this.resolveStats(id, level),
+      stats: resolveWeaponStats(
+        id,
+        level,
+        this.props.portalService?.state.context.activeWearables,
+      ),
     });
   }
 
@@ -788,32 +792,6 @@ export class WeaponManager {
       damageType: weapon.config.damageType,
       statusEffects,
     };
-  }
-
-  private resolveStats(id: WeaponId, level: WeaponLevel): WeaponRuntimeStats {
-    const stats = { ...WEAPON_CONFIGS[id].baseStats };
-
-    WEAPON_UPGRADES[id]
-      .filter((upgrade) => upgrade.level <= level)
-      .forEach((upgrade) => {
-        upgrade.modifiers.forEach(({ stat, operation, value }) => {
-          if (operation === "add") {
-            stats[stat] += value;
-          } else if (operation === "multiply") {
-            stats[stat] *= value;
-          } else {
-            stats[stat] = value;
-          }
-        });
-      });
-
-    stats.cooldownMs = Math.max(80, Math.round(stats.cooldownMs));
-    stats.projectileCount = Math.max(1, Math.round(stats.projectileCount));
-    stats.orbitalCount = Math.max(1, Math.round(stats.orbitalCount));
-    stats.pierce = Math.round(stats.pierce);
-    stats.bounceCount = Math.round(stats.bounceCount);
-
-    return stats;
   }
 
   private updateAimVector() {

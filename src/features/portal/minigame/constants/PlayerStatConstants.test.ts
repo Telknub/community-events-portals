@@ -9,11 +9,12 @@ import {
   resolvePlayerDamage,
   resolvePlayerStatUpgrade,
 } from "./PlayerStatConstants";
+import { WEARABLE_BUFFS } from "./WearableConstants";
 
 describe("PlayerStatConstants", () => {
   it("defines ten balanced levels for each player stat", () => {
     expect(getPlayerStatValue("health", 0)).toBe(100);
-    expect(getPlayerStatValue("health", 10)).toBe(200);
+    expect(getPlayerStatValue("health", 10)).toBe(300);
     expect(getPlayerStatValue("speed", 0)).toBe(50);
     expect(getPlayerStatValue("speed", 10)).toBe(100);
     expect(getPlayerStatValue("damage", 0)).toBe(0);
@@ -68,8 +69,25 @@ describe("PlayerStatConstants", () => {
   });
 
   it("resolves health increases and global damage bonuses", () => {
-    expect(getPlayerStatValueIncrease("health", 0)).toBe(10);
+    expect(getPlayerStatValueIncrease("health", 0)).toBe(20);
     expect(getPlayerStatValueIncrease("health", 10)).toBe(0);
     expect(resolvePlayerDamage(2, 4)).toBe(6);
+  });
+
+  it("applies active wearable buffs to player stats and damage", () => {
+    const activeWearables = {
+      coat: "Easter Apron",
+      hair: "Green Slime Hair",
+      tool: "Handheld Bunny",
+    } as never;
+
+    expect(getPlayerStatValue("health", 0, activeWearables)).toBe(120);
+    expect(getPlayerStatValue("damage", 0, activeWearables)).toBe(0.75);
+    expect(getPlayerStatValue("speed", 0, activeWearables)).toBe(50.5);
+    expect(resolvePlayerDamage(2, 4, activeWearables)).toBe(6.75);
+  });
+
+  it("does not define a new wearable buff for Underworld Stimpack", () => {
+    expect(WEARABLE_BUFFS["Underworld Stimpack"]).toBeUndefined();
   });
 });

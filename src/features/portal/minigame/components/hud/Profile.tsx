@@ -52,10 +52,10 @@ export const REQUIRED: BumpkinPart[] = [
   "tool",
 ];
 
-const REQUIRED_BUT_INCOMPATIBLE: BumpkinPart[][] = [
-  ["shirt", "pants"],
-  ["dress"],
-];
+// const REQUIRED_BUT_INCOMPATIBLE: BumpkinPart[][] = [
+//   ["shirt", "pants"],
+//   ["dress"],
+// ];
 
 const LEFT_EQUIPMENT: BumpkinPart[] = [
   "background",
@@ -69,7 +69,7 @@ const LEFT_EQUIPMENT: BumpkinPart[] = [
 ];
 
 const RIGHT_EQUIPMENT: BumpkinPart[] = [
-  "beard",
+  // "beard",
   "necklace",
   "coat",
   "wings",
@@ -79,7 +79,7 @@ const RIGHT_EQUIPMENT: BumpkinPart[] = [
   "pants",
 ];
 
-const BOTTOM_EQUIPMENT: BumpkinPart[] = ["secondaryTool", "aura"];
+// const BOTTOM_EQUIPMENT: BumpkinPart[] = ["secondaryTool", "aura"];
 
 const getStorageKey = (farmId: number) =>
   `portal:${PORTAL_NAME}:wearableLoadouts:${farmId}`;
@@ -88,6 +88,7 @@ const _playerStatsState = (state: PortalMachineState) => ({
   xpPoints: state.context.xpPoints,
   selectedStat: state.context.selectedStat,
   playerStatLevels: state.context.playerStatLevels,
+  activeWearables: state.context.activeWearables,
 });
 
 const getDefaultLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
@@ -308,10 +309,8 @@ export const Profile: React.FC<{
 }) => {
   const { t } = useAppTranslation();
   const { portalService } = useContext(PortalContext);
-  const { xpPoints, selectedStat, playerStatLevels } = useSelector(
-    portalService,
-    _playerStatsState,
-  );
+  const { xpPoints, selectedStat, playerStatLevels, activeWearables } =
+    useSelector(portalService, _playerStatsState);
 
   const statIcons: Record<PlayerStatId, { src: string; width?: number }> = {
     health: { src: SUNNYSIDE.icons.heart },
@@ -326,7 +325,7 @@ export const Profile: React.FC<{
   } as const;
 
   const statTitles = {
-    health: t(`${PORTAL_NAME}.lives`),
+    health: t(`${PORTAL_NAME}.health`),
     speed: t(`${PORTAL_NAME}.speed`),
     damage: t(`${PORTAL_NAME}.damage`),
   };
@@ -343,7 +342,7 @@ export const Profile: React.FC<{
           const value =
             stat === "health"
               ? `${lives}/${maxLives}`
-              : getPlayerStatValue(stat, level);
+              : getPlayerStatValue(stat, level, activeWearables);
           const statIncrease = getPlayerStatValueIncrease(stat, level);
 
           return (

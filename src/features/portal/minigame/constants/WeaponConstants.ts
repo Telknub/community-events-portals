@@ -5,8 +5,11 @@ import type {
   WeaponConfig,
   WeaponId,
   WeaponLevel,
+  WeaponRuntimeStats,
   WeaponUpgrade,
 } from "../Types";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import { getActiveWearableBuffs } from "./WearableConstants";
 
 const BASE_WEAPON_STATS = {
   damage: 1,
@@ -722,6 +725,52 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       ],
     },
   ],
+};
+
+export const normaliseWeaponStats = (stats: WeaponRuntimeStats) => {
+  stats.cooldownMs = Math.max(80, Math.round(stats.cooldownMs));
+  stats.hitCooldownMs = Math.max(80, Math.round(stats.hitCooldownMs));
+  stats.dotTickMs = Math.max(80, Math.round(stats.dotTickMs));
+  stats.projectileCount = Math.max(1, Math.round(stats.projectileCount));
+  stats.orbitalCount = Math.max(1, Math.round(stats.orbitalCount));
+  stats.pierce = Math.max(0, Math.round(stats.pierce));
+  stats.bounceCount = Math.max(0, Math.round(stats.bounceCount));
+  stats.areaRadius = Math.max(1, stats.areaRadius);
+  stats.range = Math.max(1, stats.range);
+  stats.durationMs = Math.max(80, Math.round(stats.durationMs));
+
+  return stats;
+};
+
+export const resolveWeaponStats = (
+  id: WeaponId,
+  level: number,
+  activeWearables?: BumpkinParts,
+): WeaponRuntimeStats => {
+  const stats = { ...WEAPON_CONFIGS[id].baseStats };
+
+  WEAPON_UPGRADES[id]
+    .filter((upgrade) => upgrade.level <= level)
+    .forEach((upgrade) => {
+      upgrade.modifiers.forEach(({ stat, operation, value }) => {
+        if (operation === "add") {
+          stats[stat] += value;
+        } else if (operation === "multiply") {
+          stats[stat] *= value;
+        } else {
+          stats[stat] = value;
+        }
+      });
+    });
+
+  getActiveWearableBuffs(activeWearables).forEach((buff) => {
+    if (buff.target.type !== "weaponStat") return;
+    if (buff.target.weapon !== id) return;
+
+    stats[buff.target.stat] += buff.value;
+  });
+
+  return normaliseWeaponStats(stats);
 };
 
 export const COMBAT_CONFIG: CombatConfig = {

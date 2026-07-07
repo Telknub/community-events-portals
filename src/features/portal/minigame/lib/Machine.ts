@@ -13,6 +13,7 @@ import {
   getLevelUpChoice,
   getNextLevelXP,
   getNextPlayerStatLevel,
+  getPlayerStatValue,
   getPlayerStatValueIncrease,
   getUnlockedWeapons,
   isPlayerMaxLevel,
@@ -46,6 +47,11 @@ const getJWT = () => {
 
 const getRunScore = (context: Context) => context.collected;
 
+const getMaxLives = (
+  playerStatLevels: PlayerStatLevels,
+  activeWearables?: BumpkinParts,
+) => getPlayerStatValue("health", playerStatLevels.health, activeWearables);
+
 export interface Context {
   id: number;
   jwt: string | null;
@@ -68,6 +74,7 @@ export interface Context {
   selectedStat?: PlayerStatId;
   pendingLevelUpChoice?: LevelUpChoice;
   isGameplayPaused: boolean;
+  gameplayPausedAt?: number;
   weaponLevels: Record<WeaponId, WeaponLevel>;
   hudWeapons: WeaponId[];
   playerStatLevels: PlayerStatLevels;
@@ -111,9 +118,29 @@ const getInitialProgression = ({
     selectedStat: undefined,
     pendingLevelUpChoice,
     isGameplayPaused: !!pendingLevelUpChoice,
+    gameplayPausedAt: undefined,
     weaponLevels,
     hudWeapons: [] as WeaponId[],
     playerStatLevels: { ...DEFAULT_PLAYER_STAT_LEVELS },
+  };
+};
+
+const pauseGameplayClock = (context: Context): Partial<Context> => ({
+  isGameplayPaused: true,
+  gameplayPausedAt:
+    context.endAt > 0 ? (context.gameplayPausedAt ?? Date.now()) : undefined,
+});
+
+const resumeGameplayClock = (context: Context): Partial<Context> => {
+  const pausedDuration =
+    context.endAt > 0 && context.gameplayPausedAt !== undefined
+      ? Date.now() - context.gameplayPausedAt
+      : 0;
+
+  return {
+    isGameplayPaused: false,
+    gameplayPausedAt: undefined,
+    endAt: context.endAt > 0 ? context.endAt + pausedDuration : context.endAt,
   };
 };
 
@@ -172,6 +199,11 @@ const resolveXPProgression = ({
     xpPoints,
     pendingLevelUpChoice,
     isGameplayPaused: pendingLevelUpChoice ? true : context.isGameplayPaused,
+    gameplayPausedAt: pendingLevelUpChoice
+      ? context.endAt > 0
+        ? (context.gameplayPausedAt ?? Date.now())
+        : undefined
+      : context.gameplayPausedAt,
   };
 };
 
@@ -295,15 +327,23 @@ const VALIDATIONS = {};
 const resetGameTransition = {
   RETRY: {
     target: "starting",
-    actions: assign((context: Context): Partial<Context> => ({
-      score: 0,
-      lives: GAME_LIVES,
-      maxLives: GAME_LIVES,
-      endAt: 0,
-      ...getInitialProgression(),
-      activeWearables: context.activeWearables,
-      validations: structuredClone(VALIDATIONS),
-    })) as any,
+    actions: assign((context: Context): Partial<Context> => {
+      const progression = getInitialProgression();
+      const maxLives = getMaxLives(
+        progression.playerStatLevels,
+        context.activeWearables,
+      );
+
+      return {
+        score: 0,
+        lives: maxLives,
+        maxLives,
+        endAt: 0,
+        ...progression,
+        activeWearables: context.activeWearables,
+        validations: structuredClone(VALIDATIONS),
+      };
+    }) as any,
   },
 };
 
@@ -339,20 +379,34 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
       }),
     },
     SET_ACTIVE_WEARABLES: {
-      actions: assign({
-        activeWearables: (_: Context, event: SetActiveWearablesEvent) => {
-          return event.wearables;
+      actions: assign(
+        (context: Context, event: SetActiveWearablesEvent): Partial<Context> => {
+          const maxLives = getMaxLives(
+            context.playerStatLevels,
+            event.wearables,
+          );
+          const maxLivesDelta = maxLives - context.maxLives;
+
+          return {
+            activeWearables: event.wearables,
+            maxLives,
+            lives:
+              maxLivesDelta > 0
+                ? context.lives + maxLivesDelta
+                : Math.min(context.lives, maxLives),
+          };
         },
-      }),
+      ),
     },
     SET_GAMEPLAY_PAUSED: {
-      actions: assign({
-        isGameplayPaused: (context: Context, event: SetGameplayPausedEvent) => {
-          if (context.pendingLevelUpChoice) return true;
+      actions: assign(
+        (context: Context, event: SetGameplayPausedEvent): Partial<Context> => {
+          if (context.pendingLevelUpChoice) return pauseGameplayClock(context);
+          if (event.isPaused) return pauseGameplayClock(context);
 
-          return event.isPaused;
+          return resumeGameplayClock(context);
         },
-      }),
+      ),
     },
     UPGRADE_WEAPON: {
       actions: assign((context: Context, event: UpgradeWeaponEvent) => {
@@ -547,6 +601,13 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         START: {
           target: "playing",
           actions: assign((context: Context): Partial<Context> => {
+            const progression = getInitialProgression({
+              withInitialWeaponChoice: true,
+            });
+            const maxLives = getMaxLives(
+              progression.playerStatLevels,
+              context.activeWearables,
+            );
             const state = (() => {
               if (context.isTraining) return context.state;
               startAttempt();
@@ -562,9 +623,9 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             return {
               endAt: 0,
               score: 0,
-              lives: GAME_LIVES,
-              maxLives: GAME_LIVES,
-              ...getInitialProgression({ withInitialWeaponChoice: true }),
+              lives: maxLives,
+              maxLives,
+              ...progression,
               validations: structuredClone(VALIDATIONS),
               state,
               attemptsLeft: context.isTraining
@@ -599,11 +660,13 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
                 weaponLevels,
                 hudWeapons,
                 pendingLevelUpChoice: undefined,
-                isGameplayPaused: false,
-                endAt:
-                  context.endAt > 0
-                    ? context.endAt
-                    : Date.now() + GAME_SECONDS * 1000,
+                ...(context.endAt > 0
+                  ? resumeGameplayClock(context)
+                  : {
+                      isGameplayPaused: false,
+                      gameplayPausedAt: undefined,
+                      endAt: Date.now() + GAME_SECONDS * 1000,
+                    }),
               };
             },
           ),
@@ -636,7 +699,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
                 maxLives: context.maxLives + healthIncrease,
                 lives: context.lives + healthIncrease,
                 pendingLevelUpChoice: undefined,
-                isGameplayPaused: false,
+                ...resumeGameplayClock(context),
               };
             },
           ),
@@ -700,31 +763,39 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         },
         GAME_OVER: {
           target: "gameOver",
-          actions: assign((context: Context): Partial<Context> => ({
-            endAt: 0,
-            lives: GAME_LIVES,
-            maxLives: GAME_LIVES,
-            ...getInitialProgression(),
-            collected: getRunScore(context),
-            validations: structuredClone(VALIDATIONS),
-            lastScore: context.isTraining
-              ? context.lastScore
-              : getRunScore(context),
-            state: (() => {
-              if (context.isTraining) return context.state;
-              const score = getRunScore(context);
+          actions: assign((context: Context): Partial<Context> => {
+            const progression = getInitialProgression();
+            const maxLives = getMaxLives(
+              progression.playerStatLevels,
+              context.activeWearables,
+            );
 
-              submitScore({ score });
-              return submitMinigameScore({
-                state: context.state as GameState,
-                action: {
-                  type: "minigame.scoreSubmitted",
-                  score: Math.round(score),
-                  id: PORTAL_NAME,
-                },
-              });
-            })(),
-          })) as any,
+            return {
+              endAt: 0,
+              lives: maxLives,
+              maxLives,
+              ...progression,
+              collected: getRunScore(context),
+              validations: structuredClone(VALIDATIONS),
+              lastScore: context.isTraining
+                ? context.lastScore
+                : getRunScore(context),
+              state: (() => {
+                if (context.isTraining) return context.state;
+                const score = getRunScore(context);
+
+                submitScore({ score });
+                return submitMinigameScore({
+                  state: context.state as GameState,
+                  action: {
+                    type: "minigame.scoreSubmitted",
+                    score: Math.round(score),
+                    id: PORTAL_NAME,
+                  },
+                });
+              })(),
+            };
+          }) as any,
         },
       },
     },

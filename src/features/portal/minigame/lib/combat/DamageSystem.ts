@@ -31,7 +31,11 @@ export class DamageSystem {
       PLAYER_STAT_BASE_LEVEL;
     const resolvedPayload = {
       ...payload,
-      amount: resolvePlayerDamage(payload.amount, damageLevel),
+      amount: resolvePlayerDamage(
+        payload.amount,
+        damageLevel,
+        this.portalService?.state.context.activeWearables,
+      ),
     };
 
     if (enemy.takeDamage) {

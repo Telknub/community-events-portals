@@ -16,87 +16,67 @@ import {
 import { getWearableImage } from "features/game/lib/getWearableImage";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { PORTAL_NAME } from "../../constants";
+import {
+  getWearableBuffDescriptionKey,
+  NEW_WEARABLES,
+  PASSIVE_ABILITY_ITEM,
+  PORTAL_NAME,
+  WEAPON_ICONS,
+  WEAPON_NAMES,
+  WEAPON_STAT_LABELS,
+  WEARABLE_BUFFS,
+  WEARABLES_TAB_ITEMS,
+  type WearableBuff,
+} from "../../constants";
+import type { PlayerStatId, WeaponRuntimeStats } from "../../Types";
+import powerupIcon from "assets/icons/level_up.png";
+import speedIcon from "public/world/portal/images/lightning.png";
+import swordIcon from "public/world/portal/images/sword_icon.png";
+import { formatStatValue } from "./weaponStats";
 
 const PANEL_CONTENT_HEIGHT = "h-[400px]";
 
-export const WEARABLES_TAB_ITEMS: BumpkinItem[] = [
-  "Carrot Pitchfork",
-  "Handheld Bunny",
-  "Bunny Mask",
-  "Bunny Pants",
-  "Easter Apron",
-  "Slime Hat",
-  "Slime Wings",
-  "Slime Aura",
-  "Green Slime Hair",
-  "Blue Slime Shirt",
-  "Slime Splattered Shirt",
-  "Sad Slime Pants",
-  "Red Jelly Pants",
-  "Yellow Slime Puppet",
-  "Blue Jelly Shoes",
-  "Sad Slime Slippers",
-  "Sad Slime Hat",
-  "Slime Wall Background",
-  "Rainbow Wings",
-  "Butterfly Aura",
-  "Paint Splattered Hair",
-  "Paint Splattered Shirt",
-  "Paint Splattered Overalls",
-  "Paint Spray Can",
-  "Moonseeker Potion",
-  "Frizzy Bob Cut",
-  "Two-toned Layered",
-  "Halloween Deathscythe",
-  "Moonseeker Hand Puppet",
-  "Sweet Devil Horns",
-  "Trick and Treat",
-  "Jack O'Sweets",
-  "Frank Onesie",
-  "Research Uniform",
-  "Sweet Devil Dress",
-  "Underworld Stimpack",
-  "Sweet Devil Wings",
-  "Wisp Aura",
-  "Comfy Xmas Sweater",
-  "Comfy Xmas Pants",
-  "Candy Halbred",
-  "Xmas Top Hat",
-  "Reindeer Mask",
-  "Snowman Mask",
-  "Cool Glasses",
-  "Cookie Shield",
-  "Holiday Feast Background",
-  "Cozy Reindeer Onesie",
-  "Diamond Snow Aura",
-  "Neon Noiz Jacket",
-  "404 Chic Top",
-  "Neon Noiz Pants",
-  "404 Chic Skirt",
-  "Admin Fools Tools",
-  "Neon Noiz Shoes",
-  "404 Chic Boots",
-  "Aether Specs",
-  "Faulty Barrier Background",
-  "Cardboard Wings",
-  "Glitch Aura",
-];
+const STAT_BUFF_ICONS: Record<PlayerStatId, string> = {
+  health: SUNNYSIDE.icons.heart,
+  speed: speedIcon,
+  damage: swordIcon,
+};
 
-const NEW_WEARABLES = new Set<BumpkinItem>([
-  "Green Slime Hair",
-  "Blue Slime Shirt",
-  "Slime Splattered Shirt",
-  "Sad Slime Pants",
-  "Red Jelly Pants",
-  "Yellow Slime Puppet",
-  "Blue Jelly Shoes",
-  "Sad Slime Slippers",
-  "Sad Slime Hat",
-  "Slime Wall Background",
-  "Rainbow Wings",
-  "Butterfly Aura",
-]);
+const getWearableBuffIcon = (wearable?: BumpkinItem) => {
+  if (!wearable) return powerupIcon;
+
+  const buff = WEARABLE_BUFFS[wearable];
+  if (!buff) return powerupIcon;
+
+  if (buff.target.type === "playerStat") {
+    return STAT_BUFF_ICONS[buff.target.stat] ?? powerupIcon;
+  }
+
+  if (buff.target.type === "weaponStat") {
+    return WEAPON_ICONS[buff.target.weapon] ?? powerupIcon;
+  }
+
+  return powerupIcon;
+};
+
+const formatSmallBuffValue = (value: number) => {
+  if (Number.isInteger(value)) return value;
+
+  return Number(value.toFixed(5));
+};
+
+const formatSignedBuffValue = (
+  stat: keyof WeaponRuntimeStats,
+  value: number,
+) => {
+  const absoluteValue = Math.abs(value);
+  const formattedValue = stat.endsWith("Ms")
+    ? `${formatStatValue(stat, absoluteValue)}s`
+    : formatSmallBuffValue(absoluteValue);
+  const sign = value >= 0 ? "+" : "-";
+
+  return `${sign}${formattedValue}`;
+};
 
 export const WearablesTab: React.FC<{
   selectedBumpkinPart: BumpkinPart;
@@ -144,6 +124,28 @@ export const WearablesTab: React.FC<{
 
   const isSelectedWearableNew =
     !!effectiveSelectedWearable && NEW_WEARABLES.has(effectiveSelectedWearable);
+  const selectedWearableBuff = effectiveSelectedWearable
+    ? WEARABLE_BUFFS[effectiveSelectedWearable]
+    : undefined;
+  const selectedWearableBuffIcon = getWearableBuffIcon(
+    effectiveSelectedWearable,
+  );
+  const selectedWearableDescriptionKey =
+    getWearableBuffDescriptionKey(effectiveSelectedWearable) ??
+    (effectiveSelectedWearable === PASSIVE_ABILITY_ITEM
+      ? `${PORTAL_NAME}.AbilityDescription`
+      : `${PORTAL_NAME}.wearablePowerComingSoon`);
+  const getWearableBuffDescription = (buff: WearableBuff) => {
+    if (buff.target.type === "weaponStat") {
+      const weaponName = t(WEAPON_NAMES[buff.target.weapon]);
+      const statName = t(WEAPON_STAT_LABELS[buff.target.stat]).toLowerCase();
+      const value = formatSignedBuffValue(buff.target.stat, buff.value);
+
+      return `${weaponName} ${statName} ${value}.`;
+    }
+
+    return t(selectedWearableDescriptionKey as never);
+  };
 
   const selectedWearableImageClassName = classNames(
     "h-full w-full object-contain pixelated",
@@ -212,9 +214,23 @@ export const WearablesTab: React.FC<{
             {t("wearables.new")}
           </Label>
         )}
-        <p className="mt-2 text-xs">
-          {t(`${PORTAL_NAME}.wearablePowerComingSoon`)}
-        </p>
+        {selectedWearableBuff ? (
+          <Label
+            type="formula"
+            icon={selectedWearableBuffIcon}
+            className="mt-2 max-w-full text-center leading-tight"
+          >
+            {getWearableBuffDescription(selectedWearableBuff)}
+          </Label>
+        ) : (
+          <Label
+            type="formula"
+            icon={powerupIcon}
+            className="mt-2 max-w-full text-center leading-tight"
+          >
+            {t(selectedWearableDescriptionKey as never)}
+          </Label>
+        )}
         <Button
           disabled={!canEquipSelectedWearable}
           onClick={() => onEquipWearable(effectiveSelectedWearable)}

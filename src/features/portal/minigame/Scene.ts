@@ -598,11 +598,17 @@ export class Scene extends BaseScene {
       if (!this.physics.world.isPaused) {
         this.physics.world.pause();
       }
+      if (!this.time.paused) {
+        this.time.paused = true;
+      }
       return;
     }
 
     if (this.physics.world.isPaused) {
       this.physics.world.resume();
+    }
+    if (this.time.paused) {
+      this.time.paused = false;
     }
   }
 
@@ -614,7 +620,11 @@ export class Scene extends BaseScene {
     const speedLevel =
       this.portalService?.state.context.playerStatLevels.speed ??
       PLAYER_STAT_BASE_LEVEL;
-    const speed = getPlayerStatValue("speed", speedLevel);
+    const speed = getPlayerStatValue(
+      "speed",
+      speedLevel,
+      this.portalService?.state.context.activeWearables,
+    );
 
     return this.currentPlayer?.isSwimming
       ? speed * PLAYER_WATER_SPEED_MULTIPLIER
@@ -748,6 +758,7 @@ export class Scene extends BaseScene {
     const portalService = this.portalService;
     const portalContext = portalService?.state.context;
     let weaponLoadout = this.createWeaponLoadout(portalContext?.weaponLevels);
+    let activeWearables = portalContext?.activeWearables;
     this.currentPlayer.setEquippedWeapon(
       this.getDisplayedWeapon(weaponLoadout),
     );
@@ -764,11 +775,18 @@ export class Scene extends BaseScene {
       const nextWeaponLoadout = this.createWeaponLoadout(
         state.context.weaponLevels,
       );
-      if (JSON.stringify(nextWeaponLoadout) === JSON.stringify(weaponLoadout)) {
+      const nextWearables = state.context.activeWearables;
+      const hasSameWeaponLoadout =
+        JSON.stringify(nextWeaponLoadout) === JSON.stringify(weaponLoadout);
+      const hasSameWearables =
+        JSON.stringify(nextWearables) === JSON.stringify(activeWearables);
+
+      if (hasSameWeaponLoadout && hasSameWearables) {
         return;
       }
 
       weaponLoadout = nextWeaponLoadout;
+      activeWearables = nextWearables;
       this.currentPlayer?.setEquippedWeapon(
         this.getDisplayedWeapon(nextWeaponLoadout),
       );
