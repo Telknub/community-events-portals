@@ -1,19 +1,18 @@
 import Decimal from "decimal.js-light";
-import { fromWei } from "web3-utils";
 import {
-  Bumpkin,
-  GameState,
-  ExpansionConstruction,
-  PlacedItem,
+  type Bumpkin,
+  type GameState,
+  type ExpansionConstruction,
+  type PlacedItem,
   BB_TO_GEM_RATIO,
-  InventoryItemName,
+  type InventoryItemName,
 } from "../types/game";
 import { getKeys } from "lib/object";
-import { BumpkinParts, tokenUriBuilder } from "lib/utils/tokenUriBuilder";
-import { BumpkinItem, Equipped } from "../types/bumpkin";
-import { isSeed, SeedName } from "../types/seeds";
+import { type BumpkinParts, tokenUriBuilder } from "lib/utils/tokenUriBuilder";
+import type { BumpkinItem, Equipped } from "../types/bumpkin";
+import { isSeed, type SeedName } from "../types/seeds";
 import { makeAnimalBuilding } from "./animals";
-import { ChoreBoard } from "../types/choreBoard";
+import type { ChoreBoard } from "../types/choreBoard";
 import { getChapterTicket } from "../types/chapters";
 import { getObjectEntries } from "lib/object";
 import {
@@ -25,11 +24,11 @@ import {
   isAdvancedFruitSeed,
   isBasicFruitSeed,
 } from "../events/landExpansion/fruitPlanted";
-import { PatchFruitSeedName } from "../types/fruits";
+import type { PatchFruitSeedName } from "../types/fruits";
 import {
-  TreasureToolName,
+  type TreasureToolName,
   WORKBENCH_TOOLS,
-  WorkbenchToolName,
+  type WorkbenchToolName,
 } from "../types/tools";
 import { createInitialAgingShed } from "./agingShed";
 import {
@@ -262,6 +261,7 @@ export const INITIAL_RESOURCES: Pick<
   | "flowers"
   | "crimstones"
   | "sunstones"
+  | "ascensionCrystals"
   | "beehives"
   | "oilReserves"
 > = {
@@ -322,6 +322,7 @@ export const INITIAL_RESOURCES: Pick<
     flowerBeds: {},
   },
   sunstones: {},
+  ascensionCrystals: {},
   beehives: {},
   oilReserves: {},
 };
@@ -772,12 +773,6 @@ export const INITIAL_FARM: GameState = {
     status: "ok",
     isSocialVerified: false,
   },
-  blessing: {
-    offering: {
-      item: "Potato",
-      prize: "Potato",
-    },
-  },
   aoe: {},
   socialFarming: {
     weeklyPoints: {
@@ -1069,6 +1064,7 @@ export const TEST_FARM: GameState = {
     },
   },
   sunstones: {},
+  ascensionCrystals: {},
   mushrooms: {
     spawnedAt: 0,
     mushrooms: {},
@@ -1111,12 +1107,6 @@ export const TEST_FARM: GameState = {
   ban: {
     isSocialVerified: false,
     status: "ok",
-  },
-  blessing: {
-    offering: {
-      item: "Potato",
-      prize: "Potato",
-    },
   },
   aoe: {},
   socialFarming: {
@@ -1161,8 +1151,8 @@ export const INITIAL_EQUIPPED: Equipped = {
 export const EMPTY: GameState = {
   settings: {},
   coins: 0,
-  balance: new Decimal(fromWei("0")),
-  previousBalance: new Decimal(fromWei("0")),
+  balance: new Decimal(0),
+  previousBalance: new Decimal(0),
   createdAt: new Date().getTime(),
   inventory: {
     "Chicken Coop": new Decimal(1),
@@ -1249,6 +1239,7 @@ export const EMPTY: GameState = {
   oilReserves: {},
   trees: {},
   sunstones: {},
+  ascensionCrystals: {},
   farmActivity: {},
 
   milestones: {},
@@ -1299,12 +1290,6 @@ export const EMPTY: GameState = {
   ban: {
     isSocialVerified: false,
     status: "ok",
-  },
-  blessing: {
-    offering: {
-      item: "Potato",
-      prize: "Potato",
-    },
   },
   aoe: {},
   socialFarming: {

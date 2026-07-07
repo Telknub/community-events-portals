@@ -6,9 +6,12 @@ import { Modal } from "components/ui/Modal";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { SquareIcon } from "components/ui/SquareIcon";
 
-import { CodexCategory, CodexCategoryName } from "features/game/types/codex";
+import type {
+  CodexCategory,
+  CodexCategoryName,
+} from "features/game/types/codex";
 import { MilestoneReached } from "./components/MilestoneReached";
-import { MilestoneName } from "features/game/types/milestones";
+import type { MilestoneName } from "features/game/types/milestones";
 import { Fish } from "./pages/Fish";
 import { Flowers } from "./pages/Flowers";
 import { Deliveries } from "./pages/Deliveries";
@@ -26,17 +29,18 @@ import { useSound } from "lib/utils/hooks/useSound";
 
 import factions from "assets/icons/factions.webp";
 import chores from "assets/icons/chores.webp";
-import { Leaderboards } from "features/game/expansion/components/leaderboard/actions/cache";
+import type { Leaderboards } from "features/game/expansion/components/leaderboard/actions/cache";
 import { fetchLeaderboardData } from "features/game/expansion/components/leaderboard/actions/leaderboard";
 import { getChapterTicket } from "features/game/types/chapters";
-import { CompetitionDetails } from "features/competition/CompetitionBoard";
-import { MachineState } from "features/game/lib/gameMachine";
 import { ANIMALS } from "features/game/types/animals";
+import type { BountyRequest } from "features/game/types/game";
+import { CompetitionDetails } from "features/competition/CompetitionBoard";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { Checklist, checklistCount } from "components/ui/CheckList";
-import { getBumpkinLevel } from "features/game/lib/level";
+import { getAscensionLevel } from "features/game/lib/level";
 import trophyIcon from "assets/icons/trophy.png";
 import { hasFeatureAccess } from "lib/flags";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import * as AuthProvider from "features/auth/lib/Provider";
 import { useNow } from "lib/utils/hooks/useNow";
 import { ChapterBounties } from "./pages/ChapterBounties";
@@ -52,6 +56,23 @@ const _state = (state: MachineState) => state.context.state;
 const _token = (state: AuthMachineState) =>
   state.context.user.rawToken as string;
 
+/**
+ * Codex bounties tab: mega board (all non-animal requests) + animal ticket rows
+ * only. Animal coin and gem deals are omitted from the count; mega bounties
+ * are not filtered by reward type.
+ */
+function shouldCountIncompleteBountyForCodex(
+  deal: BountyRequest,
+  now: number,
+): boolean {
+  if (deal.name in ANIMALS) {
+    const ticket = getChapterTicket(now);
+    return (deal.items?.[ticket] ?? 0) > 0;
+  }
+
+  return true;
+}
+
 export const Codex: React.FC<Props> = ({ show, onHide }) => {
   const { t } = useAppTranslation();
   const { gameService } = useContext(Context);
@@ -62,10 +83,12 @@ export const Codex: React.FC<Props> = ({ show, onHide }) => {
   const now = useNow();
   const chapterTicket = getChapterTicket(now);
 
-  const bumpkinLevel = getBumpkinLevel(state.bumpkin?.experience ?? 0);
+  const ascension = getAscensionLevel({
+    experience: state.bumpkin.experience ?? 0,
+    ascensionLevel: state.island.ascensionLevel ?? 0,
+  });
 
-  const { username, bounties, delivery, choreBoard, kingdomChores, faction } =
-    state;
+  const { username, bounties, delivery, choreBoard, faction } = state;
 
   const [currentTab, setCurrentTab] = useState<CodexCategoryName>("Deliveries");
   const [showMilestoneReached, setShowMilestoneReached] = useState(false);
@@ -109,15 +132,11 @@ export const Codex: React.FC<Props> = ({ show, onHide }) => {
     setMilestoneName(undefined);
   };
 
-  // Use Set for O(1) lookup instead of Object.keys().includes()
-  const animalNamesSet = new Set(Object.keys(ANIMALS));
-  const incompleteMegaBounties = bounties.requests.filter(
-    (deal) => !animalNamesSet.has(deal.name),
-  );
-  // Optimize: Use Set for O(1) lookup instead of array.find()
   const completedBountyIds = new Set(bounties.completed.map((r) => r.id));
-  const incompleteMegaBountiesCount = incompleteMegaBounties.filter(
-    (deal) => !completedBountyIds.has(deal.id),
+  const incompleteBountiesCount = bounties.requests.filter(
+    (deal) =>
+      shouldCountIncompleteBountyForCodex(deal, now) &&
+      !completedBountyIds.has(deal.id),
   ).length;
 
   const incompleteDeliveries = delivery.orders.filter(
@@ -128,13 +147,8 @@ export const Codex: React.FC<Props> = ({ show, onHide }) => {
     (chore) => !chore.completedAt,
   ).length;
 
-  const inCompleteKingdomChores =
-    kingdomChores?.chores.filter(
-      (chore) => chore.startedAt && !chore.completedAt && !chore.skippedAt,
-    ).length ?? 0;
-
   // Pre-calculate checklist count once
-  const checklistCountValue = checklistCount(state, bumpkinLevel, now);
+  const checklistCountValue = checklistCount(state, ascension, now);
   const hasLeagues =
     hasFeatureAccess(state, "LEAGUES") && state.prototypes?.leagues;
 
@@ -153,7 +167,7 @@ export const Codex: React.FC<Props> = ({ show, onHide }) => {
     {
       name: "Leaderboard",
       icon: ITEM_DETAILS[chapterTicket].image,
-      count: incompleteMegaBountiesCount,
+      count: incompleteBountiesCount,
     },
     {
       name: "Checklist",
@@ -180,7 +194,7 @@ export const Codex: React.FC<Props> = ({ show, onHide }) => {
           {
             name: "Marks" as const,
             icon: factions,
-            count: inCompleteKingdomChores,
+            count: 0,
           },
         ]
       : []),

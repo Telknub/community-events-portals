@@ -1,11 +1,11 @@
 import Decimal from "decimal.js-light";
 import { trackFarmActivity } from "features/game/types/farmActivity";
-import {
+import type {
   CraftingQueueItem,
   GameState,
   InventoryItemName,
 } from "features/game/types/game";
-import { BumpkinItem } from "features/game/types/bumpkin";
+import type { BumpkinItem } from "features/game/types/bumpkin";
 import { produce } from "immer";
 
 export type CollectCraftingAction = {
@@ -18,7 +18,10 @@ type Options = {
   createdAt?: number;
 };
 
-function collectQueueItem(item: CraftingQueueItem, game: GameState): void {
+export function grantCraftedItem(
+  item: Pick<CraftingQueueItem, "type" | "name">,
+  game: GameState,
+): void {
   if (item.type === "collectible") {
     const name = item.name as InventoryItemName;
     game.inventory[name] = (game.inventory[name] || new Decimal(0)).plus(1);
@@ -51,7 +54,7 @@ export function collectCrafting({
 
     const remainingQueue = queue.filter((item) => {
       if (item.readyAt <= createdAt) {
-        collectQueueItem(item, copy);
+        grantCraftedItem(item, copy);
         return false;
       }
       return true;

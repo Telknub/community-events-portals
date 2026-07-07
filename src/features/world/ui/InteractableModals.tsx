@@ -9,7 +9,7 @@ import { OuterPanel, Panel } from "components/ui/Panel";
 import { NyeButton } from "./NyeButton";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { TreasureChest } from "./chests/TreasureChest";
-import { SceneId } from "../mmoMachine";
+import type { SceneId } from "../mmoMachine";
 import { BudBox } from "./chests/BudBox";
 import { Raffle } from "./chests/Raffle";
 import { FanArt } from "./FanArt";
@@ -41,7 +41,6 @@ import { FloatingIslandShop } from "./loveRewardShop/FloatingIslandShop";
 import { MegaBountyBoard } from "./flowerShop/MegaBountyBoard";
 import { PetalPuzzlePrize } from "./loveRewardShop/PetalPuzzlePrize";
 import { FlowerExchange } from "./npcs/Rocketman";
-import { Blessings } from "features/loveIsland/blessings/Blessings";
 import { EventMegaStore } from "./eventmegastore/EventMegaStore";
 import { EventNoticeboard } from "./EventNoticeboard";
 import { PotionMaster } from "features/helios/components/potions/component/PotionHouseShopItems";
@@ -53,7 +52,6 @@ import { FreeTrial } from "./FreeTrial";
 import { useNavigate } from "react-router";
 
 type InteractableName =
-  | "guardian"
   | "desert_noticeboard"
   | "faction_noticeboard"
   | "kingdom_noticeboard"
@@ -477,7 +475,7 @@ export const InteractableModals: React.FC<Props> = ({ id, scene }) => {
       <Modal show={interactable === "raffle"} onHide={closeModal}>
         <Raffle onClose={closeModal} />
       </Modal>
-      <Modal show={interactable === "bank"} onHide={closeModal}>
+      <Modal show={interactable === "bank"} onHide={closeModal} size="lg">
         <BankModal onClose={closeModal} farmAddress="?" />
       </Modal>
       <Modal show={interactable === "garbage_collector"} onHide={closeModal}>
@@ -534,10 +532,6 @@ export const InteractableModals: React.FC<Props> = ({ id, scene }) => {
 
       <Modal show={interactable === "portal_chooser"} onHide={closeModal}>
         <PortalChooser onClose={closeModal} />
-      </Modal>
-
-      <Modal show={interactable === "guardian"} onHide={closeModal}>
-        <Blessings onClose={closeModal} />
       </Modal>
 
       <Modal show={interactable === "flower_exchange"} onHide={closeModal}>

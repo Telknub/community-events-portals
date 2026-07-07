@@ -9,6 +9,7 @@ import { Modal } from "components/ui/Modal";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import mailboxImg from "assets/decorations/mailbox.png";
 import newsIcon from "assets/icons/chapter_icon_2.webp";
+import speakerIcon from "assets/icons/speaker.webp";
 
 import classNames from "classnames";
 
@@ -20,6 +21,10 @@ import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import giftIcon from "assets/icons/gift.png";
 import { DiscordNews } from "./components/DiscordNews";
 import { DailyRewardClaim } from "features/game/components/DailyReward";
+import { CommunityFeed } from "./components/CommunityFeed";
+import { AddPostForm } from "./components/AddPostForm";
+import { PostOnXPanel } from "./components/PostOnXPanel";
+import { RoadmapWidget } from "./components/RoadmapWidget";
 import { useAuth } from "features/auth/lib/Provider";
 import {
   DISCORD_NEWS_STORAGE_EVENT,
@@ -31,8 +36,11 @@ import {
 export const LetterBox: React.FC = () => {
   const { gameService, showAnimations } = useContext(Context);
   const { authState } = useAuth();
-  const [tab, setTab] = useState<"news" | "dailyGift">("news");
+  const [tab, setTab] = useState<"news" | "dailyGift" | "community">("news");
   const [isOpen, setIsOpen] = useState(false);
+  const [showAddPost, setShowAddPost] = useState(false);
+  // Bumped after a post is showcased to remount the feed so the new post loads.
+  const [feedKey, setFeedKey] = useState(0);
 
   const isVisiting = useSelector(gameService, (state) =>
     state.matches("visiting"),
@@ -142,6 +150,11 @@ export const LetterBox: React.FC = () => {
               name: t("mailbox.dailyGift"),
               id: "dailyGift",
             },
+            {
+              icon: speakerIcon,
+              name: t("mailbox.community"),
+              id: "community" as const,
+            },
           ]}
           currentTab={tab}
           setCurrentTab={setTab}
@@ -157,8 +170,28 @@ export const LetterBox: React.FC = () => {
               <DailyRewardClaim />
             </InnerPanel>
           )}
+          {tab === "community" && (
+            <CommunityFeed
+              key={feedKey}
+              onAddPost={() => setShowAddPost(true)}
+              onRemoved={() => setFeedKey((key) => key + 1)}
+            />
+          )}
         </CloseButtonPanel>
+        {tab === "news" && <RoadmapWidget />}
+        {tab === "community" && <PostOnXPanel onClose={close} />}
       </Modal>
+      <AddPostForm
+        key={feedKey}
+        show={showAddPost}
+        onClose={() => setShowAddPost(false)}
+        onSuccess={() => {
+          setShowAddPost(false);
+          // Remount the feed (and this form) so the newly showcased post
+          // loads into the list and the form input resets.
+          setFeedKey((key) => key + 1);
+        }}
+      />
     </>
   );
 };

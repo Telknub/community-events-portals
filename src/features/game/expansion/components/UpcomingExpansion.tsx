@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Modal } from "components/ui/Modal";
 
 import { EXPANSION_ORIGINS, LAND_SIZE } from "../lib/constants";
-import { Coordinates, MapPlacement } from "./MapPlacement";
+import { type Coordinates, MapPlacement } from "./MapPlacement";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { Pontoon } from "./Pontoon";
 
@@ -14,18 +14,21 @@ import { useActor } from "@xstate/react";
 import { RequirementLabel } from "components/ui/RequirementsLabel";
 import Decimal from "decimal.js-light";
 import { getKeys } from "lib/object";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { Label } from "components/ui/Label";
 import { NPC_WEARABLES } from "lib/npcs";
 import { craftingRequirementsMet } from "features/game/lib/craftingRequirement";
 import classNames from "classnames";
-import {
+import type {
   ExpansionRequirements as IExpansionRequirements,
   GameState,
   Inventory,
   Bumpkin,
 } from "features/game/types/game";
-import { expansionRequirements } from "features/game/events/landExpansion/revealLand";
+import { expansionRequirements } from "features/game/events/landExpansion/expandLand";
 import { translate } from "lib/i18n/translate";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { ExpansionRequirements } from "components/ui/layouts/ExpansionRequirements";
@@ -133,7 +136,7 @@ export const ExpandIcon: React.FC<ExpandIconProps> = ({
                   icon={SUNNYSIDE.icons.lock}
                   className="mt-2"
                 >
-                  {t("lvl")} {requirements.bumpkinLevel}
+                  {t("lvl")} {requirements.bumpkinLevel.level}
                 </Label>
               )}
             </>
@@ -270,9 +273,16 @@ export const UpcomingExpansion: React.FC = () => {
   const nextPosition =
     EXPANSION_ORIGINS[state.inventory["Basic Land"]?.toNumber() ?? 0];
 
-  const isLocked =
-    getBumpkinLevel(state.bumpkin?.experience ?? 0) <
-    (requirements?.bumpkinLevel ?? 0);
+  // Compare the player's standing against the (ascension, level) requirement —
+  // matching the `expandLand` gate.
+  const ascensionLevel = state.island.ascensionLevel ?? 0;
+  const playerLevel = getAscensionLevel({
+    experience: state.bumpkin.experience ?? 0,
+    ascensionLevel,
+  });
+  const isLocked = requirements
+    ? !meetsLevelRequirement(playerLevel, requirements.bumpkinLevel)
+    : false;
 
   const effectiveCoinCost = useExpansionCoinCostWithVip({
     coins: requirements?.coins,

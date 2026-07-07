@@ -10,7 +10,7 @@ import mapIcon from "assets/icons/map.webp";
 
 import { ZoomContext } from "components/ZoomProvider";
 import Spritesheet, {
-  SpriteSheetInstance,
+  type SpriteSheetInstance,
 } from "components/animation/SpriteAnimator";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { Context } from "features/game/GameProvider";
@@ -22,14 +22,18 @@ import { FishCaught } from "./FishCaught";
 import { getKeys } from "lib/object";
 import {
   FISH,
-  FishName,
+  type FishName,
   FISH_DIFFICULTY,
-  MarineMarvelName,
+  type MarineMarvelName,
   MAP_PIECE_MARVELS,
 } from "features/game/types/fishing";
-import { MachineState } from "features/game/lib/gameMachine";
+
+import type { MachineState } from "features/game/lib/gameMachine";
 import { gameAnalytics } from "lib/gameAnalytics";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { Label } from "components/ui/Label";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
@@ -37,7 +41,8 @@ import classNames from "classnames";
 import { isFishFrenzy, isFullMoon } from "features/game/types/calendar";
 import { FishermanPuzzle } from "features/island/fisherman/FishingPuzzle";
 import { Panel } from "components/ui/Panel";
-import { Coordinates } from "features/game/expansion/components/MapPlacement";
+import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
 
 const HITBOX_SIZE_PX = 50;
 
@@ -89,7 +94,13 @@ interface Props {
 }
 
 const _canFish = (state: MachineState) =>
-  getBumpkinLevel(state.context.state.bumpkin?.experience ?? 0) >= 5;
+  meetsLevelRequirement(
+    getAscensionLevel({
+      experience: state.context.state.bumpkin.experience ?? 0,
+      ascensionLevel: state.context.state.island.ascensionLevel ?? 0,
+    }),
+    { ascension: 0, level: 5 },
+  );
 const _state = (state: MachineState) => state.context.state;
 
 const _marvel = (state: MachineState) => {
@@ -270,7 +281,9 @@ export const FishermanNPC: React.FC<Props> = ({ onClick }) => {
   };
 
   const fishermanPosition = (): Coordinates => {
-    if (island.type === "volcano") {
+    // Ascension islands (swamp, spooky, crystal, moon, marble) reuse the volcano
+    // dock art, so the fisherman stands at the same spot.
+    if (hasRequiredIslandExpansion(island.type, "volcano")) {
       return {
         x: 53,
         y: 44,

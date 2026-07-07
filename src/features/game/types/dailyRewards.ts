@@ -1,6 +1,10 @@
-import { BuffName } from "./buffs";
-import { BoostName, GameState, InventoryItemName } from "./game";
-import { getBumpkinLevel, getExperienceToNextLevel } from "../lib/level";
+import type { BuffName } from "./buffs";
+import type { BoostName, GameState, InventoryItemName } from "./game";
+import {
+  getAscensionLevel,
+  getExperienceToNextLevel,
+  meetsLevelRequirement,
+} from "../lib/level";
 import {
   CHAPTER_ORDER,
   getChapterBanner,
@@ -43,10 +47,14 @@ export type DailyRewardName =
   | "weekly-mega-box"
   | "streak-one-year"
   | "streak-two-year"
+  | "streak-three-year"
+  | "streak-four-year"
   | "weekly-day-6-coin-stash"
   | "weekly-mega-box"
   | "streak-one-year"
-  | "streak-two-year";
+  | "streak-two-year"
+  | "streak-three-year"
+  | "streak-four-year";
 
 // The first 7 rewards, players can claim without losing a streak
 const ONBOARDING_REWARDS: DailyRewardDefinition[] = [
@@ -133,7 +141,11 @@ export function calculateXPPotion(
 const WEEKLY_REWARDS: (game: GameState) => DailyRewardDefinition[] = (
   game: GameState,
 ) => {
-  const level = getBumpkinLevel(game.bumpkin?.experience ?? 0);
+  const ascension = getAscensionLevel({
+    experience: game.bumpkin.experience ?? 0,
+    ascensionLevel: game.island.ascensionLevel ?? 0,
+  });
+  const level = ascension.level;
   const { experienceToNextLevel } = getExperienceToNextLevel(
     game.bumpkin?.experience ?? 0,
   );
@@ -146,10 +158,10 @@ const WEEKLY_REWARDS: (game: GameState) => DailyRewardDefinition[] = (
   const day2Xp = calculateXPPotion(level, experienceToNextLevel);
 
   const loveBox = (() => {
-    if (level > 100) {
+    if (meetsLevelRequirement(ascension, { ascension: 0, level: 101 })) {
       return "Silver Love Box";
     }
-    if (level > 50) {
+    if (meetsLevelRequirement(ascension, { ascension: 0, level: 51 })) {
       return "Bronze Love Box";
     }
 
@@ -233,6 +245,34 @@ const STREAK_MILESTONES: StreakMilestone[] = [
         "Super Totem": 1,
         Gem: 320,
         "Luxury Key": 1,
+      },
+    },
+  },
+  {
+    days: 1094,
+    reward: {
+      id: "streak-three-year",
+      label: "Three Year Streak Reward",
+      coins: 10000,
+      items: {
+        "Pirate Cake": 15,
+        "Treasure Key": 2,
+        "Rare Key": 2,
+        "Luxury Key": 2,
+      },
+    },
+  },
+  {
+    days: 1459,
+    reward: {
+      id: "streak-four-year",
+      label: "Four Year Streak Reward",
+      coins: 20000,
+      items: {
+        "Pizza Margherita": 10,
+        "Super Totem": 1,
+        Gem: 500,
+        "Luxury Key": 2,
       },
     },
   },

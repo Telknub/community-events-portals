@@ -4,28 +4,34 @@ import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { SplitScreenView } from "components/ui/SplitScreenView";
 import { Context } from "features/game/GameProvider";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { CraftingRequirements } from "components/ui/layouts/CraftingRequirements";
 import { Button } from "components/ui/Button";
 import { getKeys } from "lib/object";
 import {
-  AnimalBuildingType,
+  type AnimalBuildingType,
   ANIMALS,
-  AnimalType,
+  type AnimalType,
 } from "features/game/types/animals";
 import { Box } from "components/ui/Box";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { AnimalBounty, AnimalBuildingKey } from "features/game/types/game";
+import type { AnimalBounty, AnimalBuildingKey } from "features/game/types/game";
 import Decimal from "decimal.js-light";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { getBoostedAnimalCapacity } from "features/game/events/landExpansion/buyAnimal";
 import { Label } from "components/ui/Label";
 
 import coinsIcon from "assets/icons/coins.webp";
 import brush from "assets/animals/brush.webp";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { makeAnimalBuildingKey } from "features/game/lib/animals";
+import {
+  getAnimalMaturityTimeForDisplay,
+  makeAnimalBuildingKey,
+} from "features/game/lib/animals";
 import { AnimalBounties } from "features/barn/components/AnimalBounties";
 import { SpeakingModal } from "features/game/components/SpeakingModal";
 import { NPC_WEARABLES } from "lib/npcs";
@@ -77,6 +83,7 @@ export const AnimalBuildingModal: React.FC<Props> = ({
   const [currentTab, setCurrentTab] = useState<Tab>(
     !hasReadGuide() ? "guide" : "buy",
   );
+  const [showTimeBoosts, setShowTimeBoosts] = useState(false);
 
   const state = useSelector(gameService, _state);
   const bumpkin = useSelector(gameService, _bumpkin);
@@ -110,14 +117,22 @@ export const AnimalBuildingModal: React.FC<Props> = ({
       (animal) => ANIMALS[animal.type].buildingRequired === buildingName,
     ).length;
 
-  const bumpkinLevel = getBumpkinLevel(bumpkin.experience);
+  const ascension = getAscensionLevel({
+    experience: bumpkin.experience,
+    ascensionLevel: state.island.ascensionLevel ?? 0,
+  });
 
   const hasRequiredLevel = () =>
-    bumpkinLevel >= ANIMALS[selectedName].levelRequired;
+    meetsLevelRequirement(ascension, ANIMALS[selectedName].levelRequired);
 
   const atMaxCapacity =
     getTotalAnimalsInBuilding() >=
     getBoostedAnimalCapacity(buildingKey, state).capacity;
+
+  const maturityTime = getAnimalMaturityTimeForDisplay({
+    animalType: selectedName,
+    game: state,
+  });
 
   if (showIntro) {
     return (
@@ -194,8 +209,13 @@ export const AnimalBuildingModal: React.FC<Props> = ({
               requirements={{
                 coins: ANIMALS[selectedName].coins,
                 showCoinsIfFree: true,
+                timeSeconds: Math.ceil(maturityTime.maturityTimeMs / 1000),
+                baseTimeSeconds: Math.ceil(maturityTime.baseTimeMs / 1000),
+                timeBoostsUsed: maturityTime.boostsUsed,
                 level: ANIMALS[selectedName].levelRequired,
               }}
+              showTimeBoosts={showTimeBoosts}
+              setShowTimeBoosts={setShowTimeBoosts}
               label={
                 atMaxCapacity ? (
                   <Label type="danger">
@@ -225,7 +245,10 @@ export const AnimalBuildingModal: React.FC<Props> = ({
                   <Box
                     isSelected={selectedName === name}
                     key={name}
-                    onClick={() => setSelectedName(name)}
+                    onClick={() => {
+                      setSelectedName(name);
+                      setShowTimeBoosts(false);
+                    }}
                     image={ITEM_DETAILS[name].image}
                     showOverlay={!hasRequiredLevel()}
                     secondaryImage={
@@ -237,7 +260,7 @@ export const AnimalBuildingModal: React.FC<Props> = ({
               </div>
               <Label
                 type={atMaxCapacity ? "danger" : "info"}
-                className="absolute bottom-3 sm:bottom-2 left-2"
+                className="mt-1 sm:mt-0 sm:absolute sm:bottom-2 sm:left-2"
               >
                 {`${getTotalAnimalsInBuilding()}/${
                   getBoostedAnimalCapacity(buildingKey, state).capacity

@@ -1,4 +1,4 @@
-import { MarketplaceTrends } from "features/game/types/marketplace";
+import type { MarketplaceTrends } from "features/game/types/marketplace";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import React, { useContext } from "react";
 import { getTradeableDisplay } from "../lib/tradeables";
@@ -9,7 +9,7 @@ import { Loading } from "features/auth/components";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import { interpretTokenUri } from "lib/utils/tokenUriBuilder";
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
 import { formatNumber } from "lib/utils/formatNumber";
 import { playerModalManager } from "features/social/lib/playerModalManager";
@@ -53,7 +53,10 @@ export const TopTrades: React.FC<{
               <div className="flex flex-wrap items-center flex-1">
                 <div className="mr-2 text-left  flex items-center sm:w-1/2 w-full">
                   <div className="h-8 w-8 mr-2">
-                    <img src={details.image} className="h-full object-fit" />
+                    <img
+                      src={details.image}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
                   <p className="text-sm py-0.5">{`${details.name}`}</p>
                 </div>

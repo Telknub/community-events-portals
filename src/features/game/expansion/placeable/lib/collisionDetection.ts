@@ -1,4 +1,4 @@
-import {
+import type {
   AnimalBuildingKey,
   Collectibles,
   Beehive,
@@ -16,19 +16,19 @@ import {
   Rock,
 } from "features/game/types/game";
 import { EXPANSION_ORIGINS, LAND_SIZE } from "../../lib/constants";
-import { Coordinates } from "../../components/MapPlacement";
+import type { Coordinates } from "../../components/MapPlacement";
 import {
   COLLECTIBLES_DIMENSIONS,
-  CollectibleName,
+  type CollectibleName,
 } from "features/game/types/craftables";
 import { BUILDINGS_DIMENSIONS } from "features/game/types/buildings";
 import {
   MUSHROOM_DIMENSIONS,
   RESOURCE_DIMENSIONS,
-  ResourceName,
+  type ResourceName,
 } from "features/game/types/resources";
-import { PlaceableLocation } from "features/game/types/collectibles";
-import { LandscapingPlaceable } from "../landscapingMachine";
+import type { PlaceableLocation } from "features/game/types/collectibles";
+import type { LandscapingPlaceable } from "../landscapingMachine";
 import { PET_NFT_DIMENSIONS } from "features/game/types/pets";
 import { getKeys, getObjectEntries } from "lib/object";
 import {
@@ -143,6 +143,7 @@ function detectPlaceableCollision(
     flowers: { flowerBeds },
     oilReserves,
     farmHands,
+    ascensionCrystals,
   } = state;
 
   const placed = {
@@ -196,6 +197,7 @@ function detectPlaceableCollision(
     "Fruit Patch": fruitPatches,
     "Flower Bed": flowerBeds,
     Beehive: beehives,
+    "Ascension Crystal": ascensionCrystals,
   };
 
   const resourceBoundingBoxes = getObjectEntries(RESOURCE_TYPES).flatMap(
@@ -247,12 +249,28 @@ function detectPlaceableCollision(
       width: 1,
     }));
 
+  // Main bumpkin on the farm, exclude when placing/moving the bumpkin itself
+  const bumpkinBoundingBox =
+    name !== "Bumpkin" &&
+    state.bumpkin?.coordinates &&
+    state.bumpkin?.location === "farm"
+      ? [
+          {
+            x: state.bumpkin.coordinates.x,
+            y: state.bumpkin.coordinates.y,
+            height: 1,
+            width: 1,
+          },
+        ]
+      : [];
+
   const boundingBoxes = [
     ...placeableBounds,
     ...resourceBoundingBoxes,
     ...budsBoundingBox,
     ...petNFTBoundingBox,
     ...farmHandBoundingBox,
+    ...bumpkinBoundingBox,
   ];
 
   return boundingBoxes.some((resourceBoundingBox) =>
@@ -280,6 +298,37 @@ export const HOME_BOUNDS: Record<IslandType, BoundingBox> = {
     y: -8,
   },
   volcano: {
+    height: 20,
+    width: 20,
+    x: -10,
+    y: -10,
+  },
+  swamp: {
+    height: 20,
+    width: 20,
+    x: -10,
+    y: -10,
+  },
+  // Ascension islands (spooky onward) reuse the swamp value for now.
+  spooky: {
+    height: 20,
+    width: 20,
+    x: -10,
+    y: -10,
+  },
+  crystal: {
+    height: 20,
+    width: 20,
+    x: -10,
+    y: -10,
+  },
+  moon: {
+    height: 20,
+    width: 20,
+    x: -10,
+    y: -10,
+  },
+  marble: {
     height: 20,
     width: 20,
     x: -10,
@@ -469,56 +518,9 @@ function detectHomeCollision({
       }));
   });
 
-  const budsBoundingBox = Object.values(state.buds ?? {})
-    .filter((bud) => !!bud.coordinates && bud.location === "home")
-    .map((item) => ({
-      x: item.coordinates!.x,
-      y: item.coordinates!.y,
-      height: 1,
-      width: 1,
-    }));
-
-  const petNFTBoundingBox = Object.values(state.pets?.nfts ?? {})
-    .filter((petNFT) => !!petNFT.coordinates && petNFT.location === "home")
-    .map((item) => ({
-      x: item.coordinates!.x,
-      y: item.coordinates!.y,
-      height: PET_NFT_DIMENSIONS.height,
-      width: PET_NFT_DIMENSIONS.width,
-    }));
-
-  const farmHandBoundingBox = Object.values(state.farmHands.bumpkins ?? {})
-    .filter(
-      (farmHand) => !!farmHand.coordinates && farmHand.location === "home",
-    )
-    .map((farmHand) => ({
-      x: farmHand.coordinates!.x,
-      y: farmHand.coordinates!.y,
-      height: 1,
-      width: 1,
-    }));
-
-  // Main bumpkin inside, exclude when placing/moving the bumpkin itself
-  const bumpkinBoundingBox =
-    name !== "Bumpkin" &&
-    state.bumpkin?.coordinates &&
-    state.bumpkin?.location === "home"
-      ? [
-          {
-            x: state.bumpkin.coordinates.x,
-            y: state.bumpkin.coordinates.y,
-            height: 1,
-            width: 1,
-          },
-        ]
-      : [];
-
   const boundingBoxes = [
     ...placeableBounds,
-    ...budsBoundingBox,
-    ...petNFTBoundingBox,
-    ...farmHandBoundingBox,
-    ...bumpkinBoundingBox,
+    ...placedEntityBoundingBoxes(state, "home", name),
   ];
 
   return boundingBoxes.some((resourceBoundingBox) =>
@@ -633,139 +635,6 @@ function detectAirdropCollision(state: GameState, boundingBox: BoundingBox) {
   );
 }
 
-function detectGarbageCollision(state: GameState, boundingBox: BoundingBox) {
-  if (!state.socialFarming?.clutter?.locations) return false;
-  const { locations } = state.socialFarming.clutter;
-
-  const boundingBoxes = getKeys(locations).flatMap((id) => {
-    const location = locations[id];
-
-    return {
-      x: location.x,
-      y: location.y,
-      height: 1,
-      width: 1,
-    };
-  });
-
-  return boundingBoxes.some((resourceBoundingBox) =>
-    isOverlapping(boundingBox, resourceBoundingBox),
-  );
-}
-
-enum Direction {
-  Left,
-  Right,
-  Top,
-  Bottom,
-}
-
-/**
- * Detects whether a bounding box collides with a land corner.
- *
- * As corners of a land change depending on how many expansions you have, this function looks for
- * neighbouring expansions in all directions to determine where the corners are and whether the bounding box
- * overlaps with any of them.
- * @param expansions The list of expansions that are not under construction.
- * @param boundingBox
- * @returns boolean
- */
-function detectLandCornerCollision(
-  expansions: number,
-  boundingBox: BoundingBox,
-) {
-  // Mid point coordinates for all land expansions
-  const originCoordinatesForExpansions: Coordinates[] = new Array(expansions)
-    .fill(null)
-    .map((_, i) => EXPANSION_ORIGINS[i]);
-
-  /**
-   *
-   * @param expansionOrigin Center coordinates for a land expansion
-   * @param offset coordinate multiplier to determine direction to check eg bottomLeft = { x: -1, y: -1 }
-   * @returns Boolean
-   */
-  const expansionExistsAtOffset = (
-    expansionOrigin: Coordinates,
-    offset: {
-      x: -1 | 0 | 1;
-      y: -1 | 0 | 1;
-    },
-  ) => {
-    return originCoordinatesForExpansions.some((neighbour) => {
-      return (
-        neighbour.x === expansionOrigin.x + LAND_SIZE * offset.x &&
-        neighbour.y === expansionOrigin.y + LAND_SIZE * offset.y
-      );
-    });
-  };
-
-  const hasNeighbouringExpansion = (
-    origin: Coordinates,
-    direction: Direction,
-  ) => {
-    switch (direction) {
-      case Direction.Left:
-        return expansionExistsAtOffset(origin, { x: -1, y: 0 });
-      case Direction.Right:
-        return expansionExistsAtOffset(origin, { x: 1, y: 0 });
-      case Direction.Top:
-        return expansionExistsAtOffset(origin, { x: 0, y: 1 });
-      case Direction.Bottom:
-        return expansionExistsAtOffset(origin, { x: 0, y: -1 });
-    }
-  };
-
-  return originCoordinatesForExpansions.some((originCoordinate) => {
-    const overlapsTopLeft = () =>
-      !hasNeighbouringExpansion(originCoordinate, Direction.Left) &&
-      !hasNeighbouringExpansion(originCoordinate, Direction.Top) &&
-      isOverlapping(boundingBox, {
-        x: originCoordinate.x - LAND_SIZE / 2,
-        y: originCoordinate.y + LAND_SIZE / 2,
-        width: 1,
-        height: 1,
-      });
-
-    const overlapsTopRight = () =>
-      !hasNeighbouringExpansion(originCoordinate, Direction.Right) &&
-      !hasNeighbouringExpansion(originCoordinate, Direction.Top) &&
-      isOverlapping(boundingBox, {
-        x: originCoordinate.x + LAND_SIZE / 2 - 1,
-        y: originCoordinate.y + LAND_SIZE / 2,
-        width: 1,
-        height: 1,
-      });
-
-    const overlapsBottomLeft = () =>
-      !hasNeighbouringExpansion(originCoordinate, Direction.Left) &&
-      !hasNeighbouringExpansion(originCoordinate, Direction.Bottom) &&
-      isOverlapping(boundingBox, {
-        x: originCoordinate.x - LAND_SIZE / 2,
-        y: originCoordinate.y - LAND_SIZE / 2 + 1,
-        width: 1,
-        height: 1,
-      });
-
-    const overlapsBottomRight = () =>
-      !hasNeighbouringExpansion(originCoordinate, Direction.Right) &&
-      !hasNeighbouringExpansion(originCoordinate, Direction.Bottom) &&
-      isOverlapping(boundingBox, {
-        x: originCoordinate.x + LAND_SIZE / 2 - 1,
-        y: originCoordinate.y - LAND_SIZE / 2 + 1,
-        width: 1,
-        height: 1,
-      });
-
-    return (
-      overlapsTopLeft() ||
-      overlapsTopRight() ||
-      overlapsBottomLeft() ||
-      overlapsBottomRight()
-    );
-  });
-}
-
 /**
  * Interior collision check — intentionally simpler than `detectHomeCollision`.
  *
@@ -786,6 +655,69 @@ function detectLandCornerCollision(
  * once before the layout lookup and treat everything else (overlap check) in
  * the canvas-center convention since collectibles store their coords there.
  */
+/**
+ * Bounding boxes for the non-collectible entities (buds, pet NFTs, farm hands
+ * and the main bumpkin) placed on a given indoor surface. Shared by the home,
+ * interior and level_one collision checks so each surface collides with these
+ * the same way.
+ */
+function placedEntityBoundingBoxes(
+  state: GameState,
+  location: PlaceableLocation,
+  name: LandscapingPlaceable,
+): BoundingBox[] {
+  const budsBoundingBox = Object.values(state.buds ?? {})
+    .filter((bud) => !!bud.coordinates && bud.location === location)
+    .map((item) => ({
+      x: item.coordinates!.x,
+      y: item.coordinates!.y,
+      height: 1,
+      width: 1,
+    }));
+
+  const petNFTBoundingBox = Object.values(state.pets?.nfts ?? {})
+    .filter((petNFT) => !!petNFT.coordinates && petNFT.location === location)
+    .map((item) => ({
+      x: item.coordinates!.x,
+      y: item.coordinates!.y,
+      height: PET_NFT_DIMENSIONS.height,
+      width: PET_NFT_DIMENSIONS.width,
+    }));
+
+  const farmHandBoundingBox = Object.values(state.farmHands.bumpkins ?? {})
+    .filter(
+      (farmHand) => !!farmHand.coordinates && farmHand.location === location,
+    )
+    .map((farmHand) => ({
+      x: farmHand.coordinates!.x,
+      y: farmHand.coordinates!.y,
+      height: 1,
+      width: 1,
+    }));
+
+  // Main bumpkin inside, exclude when placing/moving the bumpkin itself
+  const bumpkinBoundingBox =
+    name !== "Bumpkin" &&
+    state.bumpkin?.coordinates &&
+    state.bumpkin?.location === location
+      ? [
+          {
+            x: state.bumpkin.coordinates.x,
+            y: state.bumpkin.coordinates.y,
+            height: 1,
+            width: 1,
+          },
+        ]
+      : [];
+
+  return [
+    ...budsBoundingBox,
+    ...petNFTBoundingBox,
+    ...farmHandBoundingBox,
+    ...bumpkinBoundingBox,
+  ];
+}
+
 function detectInteriorCollision({
   state,
   position,
@@ -809,14 +741,15 @@ function detectInteriorCollision({
     return true;
   }
 
-  // Decorations (everything except utility NPCs) can be stacked freely on
-  // any valid interior tile — players should be able to pixel-perfect arrange
-  // collectibles without collision getting in the way.
-  if (name !== "FarmHand" && name !== "Bumpkin") {
+  // 2. Overlap check — interior placements must not overlap any other
+  // collectible already placed in the room. Existing overlaps in saved
+  // state are left alone; this only blocks new placements/moves that
+  // would land on top of something. Rugs / tiles (NON_COLLIDING_OBJECTS)
+  // are still free to overlap anything.
+  if (NON_COLLIDING_OBJECTS.includes(name as InventoryItemName)) {
     return false;
   }
 
-  // Utility NPCs (FarmHand, Bumpkin) still check against each other.
   const placed = state.interior.ground.collectibles;
   const collidingItems = getKeys(placed).filter(
     (itemName) => !NON_COLLIDING_OBJECTS.includes(itemName),
@@ -834,7 +767,12 @@ function detectInteriorCollision({
       }));
   });
 
-  return placeableBounds.some((box) => isOverlapping(position, box));
+  const boundingBoxes = [
+    ...placeableBounds,
+    ...placedEntityBoundingBoxes(state, "interior", name),
+  ];
+
+  return boundingBoxes.some((box) => isOverlapping(position, box));
 }
 
 /**
@@ -873,9 +811,9 @@ function detectLevelOneCollision({
     return true;
   }
 
-  // Same decoration-first policy as the ground floor: only FarmHand and
-  // Bumpkin are utility items that need to avoid overlapping each other.
-  if (name !== "FarmHand" && name !== "Bumpkin") {
+  // Same overlap policy as the ground floor — see detectInteriorCollision
+  // for rationale. Rugs / tiles can still stack freely.
+  if (NON_COLLIDING_OBJECTS.includes(name as InventoryItemName)) {
     return false;
   }
 
@@ -896,7 +834,12 @@ function detectLevelOneCollision({
       }));
   });
 
-  return placeableBounds.some((box) => isOverlapping(position, box));
+  const boundingBoxes = [
+    ...placeableBounds,
+    ...placedEntityBoundingBoxes(state, "level_one", name),
+  ];
+
+  return boundingBoxes.some((box) => isOverlapping(position, box));
 }
 
 export function detectCollision({
@@ -931,7 +874,6 @@ export function detectCollision({
   return (
     detectWaterCollision(expansions, position) ||
     detectPlaceableCollision(state, position, name) ||
-    detectLandCornerCollision(expansions, position) ||
     detectMushroomCollision(state, position, name) ||
     detectAirdropCollision(state, position)
   );

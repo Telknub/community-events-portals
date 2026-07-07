@@ -6,27 +6,29 @@ import { Context } from "features/game/GameProvider";
 import { Settings } from "./components/Settings";
 import { Inventory } from "./components/inventory/Inventory";
 import { Save } from "./components/Save";
-import { DepositArgs } from "lib/blockchain/Deposit";
+import type { DepositArgs } from "lib/blockchain/Deposit";
 import { DepositGameItemsModal } from "features/goblins/bank/components/DepositGameItems";
 import { placeEvent } from "features/game/expansion/placeable/landscapingMachine";
 import { TravelButton } from "./components/deliveries/TravelButton";
 import { AuctionCountdown } from "features/retreat/components/auctioneer/AuctionCountdown";
 import { VIPExpiryWidget } from "./components/VIPExpiryWidget";
 import { VersionUpdateWidget } from "./components/VersionUpdateWidget";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 import { HudContainer } from "components/ui/HudContainer";
 import Decimal from "decimal.js-light";
 import { CurrenciesModal } from "./components/CurrenciesModal";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSound } from "lib/utils/hooks/useSound";
 import { TransactionCountdown } from "./Transaction";
 import { MarketplaceButton } from "./components/MarketplaceButton";
 import { PowerSkillsButton } from "./components/PowerSkillsButton";
 import {
-  BumpkinRevampSkillName,
+  type BumpkinRevampSkillName,
   getPowerSkills,
 } from "features/game/types/bumpkinSkills";
 import { LandscapeButton } from "./components/LandscapeButton";
+import { InteriorFloorNav } from "features/interior/components/InteriorFloorNav";
+import { InteriorBedsButton } from "features/interior/components/InteriorBedsButton";
 import { StreamCountdown } from "./components/streamCountdown/StreamCountdown";
 import { HudBumpkin } from "./components/bumpkinProfile/HudBumpkin";
 import { WorldFeedButton } from "features/social/components/WorldFeedButton";
@@ -110,6 +112,8 @@ const HudComponent: React.FC<{
         <WorldFeedButton showFeed={showFeed} setShowFeed={setShowFeed} />
         {hasPowerSkills && <PowerSkillsButton />}
         <MarketplaceButton />
+        {location === "interior" && <InteriorFloorNav floor="ground" />}
+        {location === "level_one" && <InteriorFloorNav floor="level_one" />}
         <TravelButton location={location} />
       </div>
       <div className="absolute bottom-0 pb-2 pl-3 left-16 flex flex-col space-y-2.5">
@@ -164,6 +168,9 @@ const HudComponent: React.FC<{
           hideActions={false}
           location={location}
         />
+        {(location === "interior" || location === "level_one") && (
+          <InteriorBedsButton />
+        )}
       </div>
 
       <div className="absolute bottom-0 p-2 right-0 flex flex-col space-y-2.5">

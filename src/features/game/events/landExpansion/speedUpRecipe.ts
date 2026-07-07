@@ -1,23 +1,24 @@
 import Decimal from "decimal.js-light";
-import {
+import type {
   BuildingName,
   CookingBuildingName,
 } from "features/game/types/buildings";
 import { trackFarmActivity } from "features/game/types/farmActivity";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { produce } from "immer";
 import { getCurrentCookingItem, recalculateQueue } from "./cancelQueuedRecipe";
 import {
   assertCookableName,
-  CookableName,
+  type CookableName,
 } from "features/game/types/consumables";
 import { getCookingAmount } from "./collectRecipe";
 import {
   chargeCoinsForSpeedUp,
   getInstantGems,
   makeGemHistory,
-  SpeedUpPaymentMethod,
+  type SpeedUpPaymentMethod,
 } from "features/game/lib/getInstantGems";
+import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 
 export type InstantCookRecipe = {
   type: "recipe.spedUp";
@@ -90,7 +91,7 @@ export function speedUpRecipe({
     }
     const cookableName = assertCookableName(recipe.name);
 
-    const amount = getCookingAmount({
+    const { amount, boostsUsed } = getCookingAmount({
       building: action.buildingName,
       game,
       recipe,
@@ -117,6 +118,14 @@ export function speedUpRecipe({
       `${cookableName} Cooked`,
       game.farmActivity,
     );
+
+    if (boostsUsed.length > 0) {
+      game.boostsUsedAt = updateBoostUsed({
+        game,
+        boostNames: boostsUsed,
+        createdAt,
+      });
+    }
 
     return game;
   });

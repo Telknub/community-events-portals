@@ -1,10 +1,10 @@
-import { NPCName } from "lib/npcs";
+import type { NPCName } from "lib/npcs";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Context } from "features/game/GameProvider";
 import { useActor } from "@xstate/react";
-import { Airdrop, GameState, Order } from "features/game/types/game";
+import type { Airdrop, GameState, Order } from "features/game/types/game";
 import { Button } from "components/ui/Button";
 
 import coinsImg from "assets/icons/coins.webp";
@@ -21,7 +21,7 @@ import { getKeys } from "lib/object";
 import { RequirementLabel } from "components/ui/RequirementsLabel";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { ResizableBar } from "components/ui/ProgressBar";
-import { FLOWERS, FlowerName } from "features/game/types/flowers";
+import { FLOWERS, type FlowerName } from "features/game/types/flowers";
 import { Box } from "components/ui/Box";
 import {
   getBumpkinRecipes,
@@ -32,8 +32,9 @@ import { defaultDialogue, npcDialogues } from "./dialogues";
 import { useRandomItem } from "lib/utils/hooks/useRandomItem";
 import {
   NPC_DELIVERY_LEVELS,
-  DeliveryNpcName,
+  type DeliveryNpcName,
   isCoinNPC,
+  isSFLNPC,
   isTicketNPC,
 } from "features/island/delivery/lib/delivery";
 import {
@@ -42,6 +43,8 @@ import {
 } from "features/game/types/chapters";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { useNow } from "lib/utils/hooks/useNow";
+import { getDayOfYear, secondsTillReset } from "lib/utils/time";
+import { Loading } from "features/auth/components";
 import {
   BUMPKIN_FLOWER_BONUSES,
   DEFAULT_FLOWER_POINTS,
@@ -55,8 +58,12 @@ import {
 import { getBumpkinHoliday } from "lib/utils/getSeasonWeek";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { formatNumber } from "lib/utils/formatNumber";
-import { getBumpkinLevel } from "features/game/lib/level";
-import { TranslationKeys } from "lib/i18n/dictionaries/types";
+import {
+  getAscensionLevel,
+  levelRequirementToTotal,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
+import type { TranslationKeys } from "lib/i18n/dictionaries/types";
 import { calculateRelationshipPoints } from "features/game/events/landExpansion/giftFlowers";
 import { FriendshipInfoPanel } from "components/ui/FriendshipInfoPanel";
 import { getActiveCalendarEvent } from "features/game/types/calendar";
@@ -95,7 +102,7 @@ const OrderCard: React.FC<{
   const { holiday } = getBumpkinHoliday({ now });
   const isHoliday = holiday === new Date(now).toISOString().split("T")[0];
 
-  const baseTickets = generateDeliveryTickets({
+  const { amount: baseTickets } = generateDeliveryTickets({
     game,
     npc: order.from,
     now,
@@ -126,6 +133,25 @@ const OrderCard: React.FC<{
       }
       return getChapterTaskPoints({
         task: "coinDelivery",
+        points: 10,
+      });
+    }
+    if (
+      isSFLNPC(order.from) &&
+      hasTimeBasedFeatureAccess({
+        featureName: "TICKETS_FROM_FLOWER_NPC",
+        now: order.createdAt,
+        game,
+      })
+    ) {
+      if (areBumpkinsOnHoliday(order.createdAt)) {
+        return 0;
+      }
+      if (getCurrentChapter(order.createdAt) !== getCurrentChapter(now)) {
+        return 0;
+      }
+      return getChapterTaskPoints({
+        task: "flowerDelivery",
         points: 10,
       });
     }
@@ -713,9 +739,39 @@ export const BumpkinDelivery: React.FC<Props> = ({ onClose, npc }) => {
 
   const game = gameState.context.state;
   const [showFlowers, setShowFlowers] = useState(false);
+  const [showSkipDialog, setShowSkipDialog] = useState(false);
   const [gift, setGift] = useState<Airdrop>();
 
   const delivery = game.delivery.orders.find((order) => order.from === npc);
+
+  const canSkip =
+    !!delivery &&
+    (getDayOfYear(new Date(now)) !==
+      getDayOfYear(new Date(delivery.createdAt)) ||
+      new Date(now).getFullYear() !==
+        new Date(delivery.createdAt).getFullYear());
+
+  const skippableDelivery =
+    delivery && !delivery.completedAt && delivery.readyAt <= now && canSkip
+      ? delivery
+      : undefined;
+
+  // Keep the loading screen up from the moment the player skips until the
+  // autosave settles and the server returns the fresh set of orders.
+  const isAutosaving = gameState.matches("autosaving");
+  const [isSkipping, setIsSkipping] = useState(false);
+  const [wasAutosaving, setWasAutosaving] = useState(isAutosaving);
+  if (wasAutosaving !== isAutosaving) {
+    setWasAutosaving(isAutosaving);
+    if (!isAutosaving) setIsSkipping(false);
+  }
+
+  const skip = (id: string) => {
+    setShowSkipDialog(false);
+    setIsSkipping(true);
+    gameService.send("order.skipped", { id });
+    gameService.send("SAVE");
+  };
 
   const { holiday } = getBumpkinHoliday({ now });
 
@@ -771,7 +827,7 @@ export const BumpkinDelivery: React.FC<Props> = ({ onClose, npc }) => {
   const positive = useRandomItem(dialogue.positiveDelivery);
   const noOrder = useRandomItem(dialogue.noOrder);
 
-  const baseTickets = generateDeliveryTickets({
+  const { amount: baseTickets } = generateDeliveryTickets({
     game,
     npc,
     now,
@@ -799,10 +855,19 @@ export const BumpkinDelivery: React.FC<Props> = ({ onClose, npc }) => {
     message = t("goblinTrade.missingReputation.sflDelivery");
   }
 
-  const missingLevels =
-    (NPC_DELIVERY_LEVELS[npc as DeliveryNpcName] ?? 0) -
-    getBumpkinLevel(game.bumpkin?.experience ?? 0);
-  const isLocked = missingLevels >= 1;
+  const requiredLevel = NPC_DELIVERY_LEVELS[npc as DeliveryNpcName] ?? {
+    ascension: 0,
+    level: 0,
+  };
+  const ascension = getAscensionLevel({
+    experience: game.bumpkin.experience ?? 0,
+    ascensionLevel: game.island.ascensionLevel ?? 0,
+  });
+  const isLocked = !meetsLevelRequirement(ascension, requiredLevel);
+  const missingLevels = Math.max(
+    0,
+    levelRequirementToTotal(requiredLevel) - levelRequirementToTotal(ascension),
+  );
   const deliveryFrozen = isHoliday && isTicketNPC(npc) && baseTickets > 0;
   const acceptGifts = !!getNextGift({ game, npc });
 
@@ -871,98 +936,161 @@ export const BumpkinDelivery: React.FC<Props> = ({ onClose, npc }) => {
           </InnerPanel>
 
           <InnerPanel className="mb-1">
-            <div className="px-2 ">
-              <div className="flex flex-col justify-between items-stretch mb-2 gap-1">
-                <div className="flex flex-row justify-between w-full">
-                  {getActiveCalendarEvent({
-                    calendar: gameState.context.state.calendar,
-                  }) === "doubleDelivery" && !hasClaimedBonus ? (
-                    <Label type="vibrant" icon={lightning}>
-                      {t("double.rewards.delivery")}
-                    </Label>
-                  ) : (
-                    <Label
-                      type="default"
-                      icon={SUNNYSIDE.icons.expression_chat}
-                    >
-                      {t("delivery")}
-                    </Label>
-                  )}
-
-                  {isLocked && (
-                    <Label type="danger" secondaryIcon={SUNNYSIDE.icons.player}>
-                      {t("warning.level.required", {
-                        lvl: NPC_DELIVERY_LEVELS[npc as DeliveryNpcName],
-                      })}
-                    </Label>
-                  )}
-
-                  {delivery?.completedAt && (
-                    <Label
-                      style={{ whiteSpace: "nowrap" }}
-                      type="success"
-                      secondaryIcon={SUNNYSIDE.icons.confirm}
-                    >
-                      {t("completed")}
-                    </Label>
-                  )}
-                </div>
+            {isSkipping ? (
+              <div className="flex-1 p-2">
+                <Loading
+                  className="text-center mb-0.5 mt-1 text-sm loading"
+                  text={t("skipping")}
+                />
               </div>
-              {!delivery && !isLocked && (
-                <p className="text-xs mb-1">{t("no.delivery.avl")}</p>
-              )}
+            ) : showSkipDialog ? (
+              <div className="flex-1 space-y-2 p-1">
+                <p className="text-xs">{t("orderhelp.Skip.hour")}</p>
+                {canSkip && <p className="text-xs">{t("choose.wisely")}</p>}
+                {!canSkip && (
+                  <>
+                    <p className="text-xs font-secondary">
+                      {`${t("orderhelp.SkipIn")}:`}
+                    </p>
+                    <div className="flex-1">
+                      <RequirementLabel
+                        type="time"
+                        waitSeconds={secondsTillReset(now)}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="px-2 ">
+                <div className="flex flex-col justify-between items-stretch mb-2 gap-1">
+                  <div className="flex flex-row justify-between w-full">
+                    {getActiveCalendarEvent({
+                      calendar: gameState.context.state.calendar,
+                    }) === "doubleDelivery" && !hasClaimedBonus ? (
+                      <Label type="vibrant" icon={lightning}>
+                        {t("double.rewards.delivery")}
+                      </Label>
+                    ) : (
+                      <Label
+                        type="default"
+                        icon={SUNNYSIDE.icons.expression_chat}
+                      >
+                        {t("delivery")}
+                      </Label>
+                    )}
 
-              {isLocked && (
-                <>
-                  <p className="text-xs mb-2">
-                    {t("bumpkin.delivery.proveYourself", {
-                      missingLevels: missingLevels,
-                    })}
-                  </p>
-                </>
-              )}
+                    {isLocked && (
+                      <Label
+                        type="danger"
+                        secondaryIcon={SUNNYSIDE.icons.player}
+                      >
+                        {t("warning.level.required", {
+                          lvl: NPC_DELIVERY_LEVELS[npc as DeliveryNpcName]
+                            ?.level,
+                        })}
+                      </Label>
+                    )}
 
-              {delivery && !deliveryFrozen && (
-                <>
-                  <OrderCard
-                    game={gameState.context.state}
-                    order={delivery as Order}
-                    hasRequirementsCheck={() => true}
-                    onDeliver={deliver}
-                  />
-                </>
-              )}
-              {deliveryFrozen && (
-                <Label type="danger" icon={SUNNYSIDE.icons.stopwatch}>
-                  {t("orderhelp.ticket.deliveries.closed")}
-                </Label>
-              )}
-            </div>
+                    {delivery?.completedAt && (
+                      <Label
+                        style={{ whiteSpace: "nowrap" }}
+                        type="success"
+                        secondaryIcon={SUNNYSIDE.icons.confirm}
+                      >
+                        {t("completed")}
+                      </Label>
+                    )}
+                  </div>
+                </div>
+                {!delivery && !isLocked && (
+                  <p className="text-xs mb-1">{t("no.delivery.avl")}</p>
+                )}
+
+                {isLocked && (
+                  <>
+                    <p className="text-xs mb-2">
+                      {t("bumpkin.delivery.proveYourself", {
+                        missingLevels: missingLevels,
+                      })}
+                    </p>
+                  </>
+                )}
+
+                {delivery && !deliveryFrozen && (
+                  <>
+                    <OrderCard
+                      game={gameState.context.state}
+                      order={delivery as Order}
+                      hasRequirementsCheck={() => true}
+                      onDeliver={deliver}
+                    />
+                    {!delivery.completedAt &&
+                      !isLocked &&
+                      !missingRequiredReputation &&
+                      delivery.readyAt <= now && (
+                        <button
+                          type="button"
+                          className="text-left underline font-secondary text-xxs p-0 pb-1 pt-0.5 bg-transparent border-0 cursor-pointer hover:text-blue-500 focus-visible:text-blue-500"
+                          onClick={() => setShowSkipDialog(true)}
+                        >
+                          {t("skip.order")}
+                          {"?"}
+                        </button>
+                      )}
+                  </>
+                )}
+                {deliveryFrozen && (
+                  <Label type="danger" icon={SUNNYSIDE.icons.stopwatch}>
+                    {t("orderhelp.ticket.deliveries.closed")}
+                  </Label>
+                )}
+              </div>
+            )}
           </InnerPanel>
           {missingRequiredReputation && (
             <RequiredReputation reputation={Reputation.Cropkeeper} />
           )}
-          <div className="flex mt-1">
-            {acceptGifts && (
-              <Button className="mr-1" onClick={() => setShowFlowers(true)}>
-                {t("gift")}
+          {isSkipping ? null : showSkipDialog ? (
+            canSkip ? (
+              <div className="flex flex-row gap-1">
+                <Button onClick={() => setShowSkipDialog(false)}>
+                  {t("orderhelp.NoRight")}
+                </Button>
+                {skippableDelivery && (
+                  <Button onClick={() => skip(skippableDelivery.id)}>
+                    {t("skip.order")}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Button onClick={() => setShowSkipDialog(false)}>
+                {t("back")}
               </Button>
-            )}
+            )
+          ) : (
+            <div className="flex mt-1">
+              {acceptGifts && (
+                <Button className="mr-1" onClick={() => setShowFlowers(true)}>
+                  {t("gift")}
+                </Button>
+              )}
 
-            <Button
-              disabled={
-                !delivery ||
-                !hasDelivery ||
-                !!delivery?.completedAt ||
-                isLocked ||
-                missingRequiredReputation ||
-                deliveryFrozen
-              }
-              onClick={deliver}
-            >
-              {t("deliver")}
-            </Button>
-          </div>
+              <Button
+                disabled={
+                  !delivery ||
+                  !hasDelivery ||
+                  !!delivery?.completedAt ||
+                  isLocked ||
+                  missingRequiredReputation ||
+                  deliveryFrozen
+                }
+                onClick={deliver}
+              >
+                {t("deliver")}
+              </Button>
+            </div>
+          )}
         </>
       )}
     </>

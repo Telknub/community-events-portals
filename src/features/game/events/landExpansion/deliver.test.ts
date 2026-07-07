@@ -14,12 +14,15 @@ import {
   getBumpkinHoliday,
   getCurrentChapterHolidayPeriod,
 } from "lib/utils/getSeasonWeek";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { getChapterTaskPoints } from "features/game/types/tracks";
 import { CONFIG } from "lib/config";
+import type * as FlagsModule from "lib/flags";
+import type * as DeliverModule from "./deliver";
+import type { QuestNPCName } from "./deliver";
 
 jest.mock("lib/flags", () => {
-  const actual = jest.requireActual<typeof import("lib/flags")>("lib/flags");
+  const actual = jest.requireActual<typeof FlagsModule>("lib/flags");
   return {
     ...actual,
     hasTimeBasedFeatureAccess: jest.fn(actual.hasTimeBasedFeatureAccess),
@@ -29,7 +32,7 @@ jest.mock("lib/flags", () => {
 // esbuild-runner/jest does not hoist `jest.mock` above imports. Load the
 // flags module and the SUT via require *after* the mock is registered so
 // the SUT binds the jest.fn wrapper rather than the real function.
-const flags = require("lib/flags") as typeof import("lib/flags") & {
+const flags = require("lib/flags") as typeof FlagsModule & {
   hasTimeBasedFeatureAccess: jest.Mock;
 };
 const {
@@ -37,8 +40,7 @@ const {
   TICKET_REWARDS,
   deliverOrder,
   generateDeliveryTickets,
-} = require("./deliver") as typeof import("./deliver");
-type QuestNPCName = import("./deliver").QuestNPCName;
+} = require("./deliver") as typeof DeliverModule;
 
 const FIRST_DAY_OF_SEASON = new Date("2024-11-01T16:00:00Z").getTime();
 const MID_SEASON = new Date("2023-08-15T15:00:00Z").getTime();
@@ -69,7 +71,7 @@ describe("deliver", () => {
   afterEach(() => {
     CONFIG.NETWORK = previousNetwork;
     flags.hasTimeBasedFeatureAccess.mockImplementation(
-      jest.requireActual<typeof import("lib/flags")>("lib/flags")
+      jest.requireActual<typeof FlagsModule>("lib/flags")
         .hasTimeBasedFeatureAccess,
     );
   });
@@ -1925,7 +1927,9 @@ describe("deliver", () => {
       createdAt: now,
     });
 
-    expect(state.inventory[getChapterTicket(now)]).toEqual(new Decimal(10));
+    expect(state.inventory[getChapterTicket(now)]).toEqual(
+      new Decimal(TICKET_REWARDS.tywin * 2),
+    );
   });
 
   it("returns 0 tickets for coin NPC (no tickets from coin deliveries)", () => {
@@ -1941,8 +1945,86 @@ describe("deliver", () => {
         game,
         npc: "betty",
         now,
-      }),
+      }).amount,
     ).toEqual(0);
+  });
+
+  it("surfaces boostsUsed entries for each contributing source", () => {
+    // Bull Run chapter (Cowboy Hat is a chapter ticket boost item).
+    // Fake timers are required: `getActiveCalendarEvent` reads the real
+    // clock to gate the Double Delivery window. Restore real timers in
+    // the finally so this test does not leak state into later tests.
+    const mockDate = new Date("2024-11-25T00:00:01Z");
+    const now = mockDate.getTime();
+    jest.useFakeTimers();
+    jest.setSystemTime(mockDate);
+
+    try {
+      const game: GameState = {
+        ...INITIAL_FARM,
+        inventory: {
+          ...INITIAL_FARM.inventory,
+          "Lifetime Farmer Banner": new Decimal(1),
+        },
+        bumpkin: {
+          ...TEST_BUMPKIN,
+          equipped: {
+            ...TEST_BUMPKIN.equipped,
+            hat: "Cowboy Hat",
+          },
+        },
+        npcs: {},
+        calendar: {
+          dates: [
+            {
+              name: "doubleDelivery",
+              date: new Date(now).toISOString().substring(0, 10),
+            },
+          ],
+          doubleDelivery: {
+            triggeredAt: now,
+            startedAt: now,
+          },
+        },
+      };
+
+      const { amount, boostsUsed } = generateDeliveryTickets({
+        game,
+        npc: "pumpkin' pete",
+        now,
+      });
+
+      // base 1 + VIP 2 + Cowboy Hat 1 = 4, then doubleDelivery * 2 = 8.
+      expect(amount).toEqual(8);
+      expect(boostsUsed).toEqual(
+        expect.arrayContaining([
+          { name: "VIP Access", value: "+2" },
+          { name: "Cowboy Hat", value: "+1" },
+          { name: "Double Delivery", value: "x2" },
+        ]),
+      );
+      expect(boostsUsed).toHaveLength(3);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("returns empty boostsUsed for a coin NPC", () => {
+    const now = new Date("2026-02-20T00:00:01Z").getTime();
+    const game: GameState = {
+      ...INITIAL_FARM,
+      npcs: {},
+      calendar: { dates: [] },
+    };
+
+    const { amount, boostsUsed } = generateDeliveryTickets({
+      game,
+      npc: "betty",
+      now,
+    });
+
+    expect(amount).toEqual(0);
+    expect(boostsUsed).toEqual([]);
   });
 
   it("returns 0 tickets for coin NPC even when double delivery is active", () => {
@@ -1964,7 +2046,7 @@ describe("deliver", () => {
       },
     };
 
-    const tickets = generateDeliveryTickets({
+    const { amount: tickets } = generateDeliveryTickets({
       game,
       npc: "betty",
       now,
@@ -2167,6 +2249,123 @@ describe("deliver", () => {
                 Sunflower: 50,
               },
               reward: { coins: 1000 },
+            },
+          ],
+        },
+        bumpkin: TEST_BUMPKIN,
+      },
+      action: {
+        id: "123",
+        type: "order.delivered",
+      },
+      createdAt: deliveryCreatedAt,
+    });
+
+    expect(state.farmActivity[`${chapter} Points Earned`]).toBeUndefined();
+  });
+
+  it("does not award chapter points for flower deliveries when TICKETS_FROM_FLOWER_NPC flag is inactive", () => {
+    // Use a date before TICKETS_FROM_FLOWER_NPC flag (2026-05-11)
+    const now = new Date("2026-05-09T00:00:01Z").getTime();
+    const chapter = getCurrentChapter(now);
+
+    const state = deliverOrder({
+      state: {
+        ...INITIAL_FARM,
+        balance: new Decimal(0),
+        inventory: {
+          "Mashed Potato": new Decimal(20),
+        },
+        delivery: {
+          ...INITIAL_FARM.delivery,
+          fulfilledCount: 0,
+          orders: [
+            {
+              id: "123",
+              createdAt: now,
+              readyAt: now,
+              from: "grimbly",
+              items: { "Mashed Potato": 12 },
+              reward: { sfl: 1 },
+            },
+          ],
+        },
+        bumpkin: TEST_BUMPKIN,
+      },
+      action: {
+        id: "123",
+        type: "order.delivered",
+      },
+      createdAt: now + 5000,
+    });
+
+    expect(state.farmActivity[`${chapter} Points Earned`]).toBeUndefined();
+  });
+
+  it("awards flat 10 chapter points for flower deliveries when TICKETS_FROM_FLOWER_NPC flag is active", () => {
+    // Use a date after TICKETS_FROM_FLOWER_NPC flag (2026-05-11) so points are tracked
+    const now = new Date("2026-05-12T00:00:01Z").getTime();
+    const chapter = getCurrentChapter(now);
+
+    const state = deliverOrder({
+      state: {
+        ...INITIAL_FARM,
+        balance: new Decimal(0),
+        inventory: {
+          "Mashed Potato": new Decimal(20),
+        },
+        delivery: {
+          ...INITIAL_FARM.delivery,
+          fulfilledCount: 0,
+          orders: [
+            {
+              id: "123",
+              createdAt: now,
+              readyAt: now,
+              from: "grimbly",
+              items: { "Mashed Potato": 12 },
+              reward: { sfl: 1 },
+            },
+          ],
+        },
+        bumpkin: TEST_BUMPKIN,
+      },
+      action: {
+        id: "123",
+        type: "order.delivered",
+      },
+      createdAt: now + 5000,
+    });
+
+    expect(state.farmActivity[`${chapter} Points Earned`]).toEqual(10);
+  });
+
+  it("does not award flowerDelivery chapter points when order was created on holiday", () => {
+    // Order createdAt 2026-05-04 falls in Salt Awakening's computed bumpkin
+    // holiday window (2026-05-04 → 2026-05-11 exclusive); deliver after the
+    // freeze ends so the flag is also active.
+    const orderCreatedAt = new Date("2026-05-04T12:00:00.000Z").getTime();
+    const deliveryCreatedAt = new Date("2026-05-12T12:00:00.000Z").getTime();
+    const chapter = getCurrentChapter(deliveryCreatedAt);
+
+    const state = deliverOrder({
+      state: {
+        ...INITIAL_FARM,
+        balance: new Decimal(0),
+        inventory: {
+          "Mashed Potato": new Decimal(20),
+        },
+        delivery: {
+          ...INITIAL_FARM.delivery,
+          fulfilledCount: 0,
+          orders: [
+            {
+              id: "123",
+              createdAt: orderCreatedAt,
+              readyAt: orderCreatedAt,
+              from: "grimbly",
+              items: { "Mashed Potato": 12 },
+              reward: { sfl: 1 },
             },
           ],
         },

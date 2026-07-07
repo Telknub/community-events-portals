@@ -1,14 +1,14 @@
 import Decimal from "decimal.js-light";
-import { RecipeCollectibleName } from "features/game/lib/crafting";
+import type { RecipeCollectibleName } from "features/game/lib/crafting";
 import { getKeys } from "lib/object";
-import {
+import type {
   HarvestEvent,
   CookEvent,
   AnimalResourceEvent,
   OrderDeliveredEvent,
   FarmActivityName,
 } from "features/game/types/farmActivity";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { setPrecision } from "lib/utils/formatNumber";
 import cloneDeep from "lodash.clonedeep";
 
@@ -265,6 +265,9 @@ export const LEAGUE_POINTS_EVENTS: Record<LeaguePointsEvent, Decimal> = {
   "Cosmo Doll Crafted": new Decimal(400),
   "Bigfin Doll Crafted": new Decimal(400),
   "Solar Doll Crafted": new Decimal(400),
+  "Basic Bear Crafted": new Decimal(400),
+  "Salt Doll Crafted": new Decimal(400),
+  "Jacuzzi Bear Crafted": new Decimal(400),
   "Basic Bed Crafted": new Decimal(300),
   "Sturdy Bed Crafted": new Decimal(300),
   "Floral Bed Crafted": new Decimal(300),

@@ -1,27 +1,37 @@
 import { v4 as uuidv4 } from "uuid";
-import { GameEventName, PlacementEvent } from "features/game/events";
+import type { GameEventName, PlacementEvent } from "features/game/events";
 import {
   BUILDINGS_DIMENSIONS,
-  BuildingName,
+  type BuildingName,
 } from "features/game/types/buildings";
-import { CollectibleName } from "features/game/types/craftables";
-import { assign, createMachine, Interpreter, sendParent, State } from "xstate";
-import { Coordinates } from "../components/MapPlacement";
-import { Inventory } from "features/game/types/game";
+import type { CollectibleName } from "features/game/types/craftables";
 import {
-  Context as GameMachineContext,
+  assign,
+  createMachine,
+  type Interpreter,
+  sendParent,
+  type State,
+} from "xstate";
+import type { Coordinates } from "../components/MapPlacement";
+import type { Inventory } from "features/game/types/game";
+import {
+  type Context as GameMachineContext,
   saveGame,
 } from "features/game/lib/gameMachine";
-import { RESOURCES, ResourceName } from "features/game/types/resources";
+import { RESOURCES, type ResourceName } from "features/game/types/resources";
 import {
   RESOURCE_MOVE_EVENTS,
   RESOURCES_REMOVE_ACTIONS,
 } from "features/island/collectibles/MovableComponent";
-import { PlaceableLocation } from "features/game/types/collectibles";
-import { NFTName } from "features/game/events/landExpansion/placeNFT";
+import type { PlaceableLocation } from "features/game/types/collectibles";
+import type { NFTName } from "features/game/events/landExpansion/placeNFT";
+import type { FlipCollectibleAction } from "features/game/events/landExpansion/flipCollectible";
+import type { FlipFarmHandAction } from "features/game/events/landExpansion/flipFarmHand";
+import type { FlipBumpkinAction } from "features/game/events/landExpansion/flipBumpkin";
 
-export const RESOURCE_PLACE_EVENTS: Partial<
-  Record<ResourceName, GameEventName<PlacementEvent>>
+export const RESOURCE_PLACE_EVENTS: Record<
+  Exclude<ResourceName, "Boulder">,
+  GameEventName<PlacementEvent>
 > = {
   Tree: "tree.placed",
   "Ancient Tree": "tree.placed",
@@ -43,6 +53,7 @@ export const RESOURCE_PLACE_EVENTS: Partial<
   "Sunstone Rock": "sunstone.placed",
   "Oil Reserve": "oilReserve.placed",
   "Lava Pit": "lavaPit.placed",
+  "Ascension Crystal": "ascensionCrystal.placed",
 };
 
 /**
@@ -60,7 +71,7 @@ export function placeEvent(
 ): GameEventName<PlacementEvent> {
   if (name in RESOURCES) {
     return RESOURCE_PLACE_EVENTS[
-      name as ResourceName
+      name as Exclude<ResourceName, "Boulder">
     ] as GameEventName<PlacementEvent>;
   }
 
@@ -106,6 +117,13 @@ export interface Context {
   moving?: { id: string; name: LandscapingPlaceable };
 
   maximum?: number;
+
+  /**
+   * Bulk-removal mode. When true, the landscaping HUD collapses to a single
+   * "exit" button and a red banner, and any click on a placed item dispatches
+   * the matching `*.removed` event directly instead of selecting the item.
+   */
+  removalMode?: boolean;
 }
 
 type SelectEvent = {
@@ -151,7 +169,7 @@ type RemoveAllEvent = {
 type FlipEvent = {
   type: "FLIP";
   id: string;
-  name: CollectibleName;
+  name: CollectibleName | "FarmHand" | "Bumpkin";
   location: PlaceableLocation;
 };
 
@@ -187,6 +205,7 @@ export type BlockchainEvent =
   | RemoveEvent
   | RemoveAllEvent
   | FlipEvent
+  | { type: "TOGGLE_REMOVAL_MODE" }
   | { type: "CANCEL" }
   | { type: "BACK" };
 
@@ -309,6 +328,14 @@ export const landscapingMachine = createMachine<
             BUILD: {
               target: "idle",
             },
+            TOGGLE_REMOVAL_MODE: {
+              actions: assign({
+                removalMode: (context) => !context.removalMode,
+                // Entering removal mode should also clear any current
+                // selection so the floating action row goes away.
+                moving: (_) => undefined,
+              }),
+            },
             REMOVE_ALL: {
               target: "idle",
               actions: [
@@ -322,12 +349,25 @@ export const landscapingMachine = createMachine<
             FLIP: {
               target: "idle",
               actions: [
-                sendParent((_, event) => ({
-                  type: "collectible.flipped",
-                  id: event.id,
-                  name: event.name,
-                  location: event.location,
-                })),
+                sendParent(
+                  (_, event) =>
+                    ({
+                      type:
+                        event.name === "FarmHand"
+                          ? "farmHand.flipped"
+                          : event.name === "Bumpkin"
+                            ? "bumpkin.flipped"
+                            : "collectible.flipped",
+                      ...(event.name !== "Bumpkin" ? { id: event.id } : {}),
+                      ...(event.name !== "FarmHand" && event.name !== "Bumpkin"
+                        ? { name: event.name }
+                        : {}),
+                      location: event.location,
+                    }) as
+                      | FlipCollectibleAction
+                      | FlipFarmHandAction
+                      | FlipBumpkinAction,
+                ),
               ],
             },
             REMOVE: {

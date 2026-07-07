@@ -4,15 +4,17 @@ import { useNavigate } from "react-router";
 import Decimal from "decimal.js-light";
 
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
-import { HomeExpansionTier, InventoryItemName } from "features/game/types/game";
+import type {
+  HomeExpansionTier,
+  InventoryItemName,
+} from "features/game/types/game";
 import { nextHomeExpansionTier } from "features/game/expansion/placeable/lib/interiorLayouts";
 import { HOME_EXPANSION_UPGRADE_REQUIREMENTS } from "../lib/upgradeRequirements";
 import { getKeys } from "lib/object";
-import { hasFeatureAccess } from "lib/flags";
 import upgradeImage from "assets/icons/upgrade_disc.png";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { RequirementLabel } from "components/ui/RequirementsLabel";
@@ -23,14 +25,14 @@ const _expansion = (state: MachineState) =>
 const _coins = (state: MachineState) => state.context.state.coins;
 const _inventory = (state: MachineState) => state.context.state.inventory;
 const _hasInteriorAccess = (state: MachineState) =>
-  hasFeatureAccess(state.context.state, "HOME_EXPANSIONS");
+  !!state.context.state.settings.interiorsEnabled;
 
 /**
  * Flat "Upgrade" button + cost-confirmation modal — meant to be wrapped in
  * a MapPlacement by the caller so it sits on the gameboard at a chosen tile
  * (see UPGRADE_BUTTON_TILE in Interior.tsx / LevelOne.tsx).
  *
- * Self-hides for non-beta players, when the player isn't on volcano island,
+ * Self-hides when the `interiors` experiment is off, when the player isn't on volcano island,
  * and when the expansion is already maxed at level-one-full.
  *
  * Clicking opens a small panel showing the next tier's coin + inventory cost

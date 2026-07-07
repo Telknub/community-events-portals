@@ -15,9 +15,10 @@ import { removeStone } from "./removeStone";
 import { removeSunstone } from "./removeSunstone";
 import { removeTree } from "./removeTree";
 import { removeNFT } from "./removeNFT";
+import { removeAscensionCrystal } from "./removeAscensionCrystal";
 import { getObjectEntries } from "lib/object";
-import { PlaceableLocation } from "features/game/types/collectibles";
-import { GameState } from "features/game/types/game";
+import type { PlaceableLocation } from "features/game/types/collectibles";
+import type { GameState } from "features/game/types/game";
 
 export type RemoveAllAction = {
   type: "items.removed";
@@ -339,6 +340,23 @@ export function removeAll({
             state: stateCopy,
             action: {
               type: "tree.removed",
+              id,
+            },
+            createdAt,
+          });
+        } catch (e) {
+          // Ignore errors
+        }
+      });
+
+      // Remove Ascension Crystals
+      const ascensionCrystals = stateCopy.ascensionCrystals;
+      Object.keys(ascensionCrystals).forEach((id) => {
+        try {
+          stateCopy = removeAscensionCrystal({
+            state: stateCopy,
+            action: {
+              type: "ascensionCrystal.removed",
               id,
             },
             createdAt,

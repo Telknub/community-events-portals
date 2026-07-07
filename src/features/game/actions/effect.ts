@@ -1,6 +1,6 @@
 import { CONFIG } from "lib/config";
 import { ERRORS } from "lib/errors";
-import { GameState } from "../types/game";
+import type { GameState } from "../types/game";
 import { makeGame } from "../lib/transforms";
 import { getRecordHash } from "lib/stateHash";
 
@@ -22,6 +22,8 @@ type EffectName =
   | "telegram.joined"
   | "twitter.followed"
   | "twitter.posted"
+  | "twitter.showcased"
+  | "showcase.removed"
   | "gems.bought"
   | "vip.bought"
   | "username.assigned"
@@ -32,12 +34,12 @@ type EffectName =
   | "withdraw.wearables"
   | "withdraw.buds"
   | "wallet.linked"
+  | "social.linked"
+  | "social.loginToggled"
   | "account.migrated"
   | "moderation.kicked"
   | "moderation.muted"
   | "moderation.unmuted"
-  | "blessing.offered"
-  | "blessing.seeked"
   | "nft.assigned"
   | "admin.NFTAssigned"
   | "marketplace.bulkListingsCancelled"
@@ -98,17 +100,19 @@ export type StateMachineStateName =
   | "joiningTelegram"
   | "followingTwitter"
   | "postingTwitter"
+  | "showcasingTwitter"
+  | "removingShowcase"
   | "buyingGems"
   | "buyingVIP"
   | "assigningUsername"
   | "changingUsername"
   | "claimingStreamReward"
   | "claimingBlockchainBox"
-  | "offeringBlessing"
-  | "seekingBlessing"
   | "marketplaceBulkListingsCancelling"
   | "marketplaceBulkOffersCancelling"
   | "linkingWallet"
+  | "linkingSocial"
+  | "togglingSocialLogin"
   | "assigningNFT"
   | "cheeringFarm"
   | "followingFarm"
@@ -159,17 +163,19 @@ export const STATE_MACHINE_EFFECTS: Record<
   "telegram.joined": "joiningTelegram",
   "twitter.followed": "followingTwitter",
   "twitter.posted": "postingTwitter",
+  "twitter.showcased": "showcasingTwitter",
+  "showcase.removed": "removingShowcase",
   "gems.bought": "buyingGems",
   "vip.bought": "buyingVIP",
   "username.assigned": "assigningUsername",
   "username.changed": "changingUsername",
   "streamReward.claimed": "claimingStreamReward",
   "blockchainBox.claimed": "claimingBlockchainBox",
-  "blessing.offered": "offeringBlessing",
-  "blessing.seeked": "seekingBlessing",
   "marketplace.bulkListingsCancelled": "marketplaceBulkListingsCancelling",
   "marketplace.bulkOffersCancelled": "marketplaceBulkOffersCancelling",
   "wallet.linked": "linkingWallet",
+  "social.linked": "linkingSocial",
+  "social.loginToggled": "togglingSocialLogin",
   "nft.assigned": "assigningNFT",
   "admin.NFTAssigned": "assigningNFT",
   "farm.cheered": "cheeringFarm",

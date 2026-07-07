@@ -1,9 +1,9 @@
 import { Decimal } from "decimal.js-light";
 import { EXPIRY_COOLDOWNS } from "features/game/lib/collectibleBuilt";
 import { getKeys } from "lib/object";
-import { PlaceableLocation } from "features/game/types/collectibles";
-import { GameState } from "features/game/types/game";
-import { PetShrineName } from "features/game/types/pets";
+import type { PlaceableLocation } from "features/game/types/collectibles";
+import type { GameState } from "features/game/types/game";
+import type { PetShrineName } from "features/game/types/pets";
 import { PET_SHOP_ITEMS } from "features/game/types/petShop";
 import { produce } from "immer";
 
@@ -29,7 +29,11 @@ export function renewPetShrine({
     const collectibleGroup =
       action.location === "home"
         ? stateCopy.home.collectibles[action.name]
-        : stateCopy.collectibles[action.name];
+        : action.location === "interior"
+          ? stateCopy.interior.ground.collectibles[action.name]
+          : action.location === "level_one"
+            ? stateCopy.interior.level_one?.collectibles[action.name]
+            : stateCopy.collectibles[action.name];
 
     if (!collectibleGroup) {
       throw new Error("Invalid collectible");

@@ -3,7 +3,7 @@ import { Modal } from "components/ui/Modal";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { Context } from "features/game/GameProvider";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { Button } from "components/ui/Button";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { getKeys } from "lib/object";
@@ -14,8 +14,8 @@ import { RequirementLabel } from "components/ui/RequirementsLabel";
 import Decimal from "decimal.js-light";
 import {
   BUILDING_UPGRADES,
-  BuildingUpgradeCost,
-  UpgradableBuildingType,
+  type BuildingUpgradeCost,
+  type UpgradableBuildingType,
   makeUpgradableBuildingKey,
 } from "features/game/events/landExpansion/upgradeBuilding";
 import { InlineDialogue } from "features/world/ui/TypingMessage";
@@ -28,8 +28,14 @@ import {
   WATER_WELL_VARIANTS,
 } from "features/island/lib/alternateArt";
 import { getSupportedPlots } from "features/game/events/landExpansion/plant";
-import { getBumpkinLevel } from "features/game/lib/level";
-import { getCurrentBiome, LandBiomeName } from "features/island/biomes/biomes";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
+import {
+  getCurrentBiome,
+  type LandBiomeName,
+} from "features/island/biomes/biomes";
 import { TimerDisplay } from "features/retreat/components/auctioneer/AuctionDetails";
 import { useCountdown } from "lib/utils/hooks/useCountdown";
 import { ITEM_DETAILS } from "features/game/types/images";
@@ -81,10 +87,13 @@ export const UpgradeBuildingContent: React.FC<Omit<Props, "show">> = ({
   };
 
   const hasRequiredLevel = (requirements: BuildingUpgradeCost) => {
-    const bumpkinLevel = getBumpkinLevel(state.bumpkin?.experience ?? 0);
+    const playerLevel = getAscensionLevel({
+      experience: state.bumpkin.experience ?? 0,
+      ascensionLevel: state.island.ascensionLevel ?? 0,
+    });
 
     if (requirements.requiredLevel) {
-      return bumpkinLevel >= requirements.requiredLevel;
+      return meetsLevelRequirement(playerLevel, requirements.requiredLevel);
     }
 
     return true;
@@ -273,7 +282,7 @@ export const UpgradeBuildingContent: React.FC<Omit<Props, "show">> = ({
                     className="mr-2 mb-2"
                   >
                     {t("warning.level.required", {
-                      lvl: requirements.requiredLevel,
+                      lvl: requirements.requiredLevel.level,
                     })}
                   </Label>
                 )}

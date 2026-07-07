@@ -1,6 +1,7 @@
 import Decimal from "decimal.js-light";
+import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
 import { trackFarmActivity } from "features/game/types/farmActivity";
-import {
+import type {
   AOE,
   BoostName,
   CriticalHitName,
@@ -13,14 +14,17 @@ import {
 } from "features/game/lib/collectibleBuilt";
 import { produce } from "immer";
 import {
-  Position,
+  type Position,
   isWithinAOE,
 } from "features/game/expansion/placeable/lib/collisionDetection";
 import { FACTION_ITEMS } from "features/game/lib/factions";
 import { getBudYieldBoosts } from "features/game/lib/getBudYieldBoosts";
 import { isWearableActive } from "features/game/lib/wearables";
 import { COLLECTIBLES_DIMENSIONS } from "features/game/types/craftables";
-import { RESOURCE_DIMENSIONS, RockName } from "features/game/types/resources";
+import {
+  RESOURCE_DIMENSIONS,
+  type RockName,
+} from "features/game/types/resources";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 import cloneDeep from "lodash.clonedeep";
 import {
@@ -261,7 +265,7 @@ export function getIronDropAmount({
   if (budUsed)
     boostsUsed.push({ name: budUsed, value: `+${yieldBoost.toString()}` });
 
-  if (game.island.type === "volcano") {
+  if (hasRequiredIslandExpansion(game.island.type, "volcano")) {
     amount += 0.1;
     boostsUsed.push({ name: "Volcano Bonus", value: "+0.1" });
   }

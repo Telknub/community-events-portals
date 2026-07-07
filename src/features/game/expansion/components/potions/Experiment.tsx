@@ -9,10 +9,10 @@ import { PotionBox } from "./PotionBox";
 import { Label } from "components/ui/Label";
 import { Context } from "features/game/GameProvider";
 import { useActor } from "@xstate/react";
-import { PotionHouseMachineInterpreter } from "./lib/potionHouseMachine";
+import type { PotionHouseMachineInterpreter } from "./lib/potionHouseMachine";
 import { calculateScore } from "features/game/events/landExpansion/mixPotion";
 import { MixingPotion } from "./MixingPotion";
-import { PotionName } from "features/game/types/game";
+import type { PotionName } from "features/game/types/game";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SUNNYSIDE } from "assets/sunnyside";
 import shadow from "assets/npcs/shadow.png";
@@ -227,7 +227,7 @@ export const Experiment: React.FC<Props> = ({ potionHouseService }) => {
             <span className="text-xxs italic">
               {t("statements.clickBottle")}
             </span>
-            <div className="flex flex-wrap gap-2 mt-3 mb-2">
+            <div className="flex flex-wrap gap-4 mt-3 mb-2">
               {Object.values(POTIONS).map((potion) => (
                 <div
                   key={potion.name}

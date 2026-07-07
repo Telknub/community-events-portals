@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 
 import Spritesheet, {
-  SpriteSheetInstance,
+  type SpriteSheetInstance,
 } from "components/animation/SpriteAnimator";
 
 import strikeSheet from "assets/resources/crimstone/crimstone_rock_spark.png";
@@ -18,8 +18,6 @@ import crimstone_4 from "assets/resources/crimstone/crimstone_rock_4.webp";
 import crimstone_5 from "assets/resources/crimstone/crimstone_rock_5.webp";
 import { ZoomContext } from "components/ZoomProvider";
 
-import { MachineState } from "features/game/lib/gameMachine";
-import { getBumpkinLevel } from "features/game/lib/level";
 import { getCrimstoneStage } from "../Crimstone";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { useSound } from "lib/utils/hooks/useSound";
@@ -28,9 +26,6 @@ const tool = "Gold Pickaxe";
 
 const STRIKE_SHEET_FRAME_WIDTH = 48;
 const STRIKE_SHEET_FRAME_HEIGHT = 48;
-
-const _bumpkinLevel = (state: MachineState) =>
-  getBumpkinLevel(state.context.state.bumpkin?.experience ?? 0);
 
 interface Props {
   hasTool: boolean;

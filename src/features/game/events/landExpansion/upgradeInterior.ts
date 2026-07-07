@@ -1,6 +1,6 @@
 import Decimal from "decimal.js-light";
 import { produce } from "immer";
-import {
+import type {
   GameState,
   HomeExpansionTier,
   InventoryItemName,
@@ -8,10 +8,9 @@ import {
 import { nextHomeExpansionTier } from "features/game/expansion/placeable/lib/interiorLayouts";
 import {
   HOME_EXPANSION_UPGRADE_REQUIREMENTS,
-  UpgradeCost,
+  type UpgradeCost,
 } from "features/interior/lib/upgradeRequirements";
 import { getKeys } from "lib/object";
-import { hasFeatureAccess } from "lib/flags";
 
 export enum UPGRADE_INTERIOR_ERRORS {
   NO_ACCESS = "Home expansions are not available for this player",
@@ -71,7 +70,7 @@ export function upgradeInterior({
   action: _action,
 }: Options): GameState {
   return produce(state, (game) => {
-    if (!hasFeatureAccess(game, "HOME_EXPANSIONS")) {
+    if (!game.settings.interiorsEnabled) {
       throw new Error(UPGRADE_INTERIOR_ERRORS.NO_ACCESS);
     }
     if (game.island.type !== "volcano") {

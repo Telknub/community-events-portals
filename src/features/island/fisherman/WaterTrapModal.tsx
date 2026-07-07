@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Decimal } from "decimal.js-light";
 import { useSelector } from "@xstate/react";
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { Button } from "components/ui/Button";
 import { InnerPanel, OuterPanel } from "components/ui/Panel";
@@ -17,15 +17,18 @@ import {
   getChestItems,
 } from "../hud/components/inventory/utils/inventory";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { GameState, WaterTrap } from "features/game/types/game";
+import type { GameState, WaterTrap } from "features/game/types/game";
 import {
-  WaterTrapName,
+  type WaterTrapName,
   WATER_TRAP,
   CRUSTACEAN_CHUM_AMOUNTS,
-  CrustaceanChum,
+  type CrustaceanChum,
   caughtCrustacean,
 } from "features/game/types/crustaceans";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { isCollectibleBuilt } from "features/game/lib/collectibleBuilt";
 import { CrustaceanGuide } from "./CrustaceanGuide";
 import { getKeys } from "lib/object";
@@ -125,9 +128,14 @@ export const WaterTrapModal: React.FC<Props> = ({
   const [tab, setTab] = useState<Tab>("crustaceans");
 
   const experience = state.bumpkin?.experience ?? 0;
-  const bumpkinLevel = getBumpkinLevel(experience);
-  const marinerRequiredLevel = WATER_TRAP["Mariner Pot"].requiredBumpkinLevel;
-  const canUseMarinerPot = bumpkinLevel >= marinerRequiredLevel;
+  const ascension = getAscensionLevel({
+    experience,
+    ascensionLevel: state.island.ascensionLevel ?? 0,
+  });
+  const canUseMarinerPot = meetsLevelRequirement(
+    ascension,
+    WATER_TRAP["Mariner Pot"].requiredBumpkinLevel,
+  );
 
   const [stored, setStored] = useLocalStorage<WaterTrapSelection>(
     WATER_TRAP_SELECTION_KEY,
@@ -153,7 +161,10 @@ export const WaterTrapModal: React.FC<Props> = ({
     ...getChestItems(state),
   };
 
-  const hasAccessToWaterTraps = bumpkinLevel >= 18;
+  const hasAccessToWaterTraps = meetsLevelRequirement(ascension, {
+    ascension: 0,
+    level: 18,
+  });
 
   const chums = WATER_TRAP[selectedTrap].chums.filter((chum) =>
     items[chum]?.gte(1),

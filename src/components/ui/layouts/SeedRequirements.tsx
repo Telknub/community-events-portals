@@ -1,7 +1,10 @@
 import Decimal from "decimal.js-light";
 import { INVENTORY_LIMIT } from "features/game/lib/constants";
-import { getBumpkinLevel } from "features/game/lib/level";
 import {
+  getAscensionLevel,
+  type LevelRequirement,
+} from "features/game/lib/level";
+import type {
   BoostName,
   GameState,
   InventoryItemName,
@@ -19,12 +22,12 @@ import flowerBed from "assets/flowers/empty_flowerbed.webp";
 
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { ITEM_ICONS } from "features/island/hud/components/inventory/Chest";
-import { Seed, SeedName, SEEDS } from "features/game/types/seeds";
+import { type Seed, type SeedName, SEEDS } from "features/game/types/seeds";
 import {
-  CropName,
-  CropSeedName,
+  type CropName,
+  type CropSeedName,
   getCropCategory,
-  ProduceName,
+  type ProduceName,
 } from "features/game/types/crops";
 import { getCurrentBiome } from "features/island/biomes/biomes";
 import { BoostsDisplay } from "./BoostsDisplay";
@@ -82,7 +85,7 @@ interface RequirementsProps {
   harvests?: HarvestsRequirementProps;
   time?: { seconds: number; boostsUsed: { name: BoostName; value: string }[] };
   baseTimeSeconds?: number;
-  level?: number;
+  level?: LevelRequirement;
   restriction?: {
     icon: string;
     text: string;
@@ -338,7 +341,10 @@ export const SeedRequirements: React.FC<Props> = ({
         {!!level && (
           <RequirementLabel
             type="level"
-            currentLevel={getBumpkinLevel(gameState.bumpkin?.experience ?? 0)}
+            currentLevel={getAscensionLevel({
+              experience: gameState.bumpkin.experience ?? 0,
+              ascensionLevel: gameState.island.ascensionLevel ?? 0,
+            })}
             requirement={level}
           />
         )}

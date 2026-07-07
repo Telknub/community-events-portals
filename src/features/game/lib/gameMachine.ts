@@ -1,48 +1,49 @@
 import {
   createMachine,
-  Interpreter,
+  type Interpreter,
   assign,
-  TransitionsConfig,
-  State,
+  type TransitionsConfig,
+  type State,
   send,
-  DoneInvokeEvent,
+  type DoneInvokeEvent,
 } from "xstate";
 import {
   PLAYING_EVENTS,
-  PlacementEvent,
+  type PlacementEvent,
   PLACEMENT_EVENTS,
-  GameEvent,
-  PlayingEvent,
-  GameEventName,
+  type GameEvent,
+  type PlayingEvent,
+  type GameEventName,
   VISITING_EVENTS,
-  VisitingEvent,
+  type VisitingEvent,
   LOCAL_VISITING_EVENTS,
 } from "../events";
 
 import {
   ART_MODE,
-  Context as AuthContext,
+  type Context as AuthContext,
 } from "features/auth/lib/authMachine";
 import { wallet } from "../../../lib/blockchain/wallet";
 
-import {
+import type {
   GameState,
   Inventory,
   InventoryItemName,
   PlacedLamp,
   Purchase,
 } from "../types/game";
-import { loadSession } from "../actions/loadSession";
+import { loadSession, type SocialDetails } from "../actions/loadSession";
+import { resolveSocialDetails } from "./socialDetails";
 import { EMPTY } from "./constants";
 import { autosave } from "../actions/autosave";
-import { ErrorCode, ERRORS } from "lib/errors";
+import { type ErrorCode, ERRORS } from "lib/errors";
 import { makeGame } from "./transforms";
 import { reset } from "features/farming/hud/actions/reset";
-import { checkProgress, processEvent } from "./processEvent";
+import { processEvent } from "./processEvent";
 import {
   landscapingMachine,
-  LandscapingPlaceableType,
-  SaveEvent,
+  type LandscapingPlaceableType,
+  type SaveEvent,
 } from "../expansion/placeable/landscapingMachine";
 import { isSwarming } from "../events/detectBot";
 import { generateTestLand } from "../expansion/actions/generateLand";
@@ -51,7 +52,7 @@ import { loadGameStateForVisit } from "../actions/loadGameStateForVisit";
 import { randomID } from "lib/utils/random";
 
 import { buySFL } from "../actions/buySFL";
-import { PlaceableLocation } from "../types/collectibles";
+import type { PlaceableLocation } from "../types/collectibles";
 import {
   getIntroductionRead,
   getReferralsAnnouncementLastRead,
@@ -61,15 +62,15 @@ import { getStarterOfferShown } from "./starterOfferStorage";
 import { depositToFarm } from "lib/blockchain/Deposit";
 import Decimal from "decimal.js-light";
 import { setOnboardingComplete } from "features/auth/actions/onboardingComplete";
-import { Announcements } from "../types/announcements";
+import type { Announcements } from "../types/announcements";
 import {
-  Currency,
+  type Currency,
   buyBlockBucks,
   buyBlockBucksMATIC,
 } from "../actions/buyGems";
-import { BumpkinItem } from "../types/bumpkin";
+import type { BumpkinItem } from "../types/bumpkin";
 import { getAuctionResults } from "../actions/getAuctionResults";
-import { AuctionResults } from "./auctionMachine";
+import type { AuctionResults } from "./auctionMachine";
 import type { RaffleSnapshotWinner } from "features/world/ui/chapterRaffles/actions/loadRaffleResults";
 import { onboardingAnalytics } from "lib/onboardingAnalytics";
 import { gameAnalytics } from "lib/gameAnalytics";
@@ -77,40 +78,49 @@ import { portal } from "features/world/ui/community/actions/portal";
 
 import { CONFIG } from "lib/config";
 import {
-  TradeableName,
+  type TradeableName,
   sellMarketResourceRequest,
 } from "../actions/sellMarketResource";
 import { setCachedMarketPrices } from "features/world/ui/market/lib/marketCache";
 import { OFFLINE_FARM } from "./landData";
 import { isValidRedirect } from "features/portal/lib/portalUtil";
 import {
-  Effect,
+  type Effect,
   STATE_MACHINE_EFFECTS,
   postEffect,
-  StateMachineStateName,
-  StateNameWithStatus,
+  type StateMachineStateName,
+  type StateNameWithStatus,
   STATE_MACHINE_VISIT_EFFECTS,
-  StateMachineVisitStateName,
-  StateMachineVisitEffectName,
+  type StateMachineVisitStateName,
+  type StateMachineVisitEffectName,
   sanitizeEffectForBackend,
 } from "../actions/effect";
-import { TRANSACTION_SIGNATURES, TransactionName } from "../types/transactions";
+import {
+  TRANSACTION_SIGNATURES,
+  type TransactionName,
+} from "../types/transactions";
 import { getKeys } from "lib/object";
 import { preloadHotNow } from "features/marketplace/components/MarketplaceHotNow";
 import { getLastTemperateSeasonStartedAt } from "./temperateSeason";
 import { hasLifetimeFarmerBanner, hasVipAccess } from "./vipAccess";
-import { getActiveCalendarEvent, SeasonalEventName } from "../types/calendar";
+import {
+  getActiveCalendarEvent,
+  type SeasonalEventName,
+} from "../types/calendar";
 import { getConnection, getChainId } from "@wagmi/core";
 import { config } from "features/wallet/WalletProvider";
 import { depositFlower } from "lib/blockchain/DepositFlower";
-import { NetworkOption } from "features/island/hud/components/deposit/DepositFlower";
-import { blessingIsReady } from "./blessings";
+import type { NetworkOption } from "features/island/hud/components/deposit/DepositFlower";
 import { depositSFL } from "lib/blockchain/DepositSFL";
-import { hasFeatureAccess } from "lib/flags";
+import { hasFeatureAccess, isWaypointWalletDisabled } from "lib/flags";
+import {
+  isRoninWallet,
+  getRoninWaypointPopupShown,
+} from "features/roninMigration/roninWaypointPopup";
 import { isDailyRewardReady } from "../events/landExpansion/claimDailyReward";
 import { getDailyRewardLastAcknowledged } from "../components/DailyReward";
-import { LanguageCode } from "lib/i18n/dictionaries/language";
-import { getBumpkinLevel } from "./level";
+import type { LanguageCode } from "lib/i18n/dictionaries/language";
+import { getAscensionLevel, meetsLevelRequirement } from "./level";
 
 // Run at startup in case removed from query params
 const portalName = new URLSearchParams(window.location.search).get("portal");
@@ -147,8 +157,6 @@ export type PastAction = GameEvent & {
   createdAt: Date;
 };
 
-export type MaxedItem = InventoryItemName | BumpkinItem | "SFL";
-
 export interface Context {
   farmId: number;
   state: GameState;
@@ -158,7 +166,6 @@ export interface Context {
   errorCode?: ErrorCode;
   transactionId?: string;
   fingerprint?: string;
-  maxedItem?: MaxedItem;
   goblinSwarm?: Date;
   deviceTrackerId?: string;
   revealed?: {
@@ -185,18 +192,25 @@ export interface Context {
   purchases: Purchase[];
   discordId?: string;
   fslId?: string;
+  socialDetails?: SocialDetails;
   oauthNonce: string;
   data: Partial<Record<StateMachineStateName, any>>;
   rawToken?: string;
   visitorId?: number;
   visitorState?: GameState;
   visitorNftId?: number;
+  // Stash for the visitor's own socialDetails while they're on another
+  // farm. Cleared into `socialDetails` on END_VISIT so we don't leak
+  // their email through the LinkedAccounts UI while visiting, and don't
+  // need a refetch on the way back.
+  visitorSocialDetails?: SocialDetails;
   hasHelpedPlayerToday?: boolean;
   totalHelpedToday?: number;
   apiKey?: string;
   method?: "google" | "wallet" | "wechat" | "fsl";
   accountTradedAt?: string;
   onChainRaffleReward?: RaffleSnapshotWinner;
+  banReason?: string;
 }
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
@@ -256,7 +270,7 @@ type LandscapeEvent = {
   action?: GameEventName<PlacementEvent>;
   type: "LANDSCAPE";
   requirements?: {
-    sfl: Decimal;
+    coins: number;
     ingredients: Inventory;
   };
   multiple?: boolean;
@@ -377,31 +391,6 @@ const playingEventHandler = (
   const immediateSave = options?.immediateSave === true;
   return {
     [eventName]: [
-      {
-        target: "hoarding",
-        cond: (context: Context, event: PlayingEvent | VisitingEvent) => {
-          const { valid } = checkProgress({
-            state: context.state as GameState,
-            action: event,
-            farmId: context.farmId,
-            createdAt: Date.now(),
-          });
-
-          return !valid;
-        },
-        actions: assign(
-          (context: Context, event: PlayingEvent | VisitingEvent) => {
-            const { maxedItem } = checkProgress({
-              state: context.state as GameState,
-              action: event,
-              farmId: context.farmId,
-              createdAt: Date.now(),
-            });
-
-            return { maxedItem };
-          },
-        ),
-      },
       {
         ...(immediateSave ? { target: "autosaving" as const } : {}),
         actions: assign(
@@ -629,6 +618,17 @@ const EFFECT_STATES = Object.values(STATE_MACHINE_EFFECTS).reduce(
                   nftId: event.data.data?.nftId ?? context.nftId,
                   farmAddress:
                     event.data.data?.farmAddress ?? context.farmAddress,
+                  // Effects run while visiting another farm return the
+                  // visited farm's response payload. Never let that
+                  // overwrite socialDetails — visitor's own value is
+                  // stashed in `visitorSocialDetails` and restored on
+                  // END_VISIT, so we just leave the active field alone.
+                  socialDetails: context.visitorId
+                    ? context.socialDetails
+                    : resolveSocialDetails(
+                        event.data.data,
+                        context.socialDetails,
+                      ),
                   data: { ...context.data, [stateName]: event.data.data },
                 };
               }),
@@ -648,6 +648,17 @@ const EFFECT_STATES = Object.values(STATE_MACHINE_EFFECTS).reduce(
                   nftId: event.data.data?.nftId ?? context.nftId,
                   farmAddress:
                     event.data.data?.farmAddress ?? context.farmAddress,
+                  // Effects run while visiting another farm return the
+                  // visited farm's response payload. Never let that
+                  // overwrite socialDetails — visitor's own value is
+                  // stashed in `visitorSocialDetails` and restored on
+                  // END_VISIT, so we just leave the active field alone.
+                  socialDetails: context.visitorId
+                    ? context.socialDetails
+                    : resolveSocialDetails(
+                        event.data.data,
+                        context.socialDetails,
+                      ),
                   data: { ...context.data, [stateName]: event.data.data },
                 };
               }),
@@ -765,6 +776,10 @@ const VISIT_EFFECT_STATES = Object.values(STATE_MACHINE_VISIT_EFFECTS).reduce(
                   nftId: event.data.data?.nftId ?? context.nftId,
                   farmAddress:
                     event.data.data?.farmAddress ?? context.farmAddress,
+                  // Intentionally do NOT touch socialDetails here: the
+                  // payload is the visited farm's response, and merging
+                  // any `socialDetails` field would leak/clobber the
+                  // visitor's own identity in context.
                   data: { ...context.data, [stateName]: rest },
                   visitorState: event.data.visitorState,
                   hasHelpedPlayerToday,
@@ -806,7 +821,6 @@ export type BlockchainState = {
     | "landToVisitNotFound"
     | "visiting"
     | "gameRules"
-    | "blessing"
     | "portalling"
     | "introduction"
     | "welcome"
@@ -827,7 +841,6 @@ export type BlockchainState = {
     | "error"
     | "refreshing"
     | "swarming"
-    | "hoarding"
     | "mailbox"
     | "transacting"
     | "depositing"
@@ -1077,6 +1090,8 @@ export function startGame(authContext: AuthContext) {
                 apiKey: response.apiKey,
                 accountTradedAt: response.accountTradedAt,
                 totalHelpedToday: response.totalHelpedToday,
+                banReason: response.banReason,
+                socialDetails: response.socialDetails,
               };
             },
             onDone: [
@@ -1090,6 +1105,9 @@ export function startGame(authContext: AuthContext) {
                 cond: (_, event) => {
                   return event.data.state.ban.status === "permanent";
                 },
+                actions: assign((_, event) => ({
+                  banReason: event.data.banReason,
+                })),
               },
               {
                 target: "portalling",
@@ -1195,6 +1213,14 @@ export function startGame(authContext: AuthContext) {
                 visitorState: (_, event) => event.data.visitorState,
                 nftId: (_, event) => event.data.visitedFarmNftId,
                 visitorNftId: (context) => context.nftId,
+                // Stash the visitor's own socialDetails so the UI on the
+                // visited farm can't read their email; restored by END_VISIT.
+                // Preserve any existing stash so a visit-to-visit hop (without
+                // END_VISIT in between) doesn't overwrite the original value
+                // with the already-cleared `undefined`.
+                visitorSocialDetails: (context) =>
+                  context.visitorSocialDetails ?? context.socialDetails,
+                socialDetails: () => undefined,
                 hasHelpedPlayerToday: (_, event) =>
                   event.data.hasHelpedPlayerToday,
                 totalHelpedToday: (_, event) => event.data.totalHelpedToday,
@@ -1236,6 +1262,8 @@ export function startGame(authContext: AuthContext) {
                 state: context.visitorState,
                 farmId: context.visitorId,
                 nftId: context.visitorNftId,
+                socialDetails: context.visitorSocialDetails,
+                visitorSocialDetails: undefined,
                 actions: [],
               })),
             },
@@ -1313,18 +1341,6 @@ export function startGame(authContext: AuthContext) {
               cond: () => isSwarming(),
             },
             {
-              target: "blessing",
-              cond: (context) => {
-                const { offered, reward } = context.state.blessing;
-
-                if (reward) return true;
-
-                if (!offered) return false;
-
-                return blessingIsReady({ game: context.state });
-              },
-            },
-            {
               target: "vip",
               cond: (context) => {
                 const isNew = context.state.bumpkin.experience < 100;
@@ -1386,10 +1402,16 @@ export function startGame(authContext: AuthContext) {
               target: "referrals",
               cond: (context) => {
                 const experience = context.state.bumpkin?.experience ?? 0;
-                const level = getBumpkinLevel(experience);
+                const ascension = getAscensionLevel({
+                  experience,
+                  ascensionLevel: context.state.island.ascensionLevel ?? 0,
+                });
 
                 // Only show once the player is level 10 or above
-                if (level < 10) return false;
+                if (
+                  !meetsLevelRequirement(ascension, { ascension: 0, level: 10 })
+                )
+                  return false;
 
                 const lastRead = getReferralsAnnouncementLastRead();
                 const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
@@ -1453,6 +1475,17 @@ export function startGame(authContext: AuthContext) {
             },
 
             {
+              target: "roninMigration",
+              cond: (context) => {
+                if (isWaypointWalletDisabled()) return false;
+                if (getRoninWaypointPopupShown()) return false;
+                if (context.wallet === "Ronin Stash") return false;
+
+                return isRoninWallet(context.wallet);
+              },
+            },
+
+            {
               target: "dailyReward",
               cond: (context) => {
                 // If already acknowledged in last 24 hours, don't show
@@ -1467,6 +1500,7 @@ export function startGame(authContext: AuthContext) {
 
                 return isDailyRewardReady({
                   bumpkinExperience: context.state.bumpkin?.experience ?? 0,
+                  ascensionLevel: context.state.island.ascensionLevel ?? 0,
                   dailyRewards: context.state.dailyRewards,
                   now: Date.now(),
                 });
@@ -1560,6 +1594,18 @@ export function startGame(authContext: AuthContext) {
             },
           },
         },
+        roninMigration: {
+          on: {
+            ACKNOWLEDGE: {
+              // The "shown" flag is persisted synchronously by the modal's
+              // onClose BEFORE this event is sent (see RoninWaypointLoginModal).
+              // It must be set before `notifying` re-evaluates its `always`
+              // guards, otherwise this state re-enters and the popup needs two
+              // clicks to dismiss.
+              target: "notifying",
+            },
+          },
+        },
         somethingArrived: {
           on: {
             ACKNOWLEDGE: {
@@ -1606,19 +1652,6 @@ export function startGame(authContext: AuthContext) {
           },
         },
 
-        blessing: {
-          on: {
-            "blessing.claimed": (GAME_EVENT_HANDLERS as any)[
-              "blessing.claimed"
-            ],
-            "blessing.seeked": {
-              target: STATE_MACHINE_EFFECTS["blessing.seeked"],
-            },
-            ACKNOWLEDGE: {
-              target: "notifying",
-            },
-          },
-        },
         mailbox: {
           on: {
             "message.read": (GAME_EVENT_HANDLERS as any)["message.read"],
@@ -2477,16 +2510,6 @@ export function startGame(authContext: AuthContext) {
             },
           },
         },
-        hoarding: {
-          on: {
-            TRANSACT: {
-              target: "transacting",
-            },
-            ACKNOWLEDGE: {
-              target: "playing",
-            },
-          },
-        },
         introduction: {
           on: {
             ACKNOWLEDGE: {
@@ -2731,6 +2754,7 @@ export function startGame(authContext: AuthContext) {
           purchases: (_, event) => event.data.purchases,
           discordId: (_, event) => event.data.discordId,
           fslId: (_, event) => event.data.fslId,
+          socialDetails: (_, event) => event.data.socialDetails,
           oauthNonce: (_, event) => event.data.oauthNonce,
           prices: (_, event) => event.data.prices,
           apiKey: (_, event) => event.data.apiKey,

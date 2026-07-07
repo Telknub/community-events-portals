@@ -30,43 +30,46 @@ import {
   isAndroid,
   isChrome,
 } from "mobile-device-detect";
-import { DequipBumpkin } from "./blockchain-settings/DequipBumpkin";
-import { AddSFL } from "../AddSFL";
 import { Account } from "./account/Account";
 import { Advanced } from "./advanced/Advanced";
 import { InstallAppModal } from "./general-settings/InstallAppModal";
 import { LanguageSwitcher } from "./general-settings/LanguageChangeModal";
 import { PlazaSettings } from "./plaza-settings/PlazaSettingsModal";
 import { DeveloperOptions } from "./developer-options/DeveloperOptions";
-import { Discord } from "./general-settings/DiscordModal";
-import { DepositWrapper } from "features/goblins/bank/components/DepositGameItems";
+import { LinkedAccounts } from "./linked-accounts/LinkedAccounts";
+import { LinkWallet } from "features/wallet/components/LinkWallet";
+import { LinkGoogle } from "features/auth/components/LinkGoogle";
+import { LinkedGooglePanel } from "features/auth/components/LinkedGooglePanel";
+import { StreamsContent } from "features/game/components/modal/components/Streams";
+import { ReferralInfo } from "features/island/hud/components/referral/Referral";
 import { useSound } from "lib/utils/hooks/useSound";
-import { DEV_HoarderCheck } from "./developer-options/DEV_HoardingCheck";
 import { PickServer } from "./plaza-settings/PickServer";
 import { PlazaShaderSettings } from "./plaza-settings/PlazaShaderSettings";
 import { Preferences } from "./general-settings/Preferences";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import {
   getSubscriptionsForFarmId,
-  Subscriptions,
+  type Subscriptions,
 } from "features/game/actions/subscriptions";
 import { preload } from "swr";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { ReferralWidget } from "features/announcements/AnnouncementWidgets";
 import { AirdropPlayer } from "./general-settings/AirdropPlayer";
 import { FaceRecognitionSettings } from "features/retreat/components/personhood/FaceRecognition";
-import { TransferAccountWrapper } from "./blockchain-settings/TransferAccount";
 import { DEV_PlayerSearch } from "./developer-options/DEV_PlayerSearch";
 import { DEV_ErrorSearch } from "./developer-options/DEV_ErrorSearch";
 import { ApiKey } from "./general-settings/ApiKey";
 import { ExperimentsSettings } from "./experiments-settings/ExperimentsSettings";
 import { EconomyEditorExperimentSettings } from "./experiments-settings/EconomyEditorExperimentSettings";
+import { InteriorExperimentSettings } from "./experiments-settings/InteriorExperimentSettings";
+import { DesignShowcaseSettings } from "./experiments-settings/DesignShowcaseSettings";
+import type { ContentComponentProps, SettingMenuId } from "./types";
+import { TwitterRewards } from "features/auth/components/Twitter/Twitter";
+import { TelegramBody } from "features/auth/components/Telegram/Telegram";
+import { Discord } from "./general-settings/DiscordModal";
 
-export interface ContentComponentProps {
-  onSubMenuClick: (id: SettingMenuId) => void;
-  onClose: () => void;
-}
+export type { ContentComponentProps, SettingMenuId };
 
 export const subscriptionsFetcher = ([, token, farmId]: [
   string,
@@ -76,10 +79,7 @@ export const subscriptionsFetcher = ([, token, farmId]: [
   return getSubscriptionsForFarmId(farmId, token);
 };
 
-const GameOptions: React.FC<ContentComponentProps> = ({
-  onSubMenuClick,
-  onClose,
-}) => {
+const GameOptions: React.FC<ContentComponentProps> = ({ onSubMenuClick }) => {
   const { gameService } = useContext(GameContext);
 
   const { t } = useAppTranslation();
@@ -210,6 +210,13 @@ const preloadSubscriptions = async (token: string, farmId: number) => {
   );
 };
 
+const _linkingSocial = (state: MachineState) => state.matches("linkingSocial");
+const _linkingSocialSuccess = (state: MachineState) =>
+  state.matches("linkingSocialSuccess");
+const _linkingWallet = (state: MachineState) => state.matches("linkingWallet");
+const _linkingWalletSuccess = (state: MachineState) =>
+  state.matches("linkingWalletSuccess");
+
 export const GameOptionsModal: React.FC<GameOptionsModalProps> = ({
   show,
   onClose,
@@ -220,6 +227,21 @@ export const GameOptionsModal: React.FC<GameOptionsModalProps> = ({
   const { gameService } = useContext(GameContext);
   const farmId = useSelector(gameService, _farmId);
   const [selected, setSelected] = useState<SettingMenuId>("main");
+  const isLinkingSocial = useSelector(gameService, _linkingSocial);
+  const isLinkingSocialSuccess = useSelector(
+    gameService,
+    _linkingSocialSuccess,
+  );
+  const isLinkingWallet = useSelector(gameService, _linkingWallet);
+  const isLinkingWalletSuccess = useSelector(
+    gameService,
+    _linkingWalletSuccess,
+  );
+  const isLinkingInFlight =
+    isLinkingSocial ||
+    isLinkingSocialSuccess ||
+    isLinkingWallet ||
+    isLinkingWalletSuccess;
 
   useEffect(() => {
     if (farmId) preloadSubscriptions(token, farmId);
@@ -232,18 +254,18 @@ export const GameOptionsModal: React.FC<GameOptionsModalProps> = ({
     setSelected("main");
   };
 
-  const SelectedComponent = settingMenus[selected].content;
+  const SelectedComponent = SETTING_MENUS[selected].content;
 
   return (
-    <Modal show={show} onHide={onHide}>
+    <Modal show={show} onHide={isLinkingInFlight ? undefined : onHide}>
       <CloseButtonPanel
-        title={settingMenus[selected].title}
+        title={SETTING_MENUS[selected].title}
         onBack={
-          selected !== "main"
-            ? () => setSelected(settingMenus[selected].parent)
+          !isLinkingInFlight && selected !== "main"
+            ? () => setSelected(SETTING_MENUS[selected].parent)
             : undefined
         }
-        onClose={onHide}
+        onClose={isLinkingInFlight ? undefined : onHide}
       >
         <SelectedComponent onSubMenuClick={setSelected} onClose={onHide} />
       </CloseButtonPanel>
@@ -252,51 +274,13 @@ export const GameOptionsModal: React.FC<GameOptionsModalProps> = ({
   );
 };
 
-export type SettingMenuId =
-  // Game Options
-  | "main"
-  | "installApp"
-  | "account"
-  | "advanced"
-  | "about"
-  | "amoy"
-  | "blockchain"
-  | "plaza"
-  | "experiments"
-  | "economyEditor"
-  | "admin"
-  | "faceRecognition"
-  // Blockchain Settings
-  | "deposit"
-  | "swapSFL"
-  | "dequip"
-  | "transfer"
-
-  // Account / Preferences
-  | "discord"
-  | "changeLanguage"
-  | "preferences"
-  | "appearance"
-  | "behaviour"
-  | "audio"
-  | "notifications"
-  | "apiKey"
-
-  // Amoy Testnet Actions
-  | "hoardingCheck"
-  | "playerSearch"
-  | "errorSearch"
-  // Plaza Settings
-  | "pickServer"
-  | "shader";
-
 interface SettingMenu {
   title: string;
   parent: SettingMenuId;
   content: React.FC<ContentComponentProps>;
 }
 
-export const settingMenus: Record<SettingMenuId, SettingMenu> = {
+export const SETTING_MENUS: Record<SettingMenuId, SettingMenu> = {
   // Game Options
   main: {
     title: translate("gameOptions.title"),
@@ -313,6 +297,11 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
     parent: "main",
     content: Account,
   },
+  referAFriend: {
+    title: translate("gameOptions.account.referFriend"),
+    parent: "account",
+    content: ReferralInfo,
+  },
   advanced: {
     title: translate("gameOptions.advanced"),
     parent: "main",
@@ -322,6 +311,11 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
     title: translate("gameOptions.about"),
     parent: "main",
     content: About,
+  },
+  streams: {
+    title: translate("streams.title"),
+    parent: "about",
+    content: StreamsContent,
   },
   amoy: {
     title: translate("gameOptions.developerOptions"),
@@ -333,6 +327,41 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
     parent: "advanced",
     content: BlockchainSettings,
   },
+  linkedAccounts: {
+    title: translate("linkedAccounts.title"),
+    parent: "account",
+    content: LinkedAccounts,
+  },
+  linkAccountWallet: {
+    title: translate("linkedAccounts.linkWallet"),
+    parent: "linkedAccounts",
+    content: LinkWallet,
+  },
+  linkAccountGoogle: {
+    title: translate("linkedAccounts.linkGoogle"),
+    parent: "linkedAccounts",
+    content: LinkGoogle,
+  },
+  linkAccountGoogleManage: {
+    title: translate("linkedAccounts.googleSignIn.title"),
+    parent: "linkedAccounts",
+    content: LinkedGooglePanel,
+  },
+  linkAccountTwitter: {
+    title: translate("linkedAccounts.twitter"),
+    parent: "linkedAccounts",
+    content: TwitterRewards,
+  },
+  linkAccountTelegram: {
+    title: translate("linkedAccounts.telegram"),
+    parent: "linkedAccounts",
+    content: TelegramBody,
+  },
+  linkAccountDiscord: {
+    title: translate("linkedAccounts.discord"),
+    parent: "linkedAccounts",
+    content: Discord,
+  },
   plaza: {
     title: translate("gameOptions.plazaSettings"),
     parent: "main",
@@ -340,7 +369,7 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
   },
   experiments: {
     title: "Experiments",
-    parent: "amoy",
+    parent: "advanced",
     content: ExperimentsSettings,
   },
   economyEditor: {
@@ -348,27 +377,15 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
     parent: "experiments",
     content: EconomyEditorExperimentSettings,
   },
-
-  // Blockchain Settings
-  deposit: {
-    title: translate("deposit"),
-    parent: "blockchain",
-    content: DepositWrapper,
+  interiorExperiment: {
+    title: translate("gameOptions.experiments.interiors"),
+    parent: "experiments",
+    content: InteriorExperimentSettings,
   },
-  dequip: {
-    title: translate("dequipper.dequip"),
-    parent: "blockchain",
-    content: DequipBumpkin,
-  },
-  transfer: {
-    title: translate("gameOptions.blockchainSettings.transferOwnership"),
-    parent: "blockchain",
-    content: TransferAccountWrapper,
-  },
-  swapSFL: {
-    title: translate("gameOptions.blockchainSettings.swapPOLForSFL"),
-    parent: "blockchain",
-    content: AddSFL,
+  designShowcase: {
+    title: translate("gameOptions.experiments.designShowcase"),
+    parent: "experiments",
+    content: DesignShowcaseSettings,
   },
 
   // Account
@@ -377,8 +394,6 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
     parent: "account",
     content: FaceRecognitionSettings,
   },
-  discord: { title: "Discord", parent: "account", content: Discord },
-
   // Preferences hub + leaves
   preferences: {
     title: translate("gameOptions.generalSettings.preferences"),
@@ -419,11 +434,6 @@ export const settingMenus: Record<SettingMenuId, SettingMenu> = {
 
   // Developer Options
   admin: { title: `Airdrop Player`, parent: "amoy", content: AirdropPlayer },
-  hoardingCheck: {
-    title: "Hoarding Check (DEV)",
-    parent: "amoy",
-    content: (props) => <DEV_HoarderCheck {...props} />,
-  },
   playerSearch: {
     title: "Player Search (DEV)",
     parent: "amoy",

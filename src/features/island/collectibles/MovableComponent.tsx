@@ -11,7 +11,7 @@ import { InnerPanel } from "components/ui/Panel";
 
 import {
   COLLECTIBLES_DIMENSIONS,
-  CollectibleName,
+  type CollectibleName,
 } from "features/game/types/craftables";
 
 import { RESOURCE_DIMENSIONS } from "features/game/types/resources";
@@ -19,29 +19,29 @@ import { RESOURCE_DIMENSIONS } from "features/game/types/resources";
 import { GRID_WIDTH_PX, PIXEL_SCALE } from "features/game/lib/constants";
 import { Context } from "features/game/GameProvider";
 
-import { Coordinates } from "features/game/expansion/components/MapPlacement";
+import type { Coordinates } from "features/game/expansion/components/MapPlacement";
 import Draggable from "react-draggable";
 import { detectCollision } from "features/game/expansion/placeable/lib/collisionDetection";
 import { useSelector } from "@xstate/react";
-import {
+import type {
   LandscapingPlaceable,
   MachineInterpreter,
   MachineState,
 } from "features/game/expansion/placeable/landscapingMachine";
 import {
   BUILDINGS_DIMENSIONS,
-  Dimensions,
+  type Dimensions,
 } from "features/game/types/buildings";
-import { GameEventName, PlacementEvent } from "features/game/events";
-import { RESOURCES, ResourceName } from "features/game/types/resources";
-import { GameState, PlacedItem } from "features/game/types/game";
+import type { GameEventName, PlacementEvent } from "features/game/events";
+import { RESOURCES, type ResourceName } from "features/game/types/resources";
+import type { GameState, PlacedItem } from "features/game/types/game";
 import { removePlaceable } from "./lib/placing";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { isMobile } from "mobile-device-detect";
 import { ZoomContext } from "components/ZoomProvider";
 import { RemoveKuebikoModal } from "./RemoveKuebikoModal";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 import { RemoveHungryCaterpillarModal } from "./RemoveHungryCaterpillarModal";
 import flipped from "assets/icons/flipped.webp";
 import flipIcon from "assets/icons/flip.webp";
@@ -51,19 +51,18 @@ import { LIMITED_ITEMS } from "features/game/events/landExpansion/burnCollectibl
 import { PET_SHRINES } from "features/game/types/pets";
 import {
   EXPIRY_COOLDOWNS,
-  TemporaryCollectibleName,
+  type TemporaryCollectibleName,
 } from "features/game/lib/collectibleBuilt";
-import { MachineState as GameMachineState } from "features/game/lib/gameMachine";
+import type { MachineState as GameMachineState } from "features/game/lib/gameMachine";
 import { getObjectEntries } from "lib/object";
 import { getPetImage } from "../pets/lib/petShared";
 import { useNow } from "lib/utils/hooks/useNow";
 import { isPetCollectible } from "features/game/events/landExpansion/placeCollectible";
 import { getBudImage } from "lib/buds/types";
-import { hasFeatureAccess } from "lib/flags";
 
 export const RESOURCE_MOVE_EVENTS: Record<
   ResourceName,
-  GameEventName<PlacementEvent>
+  GameEventName<PlacementEvent> | null
 > = {
   Tree: "tree.moved",
   "Crop Plot": "crop.moved",
@@ -74,7 +73,7 @@ export const RESOURCE_MOVE_EVENTS: Record<
   "Fused Stone Rock": "stone.moved",
   "Reinforced Stone Rock": "stone.moved",
   "Crimstone Rock": "crimstone.moved",
-  Boulder: "tree.moved",
+  Boulder: null,
   Beehive: "beehive.moved",
   "Flower Bed": "flowerBed.moved",
   "Sunstone Rock": "sunstone.moved",
@@ -86,6 +85,7 @@ export const RESOURCE_MOVE_EVENTS: Record<
   "Tempered Iron Rock": "iron.moved",
   "Pure Gold Rock": "gold.moved",
   "Prime Gold Rock": "gold.moved",
+  "Ascension Crystal": "ascensionCrystal.moved",
 };
 
 function getMoveAction(
@@ -97,7 +97,11 @@ function getMoveAction(
   }
 
   if (name in RESOURCES) {
-    return RESOURCE_MOVE_EVENTS[name as ResourceName];
+    const event = RESOURCE_MOVE_EVENTS[name as ResourceName];
+    if (!event) {
+      throw new Error("No matching move event");
+    }
+    return event;
   }
 
   if (name in COLLECTIBLES_DIMENSIONS) {
@@ -143,6 +147,7 @@ export const RESOURCES_REMOVE_ACTIONS: Record<
   "Tempered Iron Rock": "iron.removed",
   "Pure Gold Rock": "gold.removed",
   "Prime Gold Rock": "gold.removed",
+  "Ascension Crystal": "ascensionCrystal.removed",
 };
 
 function getOverlappingCollectibles({
@@ -456,6 +461,20 @@ export const MoveableComponent: React.FC<
     state.matches({ editing: "placing" }),
   );
 
+  const isRemovalMode = useSelector(
+    landscapingMachine,
+    (state) => !!state.context.removalMode,
+  );
+
+  // Exiting removal mode should clear any in-flight warning modal for this
+  // item, otherwise the dialog could resurface the next time the player
+  // selects this same item in normal mode.
+  useEffect(() => {
+    if (!isRemovalMode) {
+      setShowRemoveConfirmation(false);
+    }
+  }, [isRemovalMode]);
+
   const isSelected = movingItem?.id === id && movingItem?.name === name;
 
   // Elevate the nearest MapPlacement ancestor when selected so the disc panel
@@ -585,25 +604,16 @@ export const MoveableComponent: React.FC<
 
   const hasRemovalAction = !!removeAction;
 
-  const hasFlipAction = !isMobile && isCollectible(name);
+  const hasFlipAction =
+    !isMobile &&
+    (isCollectible(name) || name === "FarmHand" || name === "Bumpkin");
 
   const flip = () => {
-    if (isCollectible(name)) {
+    if (isCollectible(name) || name === "FarmHand" || name === "Bumpkin") {
       landscapingMachine.send("FLIP", { id, name, location });
     }
   };
 
-  // Pixel-perfect mode is gated behind the PIXEL_PERFECT_PLACEMENT beta flag.
-  // We enable it on placeable "characters" (collectibles, buds, pet NFTs,
-  // farm hands, the player's bumpkin) AND on buildings, since the saved oX/oY
-  // round-trip the same way for both — they're stored on the entity's
-  // `coordinates` and the renderer already feeds them into MapPlacement.
-  // Natural resources (trees, crops, rocks, etc.) keep their existing
-  // tile-snap-only behaviour. Mobile uses LandscapingHud for selection
-  // controls so we only render the disc on non-mobile, matching flip/remove.
-  const hasPixelPerfectFeature = useSelector(gameService, (state) =>
-    hasFeatureAccess(state.context.state, "PIXEL_PERFECT_PLACEMENT"),
-  );
   const isPixelPerfectAllowedFor =
     (name in COLLECTIBLES_DIMENSIONS &&
       name !== "Dirt Path" &&
@@ -616,8 +626,7 @@ export const MoveableComponent: React.FC<
     name === "Pet" ||
     name === "FarmHand" ||
     name === "Bumpkin";
-  const hasPixelPerfectAction =
-    hasPixelPerfectFeature && isPixelPerfectAllowedFor;
+  const hasPixelPerfectAction = isPixelPerfectAllowedFor;
 
   const togglePixelPerfectMode = () => {
     setIsPixelPerfectMode((prev) => !prev);
@@ -676,6 +685,14 @@ export const MoveableComponent: React.FC<
   };
 
   const isFlipped = useSelector(gameService, (state) => {
+    if (name === "FarmHand") {
+      return !!state.context.state.farmHands.bumpkins[id]?.flipped;
+    }
+
+    if (name === "Bumpkin") {
+      return !!state.context.state.bumpkin?.flipped;
+    }
+
     if (!isCollectible(name)) return false;
     const collectibles =
       location === "home"
@@ -708,6 +725,26 @@ export const MoveableComponent: React.FC<
     } else {
       setShowRemoveConfirmation(true);
     }
+  };
+
+  // Mobile-safe finalise-removal path used by the Kuebiko / Hungry Caterpillar
+  // warning modals. Bypasses `remove()`'s `!isMobile && removeAction` gate so
+  // the modal's Remove button works in bulk removal mode on touch devices.
+  const confirmRemoveFromModal = () => {
+    const action = getRemoveAction(
+      name,
+      Date.now(),
+      selectedCollectible,
+      location,
+    );
+    setShowRemoveConfirmation(false);
+    if (!action) return;
+    landscapingMachine.send("REMOVE", {
+      event: action,
+      id,
+      name,
+      location,
+    });
   };
 
   useEffect(() => {
@@ -1119,11 +1156,46 @@ export const MoveableComponent: React.FC<
       // Also disable if there are overlaps and this item isn't selected
       // Disable while pixel-perfect mode is active so on-screen arrows aren't fighting the drag
       disabled={
-        (isMobile && !isSelected) || shouldDisableDrag || isPixelPerfectMode
+        (isMobile && !isSelected) ||
+        shouldDisableDrag ||
+        isPixelPerfectMode ||
+        isRemovalMode
       }
       onMouseDown={() => {
         // Mobile must click first, before dragging
         if (closeCurrentOverlapMenu) closeCurrentOverlapMenu();
+
+        // Bulk-removal mode: clicking a placed item dispatches its remove
+        // event directly and skips selection. The HUD stays in removal mode
+        // afterwards so the player can keep tapping to clear items.
+        if (isRemovalMode) {
+          const action = getRemoveAction(
+            name,
+            Date.now(),
+            selectedCollectible,
+            location,
+          );
+          // Restricted items (Manor, Town Center, House, Mansion, locked
+          // limited items in cooldown) — getRemoveAction returns null and the
+          // click is a no-op.
+          if (!action) {
+            return;
+          }
+          // Kuebiko and Hungry Caterpillar carry a warning about the gameplay
+          // side-effect of removing them — surface the same modal here so the
+          // bulk flow doesn't silently lose them.
+          if (name === "Kuebiko" || name === "Hungry Caterpillar") {
+            setShowRemoveConfirmation(true);
+            return;
+          }
+          landscapingMachine.send("REMOVE", {
+            event: action,
+            id,
+            name,
+            location,
+          });
+          return;
+        }
 
         if (isMobile && !isActive.current) {
           isActive.current = true;
@@ -1314,8 +1386,12 @@ export const MoveableComponent: React.FC<
           <div
             className="absolute z-20 flex"
             style={{
-              right: `${PIXEL_SCALE * -(hasRemovalAction ? 34 : 12)}px`,
-              bottom: `calc(100% + ${PIXEL_SCALE * 2}px)`,
+              // Anchor the action row's bottom-left to the item's top-right
+              // corner so the buttons start at the item's right edge and
+              // flow further right, never overlapping the item's footprint.
+              left: "100%",
+              bottom: "100%",
+              transform: `translate(0, ${PIXEL_SCALE * -2}px)`,
             }}
           >
             <div
@@ -1397,18 +1473,6 @@ export const MoveableComponent: React.FC<
                 />
               </div>
             )}
-            {showRemoveConfirmation && name === "Kuebiko" && (
-              <RemoveKuebikoModal
-                onClose={() => setShowRemoveConfirmation(false)}
-                onRemove={() => remove()}
-              />
-            )}
-            {showRemoveConfirmation && name === "Hungry Caterpillar" && (
-              <RemoveHungryCaterpillarModal
-                onClose={() => setShowRemoveConfirmation(false)}
-                onRemove={() => remove()}
-              />
-            )}
             {hasRemovalAction && (
               <div
                 className="group relative cursor-pointer"
@@ -1447,6 +1511,23 @@ export const MoveableComponent: React.FC<
               </div>
             )}
           </div>
+        )}
+        {/*
+          Warning modals for items with gameplay side-effects when removed.
+          Rendered outside the `isSelected` action-row above so they also
+          appear in bulk-removal mode, where there is no selection.
+        */}
+        {showRemoveConfirmation && name === "Kuebiko" && (
+          <RemoveKuebikoModal
+            onClose={() => setShowRemoveConfirmation(false)}
+            onRemove={isRemovalMode ? confirmRemoveFromModal : remove}
+          />
+        )}
+        {showRemoveConfirmation && name === "Hungry Caterpillar" && (
+          <RemoveHungryCaterpillarModal
+            onClose={() => setShowRemoveConfirmation(false)}
+            onRemove={isRemovalMode ? confirmRemoveFromModal : remove}
+          />
         )}
         {/*
           Selection tint anchored to the integer collision tile. The entity can

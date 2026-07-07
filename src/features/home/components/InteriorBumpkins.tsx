@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { PIXEL_SCALE } from "features/game/lib/constants";
-import { BedName } from "features/game/types/game";
+import type { BedName } from "features/game/types/game";
 import { NPCIcon, NPCPlaceable } from "features/island/bumpkin/components/NPC";
 import React, { useContext } from "react";
 import { Modal } from "components/ui/Modal";
@@ -10,16 +10,20 @@ import { getKeys } from "lib/object";
 import { BumpkinEquip } from "features/bumpkins/components/BumpkinEquip";
 import { Context } from "features/game/GameProvider";
 import { Button } from "components/ui/Button";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { ITEM_DETAILS } from "features/game/types/images";
-import { BED_FARMHAND_COUNT } from "features/game/types/beds";
+import {
+  BED_FARMHAND_COUNT,
+  getPlacedBedNames,
+} from "features/game/types/beds";
 import { BED_WIDTH } from "features/island/collectibles/components/Bed";
 import { Label } from "components/ui/Label";
 import { Panel } from "components/ui/Panel";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
-import { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
+import type { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 
 const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
 const _farmHands = (state: MachineState) =>
@@ -27,9 +31,17 @@ const _farmHands = (state: MachineState) =>
 const _collectibles = (state: MachineState) => state.context.state.collectibles;
 const _homeCollectibles = (state: MachineState) =>
   state.context.state.home.collectibles;
+const _interiorCollectibles = (state: MachineState) =>
+  state.context.state.interior.ground.collectibles;
+const _levelOneCollectibles = (state: MachineState) =>
+  state.context.state.interior.level_one?.collectibles;
 const _isLandscaping = (state: MachineState) => state.matches("landscaping");
 
-export const InteriorBumpkins: React.FC = () => {
+type Props = {
+  location?: Extract<PlaceableLocation, "home" | "interior" | "level_one">;
+};
+
+export const InteriorBumpkins: React.FC<Props> = ({ location = "home" }) => {
   const { t } = useAppTranslation();
   const { gameService } = useContext(Context);
 
@@ -41,6 +53,8 @@ export const InteriorBumpkins: React.FC = () => {
   const farmHands = useSelector(gameService, _farmHands);
   const collectibles = useSelector(gameService, _collectibles);
   const homeCollectibles = useSelector(gameService, _homeCollectibles);
+  const interiorCollectibles = useSelector(gameService, _interiorCollectibles);
+  const levelOneCollectibles = useSelector(gameService, _levelOneCollectibles);
   const isLandscaping = useSelector(gameService, _isLandscaping);
 
   const unplacedFarmHandIds = getKeys(farmHands).filter(
@@ -50,16 +64,17 @@ export const InteriorBumpkins: React.FC = () => {
   const count = getKeys(farmHands).length + 1;
   const max = Object.keys(BED_FARMHAND_COUNT).length;
 
-  const uniqueBedCollectibles = getKeys(collectibles).filter(
-    (collectible) => collectible in BED_FARMHAND_COUNT,
-  );
-  const uniqueHomeBedCollectibles = getKeys(homeCollectibles).filter(
-    (collectible) => collectible in BED_FARMHAND_COUNT,
-  );
-  const uniqueBeds = new Set([
-    ...uniqueBedCollectibles,
-    ...uniqueHomeBedCollectibles,
-  ]);
+  // Beds placed anywhere count — farm, home interior and both /interior floors.
+  const uniqueBeds = getPlacedBedNames({
+    collectibles,
+    home: { collectibles: homeCollectibles },
+    interior: {
+      ground: { collectibles: interiorCollectibles },
+      level_one: levelOneCollectibles
+        ? { collectibles: levelOneCollectibles }
+        : undefined,
+    },
+  });
 
   const beds = getKeys(BED_FARMHAND_COUNT)
     .sort((a, b) => BED_FARMHAND_COUNT[a] - BED_FARMHAND_COUNT[b])
@@ -91,7 +106,7 @@ export const InteriorBumpkins: React.FC = () => {
         <div className="flex">
           {(!isLandscaping ||
             !bumpkin.coordinates ||
-            bumpkin.location !== "home") && (
+            bumpkin.location !== location) && (
             <div
               className={classNames(
                 "mr-2",

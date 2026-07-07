@@ -5,7 +5,11 @@ import { Box } from "components/ui/Box";
 import { Button } from "components/ui/Button";
 import { Context } from "features/game/GameProvider";
 import { ITEM_DETAILS } from "features/game/types/images";
-import { Consumable, isJuice } from "features/game/types/consumables";
+import {
+  type Consumable,
+  type ConsumableName,
+  isJuice,
+} from "features/game/types/consumables";
 import { getFoodExpBoost } from "features/game/expansion/lib/boosts";
 
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -13,8 +17,11 @@ import { SplitScreenView } from "components/ui/SplitScreenView";
 import { FeedBumpkinDetails } from "components/ui/layouts/FeedBumpkinDetails";
 import Decimal from "decimal.js-light";
 import { PIXEL_SCALE } from "features/game/lib/constants";
-import { MachineState } from "features/game/lib/gameMachine";
-import { getBumpkinLevel } from "features/game/lib/level";
+import type { MachineState } from "features/game/lib/gameMachine";
+import {
+  getMaxBumpkinLevel,
+  getTotalBumpkinLevel,
+} from "features/game/lib/level";
 import { gameAnalytics } from "lib/gameAnalytics";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Label } from "components/ui/Label";
@@ -23,14 +30,19 @@ import { useNow } from "lib/utils/hooks/useNow";
 
 interface Props {
   food: Consumable[];
+  selectedName: ConsumableName | undefined;
+  setSelectedName: (name: ConsumableName) => void;
 }
 
 const _inventory = (state: MachineState) => state.context.state.inventory;
 const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
 const _game = (state: MachineState) => state.context.state;
 
-export const Feed: React.FC<Props> = ({ food }) => {
-  const [selected, setSelected] = useState<Consumable | undefined>(food[0]);
+export const Feed: React.FC<Props> = ({
+  food,
+  selectedName,
+  setSelectedName,
+}) => {
   const [showBoosts, setShowBoosts] = useState(false);
   const { gameService } = useContext(Context);
   const now = useNow({ live: true });
@@ -41,7 +53,7 @@ export const Feed: React.FC<Props> = ({ food }) => {
   // Derive the "active" selected food from the current props so that
   // we never point at a food item that is no longer available.
   const activeSelected =
-    food.find((item) => item.name === selected?.name) ?? food[0];
+    food.find((item) => item.name === selectedName) ?? food[0];
 
   const inventoryFoodCount = activeSelected
     ? (inventory[activeSelected.name] ?? new Decimal(0))
@@ -77,17 +89,27 @@ export const Feed: React.FC<Props> = ({ food }) => {
   const feed = (amount: number) => {
     if (!activeSelected) return;
 
+    const ascensionLevel = game.island.ascensionLevel ?? 0;
     const previousExperience = bumpkin?.experience ?? 0;
-    let previousLevel: number = getBumpkinLevel(bumpkin?.experience ?? 0);
+    const maxLevel = getMaxBumpkinLevel(game);
+    // Track the total level (across ascension bands) so milestones still fire
+    // correctly if a feed ever crosses an ascension boundary.
+    let previousLevel: number = getTotalBumpkinLevel({
+      experience: bumpkin.experience ?? 0,
+      ascensionLevel,
+      maxLevel,
+    });
 
     const newState = gameService.send("bumpkin.feed", {
       food: activeSelected.name,
       amount,
     });
 
-    const currentLevel = getBumpkinLevel(
-      newState.context.state.bumpkin?.experience ?? 0,
-    );
+    const currentLevel = getTotalBumpkinLevel({
+      experience: newState.context.state.bumpkin.experience ?? 0,
+      ascensionLevel: newState.context.state.island.ascensionLevel ?? 0,
+      maxLevel,
+    });
 
     while (currentLevel > previousLevel) {
       previousLevel += 1;
@@ -151,7 +173,7 @@ export const Feed: React.FC<Props> = ({ food }) => {
               isSelected={activeSelected?.name === item.name}
               key={item.name}
               onClick={() => {
-                setSelected(item);
+                setSelectedName(item.name);
                 setShowBoosts(false);
               }}
               image={ITEM_DETAILS[item.name].image}

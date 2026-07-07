@@ -1,14 +1,15 @@
 import { CONFIG } from "lib/config";
 import { ERRORS } from "lib/errors";
 import { sanitizeHTTPResponse } from "lib/network";
-import { GameEvent, GameEventName } from "../events";
-import { PastAction } from "../lib/gameMachine";
+import type { GameEvent, GameEventName } from "../events";
+import type { PastAction } from "../lib/gameMachine";
 import { makeGame } from "../lib/transforms";
 import { getSessionId } from "./loadSession";
 import Decimal from "decimal.js-light";
-import { SeedBoughtAction } from "../events/landExpansion/seedBought";
-import { GameState } from "../types/game";
+import type { SeedBoughtAction } from "../events/landExpansion/seedBought";
+import type { GameState } from "../types/game";
 import { AUTO_SAVE_INTERVAL } from "../expansion/Game";
+import { flushMetrics } from "../lib/interactionMetrics";
 import { getRecordHash } from "lib/stateHash";
 
 type StateHash = Record<keyof GameState, string>;
@@ -114,6 +115,7 @@ export async function autosaveRequest(
         cachedKey,
         deviceTrackerId: request.deviceTrackerId,
         stateHash: request.stateHash,
+        metrics: flushMetrics(),
       }),
       signal: controller.signal,
     });
@@ -173,6 +175,13 @@ export async function autosave(request: Request, retries = 0) {
   }
 
   if (response.status === 401) {
+    // The BE tags disabled-login as a 401 with a structured body so we
+    // can route the user to the dedicated GoogleLoginDisabled screen
+    // instead of the generic SessionExpired one.
+    const data = await response.json().catch(() => null);
+    if (data?.errorCode === ERRORS.GOOGLE_LOGIN_DISABLED) {
+      throw new Error(ERRORS.GOOGLE_LOGIN_DISABLED);
+    }
     throw new Error(ERRORS.SESSION_EXPIRED);
   }
 

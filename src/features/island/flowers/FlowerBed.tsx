@@ -9,11 +9,12 @@ import { useSelector } from "@xstate/react";
 import {
   FLOWERS,
   FLOWER_SEEDS,
-  FlowerName,
-  FlowerGrowthStage,
+  type FlowerName,
+  type FlowerGrowthStage,
 } from "features/game/types/flowers";
 import { TimerPopover } from "../common/TimerPopover";
 import { ITEM_DETAILS } from "features/game/types/images";
+import { getItemDescription } from "features/game/lib/getItemDescription";
 import { NPC_WEARABLES } from "lib/npcs";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -32,8 +33,8 @@ import { RequirementLabel } from "components/ui/RequirementsLabel";
 import { calculateInstaGrowCost } from "features/game/events/landExpansion/instaGrowFlower";
 import { Panel } from "components/ui/Panel";
 import { secondsToString } from "lib/utils/time";
-import { PlantedFlower } from "features/game/types/game";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { PlantedFlower } from "features/game/types/game";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useCountdown } from "lib/utils/hooks/useCountdown";
 
 interface Props {
@@ -127,6 +128,7 @@ const _farmActivity = (state: MachineState) => state.context.state.farmActivity;
 const _inventory = (state: MachineState) => state.context.state.inventory;
 const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
 const _collectibles = (state: MachineState) => state.context.state.collectibles;
+const _gameState = (state: MachineState) => state.context.state;
 
 const Flower: React.FC<{ flower: PlantedFlower; id: string }> = ({
   flower,
@@ -148,6 +150,7 @@ const Flower: React.FC<{ flower: PlantedFlower; id: string }> = ({
   const season = useSelector(gameService, _season);
   const bumpkin = useSelector(gameService, _bumpkin);
   const collectibles = useSelector(gameService, _collectibles);
+  const gameState = useSelector(gameService, _gameState);
 
   // Keep growth calculations in seconds to match `useCountdown`, and only use
   // milliseconds for the countdown target date.
@@ -304,10 +307,8 @@ const Flower: React.FC<{ flower: PlantedFlower; id: string }> = ({
                     {t("reward")}
                   </Label>
                   {(reward.items ?? []).map((item) => {
-                    const boost = COLLECTIBLE_BUFF_LABELS[item.name]?.({
-                      skills: bumpkin.skills,
-                      collectibles: collectibles,
-                    });
+                    const boost =
+                      COLLECTIBLE_BUFF_LABELS[item.name]?.(gameState);
 
                     return (
                       <>
@@ -317,7 +318,10 @@ const Flower: React.FC<{ flower: PlantedFlower; id: string }> = ({
                           className="h-12 mb-2"
                         />
                         <span className="text-xs text-center mb-2">
-                          {ITEM_DETAILS[item.name].description}
+                          {getItemDescription({
+                            item: item.name,
+                            game: gameState,
+                          })}
                         </span>
                         {boost && (
                           <div className="flex flex-col gap-1">

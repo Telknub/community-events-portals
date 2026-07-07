@@ -1,32 +1,33 @@
-import { BumpkinItem } from "./bumpkin";
+import type { BumpkinItem } from "./bumpkin";
 import {
   CHAPTER_RAFFLE_TICKET_NAME,
   CHAPTER_TICKET_NAME,
-  ChapterName,
+  type ChapterName,
   CHAPTER_ORDER,
-  ChapterRaffleTicket,
+  type ChapterRaffleTicket,
 } from "./chapters";
-import { InventoryItemName, MutantAnimal } from "./game";
+import type { InventoryItemName, MutantAnimal } from "./game";
 import {
-  ChapterCollectibleName,
-  ChapterStoreCollectible,
-  ChapterStoreItem,
-  ChapterStoreTier,
+  type ChapterCollectibleName,
+  type ChapterStoreCollectible,
+  type ChapterStoreItem,
+  type ChapterStoreTier,
   MEGASTORE,
-  ChapterWearableName,
+  type ChapterWearableName,
 } from "./megastore";
 import {
   isCollectible,
   isWearable,
 } from "../events/landExpansion/buyChapterItem";
-import { CHAPTER_MUTANTS, MutantsChapterName } from "./chapterMutants";
-import { ChapterFish } from "./fishing";
-import { MutantFlowerName } from "./flowers";
+import { CHAPTER_MUTANTS, type MutantsChapterName } from "./chapterMutants";
+import type { ChapterFish } from "./fishing";
+import type { MutantFlowerName } from "./flowers";
 import { HOURGLASSES } from "../events/landExpansion/burnCollectible";
-import { getKeys } from "lib/object";
+import { getKeys, getObjectEntries } from "lib/object";
 import { REWARD_BOXES } from "./rewardBoxes";
 import { CHAPTER_TRACKS } from "./tracks";
 import { COMMODITIES } from "./resources";
+import { CHAPTER_CRAFTING_ITEMS } from "../lib/crafting";
 
 export function getChapterMegastoreCollectibles(
   chapter: ChapterName,
@@ -416,7 +417,14 @@ export const CHAPTER_COLLECTIONS: Partial<
         ],
         wearables: ["Pistol Shrimp"],
       },
-      other: { collectibles: ["Salt Awakening Banner"] },
+      other: {
+        collectibles: [
+          "Salt Awakening Banner",
+          ...getObjectEntries(CHAPTER_CRAFTING_ITEMS)
+            .filter((item) => item[1] === "Salt Awakening")
+            .map((item) => item[0]),
+        ],
+      },
     },
   }),
 };

@@ -1,10 +1,15 @@
-import { Coordinates } from "features/game/expansion/components/MapPlacement";
-import { SceneId } from "../mmoMachine";
+import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import type { SceneId } from "../mmoMachine";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
+
+// `"default"` is a sentinel WorldMap callers use to mean "always use the
+// scene's `default` spawn", overriding the auto-derived previous scene.
+// `"digging"` is a non-scene shortcut that maps to a specific beach spawn.
+export type SpawnFromId = SceneId | "digging" | "default";
 
 export type SpawnLocation = Record<
   SceneId,
-  { default: Coordinates } & Partial<Record<SceneId, Coordinates>>
+  { default: Coordinates } & Partial<Record<SpawnFromId, Coordinates>>
 >;
 
 const randomXOffset = Math.random() * 60;
@@ -151,6 +156,10 @@ export const SPAWNS: () => SpawnLocation = () => ({
       y: 736,
     },
     kingdom: {
+      x: 532,
+      y: 257,
+    },
+    digging: {
       x: 532,
       y: 257,
     },

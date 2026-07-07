@@ -1,5 +1,5 @@
 import React from "react";
-import { MachineInterpreter } from "features/game/lib/auctionMachine";
+import type { MachineInterpreter } from "features/game/lib/auctionMachine";
 import { useActor } from "@xstate/react";
 import { ButtonPanel } from "components/ui/Panel";
 import { ITEM_DETAILS } from "features/game/types/images";
@@ -13,7 +13,7 @@ import { AuctionsComingSoon } from "./AuctionsComingSoon";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import classNames from "classnames";
 import { isMobile } from "mobile-device-detect";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { getAuctionItemDisplay } from "./lib/getAuctionItemDisplay";
 import { useNow } from "lib/utils/hooks/useNow";
 
@@ -45,8 +45,7 @@ export const Auctions: React.FC<Props> = ({
       {currentAuctions.map((auction) => {
         const { image, buffLabels, item, typeLabel } = getAuctionItemDisplay({
           auction,
-          skills: game.bumpkin.skills,
-          collectibles: game.collectibles,
+          game: game,
         });
 
         const hasBuff = buffLabels && buffLabels.length > 0;

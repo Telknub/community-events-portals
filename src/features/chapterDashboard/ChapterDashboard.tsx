@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSafeAreaPaddingTop } from "lib/utils/hooks/useSafeAreaPaddingTop";
 
-import logo from "assets/brand/crabs_and_traps.png";
+import logo from "assets/brand/salt_awakening.png";
 
 import { OuterPanel } from "components/ui/Panel";
 import { PIXEL_SCALE } from "features/game/lib/constants";
@@ -10,8 +10,8 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { useSelector } from "@xstate/react";
 import { Context as GameContext } from "features/game/GameProvider";
 import * as AuthProvider from "features/auth/lib/Provider";
-import { AuthMachineState } from "features/auth/lib/authMachine";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useNow } from "lib/utils/hooks/useNow";
 import { getCurrentChapter } from "features/game/types/chapters";
 import { MutantsSection } from "./components/MutantsSection";
@@ -25,7 +25,6 @@ import { ChapterIntroSection } from "./components/ChapterIntroSection";
 import { ChapterTracksPreview } from "features/world/ui/tracks/ChapterTracks";
 import { ChapterTimer } from "./components/ChapterTimer";
 import { ChapterMarketplaceWidget } from "./components/ChapterMarketplaceWidget";
-import { SocialRewardsWidget } from "./components/SocialRewardsWidget";
 
 const _farmId = (state: MachineState) => state.context.farmId;
 const _gameState = (state: MachineState) => state.context.state;
@@ -165,7 +164,6 @@ export const ChapterDashboard: React.FC = () => {
               token={effectiveToken}
             />
             <ChapterMarketplaceWidget />
-            <SocialRewardsWidget />
           </div>
         </div>
       </OuterPanel>

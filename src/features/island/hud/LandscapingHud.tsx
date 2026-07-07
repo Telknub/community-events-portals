@@ -12,13 +12,14 @@ import shopIcon from "assets/icons/shop.png";
 import flipped from "assets/icons/flipped.webp";
 import flipIcon from "assets/icons/flip.webp";
 import cleanBroom from "assets/icons/clean_broom.webp";
+import mapIcon from "assets/icons/map.webp";
 
 import { isMobile } from "mobile-device-detect";
 
 import {
-  LandscapingPlaceable,
-  MachineInterpreter,
-  MachineState,
+  type LandscapingPlaceable,
+  type MachineInterpreter,
+  type MachineState,
   placeEvent,
 } from "features/game/expansion/placeable/landscapingMachine";
 import { PlaceableController } from "features/farming/hud/components/PlaceableController";
@@ -28,30 +29,27 @@ import {
   isCollectible,
 } from "../collectibles/MovableComponent";
 import { RemoveKuebikoModal } from "../collectibles/RemoveKuebikoModal";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 import { HudContainer } from "components/ui/HudContainer";
 import { RemoveHungryCaterpillarModal } from "../collectibles/RemoveHungryCaterpillarModal";
 import { useSound } from "lib/utils/hooks/useSound";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { RoundButton } from "components/ui/RoundButton";
-import {
-  CraftBuildModal,
-  CraftDecorationsModal,
-} from "./components/decorations/CraftDecorationsModal";
+import { CraftDecorationsModal } from "./components/decorations/CraftDecorationsModal";
 import { RemoveAllConfirmation } from "../collectibles/RemoveAllConfirmation";
+import { SavedLayoutsModal } from "./components/SavedLayoutsModal";
+import { hasFeatureAccess } from "lib/flags";
 import { useNow } from "lib/utils/hooks/useNow";
 import { PET_SHRINES } from "features/game/types/pets";
 import { isPetCollectible } from "features/game/events/landExpansion/placeCollectible";
-import { MachineState as GameMachineState } from "features/game/lib/gameMachine";
 import { getKeys } from "lib/object";
 import { Label } from "components/ui/Label";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { getChestItems } from "./components/inventory/utils/inventory";
-import { NFTName } from "features/game/events/landExpansion/placeNFT";
+import type { NFTName } from "features/game/events/landExpansion/placeNFT";
 import { LandscapingChest } from "./components/LandscapingChest";
 import { LandscapingQuickPanel } from "./components/LandscapingQuickPanel";
-import classNames from "classnames";
-import { hasFeatureAccess } from "lib/flags";
+import { InteriorFloorNav } from "features/interior/components/InteriorFloorNav";
 
 const compareBalance = (prev: Decimal, next: Decimal) => {
   return prev.eq(next);
@@ -67,16 +65,9 @@ const compareBlockBucks = (prev: Decimal, next: Decimal) => {
   return previous.eq(current);
 };
 
-const needsHelp = (state: GameMachineState) => {
-  const missingScarecrow =
-    !state.context.state.inventory["Basic Scarecrow"] &&
-    (state.context.state.farmActivity?.["Sunflower Planted"] ?? 0) >= 6;
-
-  return missingScarecrow;
-};
-
 const selectMovingItem = (state: MachineState) => state.context.moving;
 const isIdle = (state: MachineState) => state.matches({ editing: "idle" });
+const selectRemovalMode = (state: MachineState) => !!state.context.removalMode;
 
 const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
   location,
@@ -94,7 +85,7 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
   const [showRemoveAllConfirmation, setShowRemoveAllConfirmation] =
     useState(false);
   const [showDecorations, setShowDecorations] = useState(false);
-  const [showCraftBuild, setShowCraftBuild] = useState(false);
+  const [showSavedLayouts, setShowSavedLayouts] = useState(false);
   const [quickDragging, setQuickDragging] = useState(false);
   const button = useSound("button");
 
@@ -119,16 +110,16 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
     compareBlockBucks,
   );
 
-  const showHelper = useSelector(gameService, needsHelp);
-
   const selectedItem = useSelector(child, selectMovingItem);
   const idle = useSelector(child, isIdle);
+  const removalMode = useSelector(child, selectRemovalMode);
+
+  const toggleRemovalMode = () => {
+    button.play();
+    child.send("TOGGLE_REMOVAL_MODE");
+  };
   const gameState = useSelector(gameService, (state) => state.context.state);
-  const hasQuickPanel = useSelector(gameService, (state) =>
-    hasFeatureAccess(state.context.state, "QUICK_LANDSCAPING_PANEL"),
-  );
   const farmHandIds = getKeys(gameState.farmHands.bumpkins);
-  const hasNoBuildings = !gameState.buildings["Water Well"];
 
   const isShrine =
     selectedItem?.name &&
@@ -150,7 +141,12 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
 
   const showRemove = isMobile && selectedItem && removeAction;
 
-  const showFlip = isMobile && selectedItem && isCollectible(selectedItem.name);
+  const showFlip =
+    isMobile &&
+    selectedItem &&
+    (isCollectible(selectedItem.name) ||
+      selectedItem.name === "FarmHand" ||
+      selectedItem.name === "Bumpkin");
 
   const remove = () => {
     const action = selectedItem && removeAction;
@@ -185,7 +181,12 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
   };
 
   const flip = () => {
-    if (selectedItem && isCollectible(selectedItem.name)) {
+    if (
+      selectedItem &&
+      (isCollectible(selectedItem.name) ||
+        selectedItem.name === "FarmHand" ||
+        selectedItem.name === "Bumpkin")
+    ) {
       child.send("FLIP", {
         id: selectedItem.id,
         name: selectedItem.name,
@@ -195,7 +196,17 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
   };
 
   const isFlipped = useSelector(gameService, (state) => {
-    if (!selectedItem || !isCollectible(selectedItem.name)) return false;
+    if (!selectedItem) return false;
+
+    if (selectedItem.name === "FarmHand") {
+      return !!state.context.state.farmHands.bumpkins[selectedItem.id]?.flipped;
+    }
+
+    if (selectedItem.name === "Bumpkin") {
+      return !!state.context.state.bumpkin?.flipped;
+    }
+
+    if (!isCollectible(selectedItem.name)) return false;
     const name = selectedItem.name;
     const collectibles =
       location === "home"
@@ -219,8 +230,50 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
         <Balances sfl={balance} coins={coins} gems={gems ?? new Decimal(0)} />
       </div>
 
+      {/*
+        Floor navigation stays available while landscaping the interior so the
+        player can move between floors without leaving edit mode. The matching
+        in-world arrows are hidden during landscaping (see Interior/LevelOne),
+        so these HUD buttons are the only way to switch floors here.
+      */}
+      {(location === "interior" || location === "level_one") && (
+        <div className="absolute bottom-0 p-2.5 left-0 flex flex-col space-y-2.5">
+          <InteriorFloorNav
+            floor={location === "interior" ? "ground" : "level_one"}
+          />
+        </div>
+      )}
+
+      {removalMode && (
+        <>
+          <div className="absolute left-1/2 -translate-x-1/2 top-2.5 z-50">
+            <Label type="danger">{"Removal mode"}</Label>
+          </div>
+          <div
+            className="absolute flex z-50 flex-col"
+            style={{
+              width: `${PIXEL_SCALE * 22}px`,
+              right: `${PIXEL_SCALE * 3}px`,
+              top: `${PIXEL_SCALE * 31}px`,
+            }}
+          >
+            <RoundButton onClick={toggleRemovalMode}>
+              <img
+                src={SUNNYSIDE.icons.cancel}
+                className="absolute group-active:translate-y-[2px]"
+                style={{
+                  top: `${PIXEL_SCALE * 5.5}px`,
+                  left: `${PIXEL_SCALE * 5.5}px`,
+                  width: `${PIXEL_SCALE * 11}px`,
+                }}
+              />
+            </RoundButton>
+          </div>
+        </>
+      )}
+
       <>
-        {idle && (
+        {idle && !removalMode && (
           <>
             <div
               className="absolute flex z-50 flex-col"
@@ -304,67 +357,6 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
                 </>
               )}
 
-              {location === "farm" && (
-                <>
-                  <RoundButton
-                    className="mb-3.5"
-                    onClick={() => setShowCraftBuild(true)}
-                  >
-                    <img src={SUNNYSIDE.icons.disc} className="w-full" />
-                    <img
-                      src={SUNNYSIDE.icons.hammer}
-                      className={classNames(
-                        "absolute group-active:translate-y-[2px]",
-                        {
-                          "animate-pulsate": hasNoBuildings,
-                        },
-                      )}
-                      style={{
-                        top: `${PIXEL_SCALE * 4.5}px`,
-                        left: `${PIXEL_SCALE * 4.5}px`,
-                        width: `${PIXEL_SCALE * 13}px`,
-                      }}
-                    />
-                    {hasNoBuildings && (
-                      <div
-                        className="absolute z-40"
-                        style={{
-                          left: `${PIXEL_SCALE * -21}px`,
-                          top: `${PIXEL_SCALE * 6}px`,
-                        }}
-                      >
-                        <Label type="vibrant" className="whitespace-nowrap">
-                          {t("build")}
-                        </Label>
-                      </div>
-                    )}
-                    {showHelper && (
-                      <div
-                        className="absolute z-40"
-                        style={{
-                          left: `${PIXEL_SCALE * -8}px`,
-                          top: `${PIXEL_SCALE * 20}px`,
-                          transform: "scaleX(-1)",
-                        }}
-                      >
-                        <img
-                          className="cursor-pointer group-hover:img-highlight animate-pulsate"
-                          src={SUNNYSIDE.icons.click_icon}
-                          style={{
-                            width: `${PIXEL_SCALE * 18}px`,
-                            display: "block",
-                          }}
-                        />
-                      </div>
-                    )}
-                  </RoundButton>
-                  <CraftBuildModal
-                    show={showCraftBuild}
-                    onHide={() => setShowCraftBuild(false)}
-                  />
-                </>
-              )}
-
               <RoundButton className="mb-3.5" onClick={removeAll}>
                 <img
                   src={cleanBroom}
@@ -373,6 +365,39 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
                     top: `${PIXEL_SCALE * 5}px`,
                     left: `${PIXEL_SCALE * 5}px`,
                     width: `${PIXEL_SCALE * 13}px`,
+                  }}
+                />
+              </RoundButton>
+
+              {location === "farm" &&
+                hasFeatureAccess(gameState, "SAVED_LAYOUTS") && (
+                  <RoundButton
+                    className="mb-3.5"
+                    onClick={() => {
+                      button.play();
+                      setShowSavedLayouts(true);
+                    }}
+                  >
+                    <img
+                      src={mapIcon}
+                      className="absolute group-active:translate-y-[2px]"
+                      style={{
+                        top: `${PIXEL_SCALE * 5}px`,
+                        left: `${PIXEL_SCALE * 5}px`,
+                        width: `${PIXEL_SCALE * 13}px`,
+                      }}
+                    />
+                  </RoundButton>
+                )}
+
+              <RoundButton className="mb-3.5" onClick={toggleRemovalMode}>
+                <img
+                  src={ITEM_DETAILS["Rusty Shovel"].image}
+                  className="absolute group-active:translate-y-[2px]"
+                  style={{
+                    top: `${PIXEL_SCALE * 4}px`,
+                    left: `${PIXEL_SCALE * 4}px`,
+                    width: `${PIXEL_SCALE * 14}px`,
                   }}
                 />
               </RoundButton>
@@ -475,6 +500,12 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
           location={location}
         />
       )}
+      {showSavedLayouts && (
+        <SavedLayoutsModal
+          show={showSavedLayouts}
+          onHide={() => setShowSavedLayouts(false)}
+        />
+      )}
       {showRemove && (
         <div
           className="absolute flex z-50 flex-col"
@@ -523,14 +554,14 @@ const LandscapingHudComponent: React.FC<{ location: PlaceableLocation }> = ({
         </div>
       )}
 
-      {hasQuickPanel && (
+      {!removalMode && (
         <LandscapingQuickPanel
           location={location}
           onQuickDragChange={setQuickDragging}
         />
       )}
 
-      {(!hasQuickPanel || !quickDragging) && (
+      {!removalMode && !quickDragging && (
         <PlaceableController location={location} />
       )}
     </HudContainer>

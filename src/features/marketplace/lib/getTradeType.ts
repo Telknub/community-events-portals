@@ -1,7 +1,7 @@
 import { KNOWN_ITEMS } from "features/game/types";
-import { BumpkinItem, ITEM_NAMES } from "features/game/types/bumpkin";
-import { InventoryItemName } from "features/game/types/game";
-import { CollectionName } from "features/game/types/marketplace";
+import { type BumpkinItem, ITEM_NAMES } from "features/game/types/bumpkin";
+import type { InventoryItemName } from "features/game/types/game";
+import type { CollectionName } from "features/game/types/marketplace";
 
 export type TradeType = "instant" | "onchain";
 
@@ -131,12 +131,15 @@ export const ITEM_TRADE_TYPES: {
     "Cosmo Doll": "instant",
     "Bigfin Doll": "instant",
     "Solar Doll": "instant",
+    "Salt Doll": "instant",
+    "Jacuzzi Bear": "instant",
     "Gold Cooking Trophy": "instant",
     "Silver Cooking Trophy": "instant",
     "Bronze Cooking Trophy": "instant",
     "Bronze Friends Trophy": "instant",
     "Silver Friends Trophy": "instant",
     "Gold Friends Trophy": "instant",
+    "Design Trophy": "instant",
     "Test Box": "instant",
     "Bronze Tool Box": "instant",
     "Silver Tool Box": "instant",
@@ -542,6 +545,8 @@ export const ITEM_TRADE_TYPES: {
     Crimstone: "instant",
     "Sunstone Rock": "instant",
     Sunstone: "instant",
+    "Ascension Crystal": "instant",
+    "Ascension Shard": "instant",
     Oil: "instant",
     "Oil Reserve": "instant",
     Obsidian: "instant",
@@ -616,6 +621,7 @@ export const ITEM_TRADE_TYPES: {
     "Clash of Factions Banner": "instant",
     Scroll: "instant",
     "Lifetime Farmer Banner": "instant",
+    "Creator Banner": "instant",
     "Goblin Emblem": "instant",
     "Bumpkin Emblem": "instant",
     "Sunflorian Emblem": "instant",
@@ -1234,8 +1240,8 @@ export const ITEM_TRADE_TYPES: {
     "Purple Tile": "instant",
     "Red Tile": "instant",
     "Yellow Tile": "instant",
-    "Easter Token 2025": "onchain",
-    "Easter Ticket 2025": "onchain",
+    "Easter Token 2025": "instant",
+    "Easter Ticket 2025": "instant",
     Cheer: "instant",
     "Carrot House": "instant",
     "Orange Bunny Lantern": "instant",
@@ -1271,6 +1277,12 @@ export const ITEM_TRADE_TYPES: {
     "Spring Biome": "instant",
     "Desert Biome": "instant",
     "Volcano Biome": "instant",
+    "Swamp Biome": "instant",
+    // Ascension biomes (spooky onward)
+    "Spooky Biome": "instant",
+    "Crystal Biome": "instant",
+    "Moon Biome": "instant",
+    "Marble Age Biome": "instant",
     Bracelet: "instant",
     Coprolite: "instant",
     "Better Together Banner": "instant",
@@ -1708,7 +1720,7 @@ export const ITEM_TRADE_TYPES: {
     "Radiant Dumbo": "onchain",
     "Deep Sea Helm": "instant",
     "Maple Dumbo": "onchain",
-    "Pickaxe Shark": "onchain",
+    "Pickaxe Shark": "instant",
     "Seedling Hat": "instant",
     "Golden Seedling": "instant",
     "Gloomy Dumbo": "onchain",
@@ -1928,7 +1940,7 @@ export const ITEM_TRADE_TYPES: {
     "Recycle Shirt": "instant",
     "Garbage Bin Hat": "instant",
     "Turd Topper": "instant",
-    "Architect Ruler": "onchain",
+    "Architect Ruler": "instant",
     "Onion Leek": "onchain",
     "Oil Gallon": "onchain",
     "Alchemist Apron": "onchain",
@@ -1977,8 +1989,8 @@ export const ITEM_TRADE_TYPES: {
     "404 Chic Boots": "instant",
     "Aether Specs": "instant",
     "Faulty Barrier Background": "instant",
-    "Cardboard Wings": "onchain",
-    "Glitch Aura": "onchain",
+    "Cardboard Wings": "instant",
+    "Glitch Aura": "instant",
     "Bumpkin Eyes": "instant",
     "Big Wink Eyes": "instant",
     "Fun Eyes": "instant",
@@ -1999,38 +2011,31 @@ export const ITEM_TRADE_TYPES: {
     "Pistol Shrimp": "onchain",
     "Clam Shell Hat": "instant",
     "Shrimp Onesie": "instant",
+    "Brasil Jersey": "instant",
   },
 };
-
-export const MAX_INSTANT_SFL_TRADE = 250;
 
 export const getTradeType = ({
   collection,
   id,
-  trade,
 }: {
   collection: CollectionName;
   id: number;
-  trade: {
-    sfl: number;
-  };
 }) => {
   if (collection === "buds") return "onchain";
   if (collection === "pets") return "onchain";
   if (collection === "economies") return "instant";
-  if (collection === "wearables") {
-    const item = ITEM_NAMES[id];
 
-    if (trade.sfl > MAX_INSTANT_SFL_TRADE) {
-      return "onchain";
-    }
+  const tradeType =
+    collection === "wearables"
+      ? ITEM_TRADE_TYPES.wearables[ITEM_NAMES[id]]
+      : ITEM_TRADE_TYPES.collectibles[KNOWN_ITEMS[id]];
 
-    return ITEM_TRADE_TYPES.wearables[item];
+  if (!tradeType) {
+    throw new Error(
+      `getTradeType: no ITEM_TRADE_TYPES entry for collection=${collection} id=${id}`,
+    );
   }
 
-  if (trade.sfl > MAX_INSTANT_SFL_TRADE) {
-    return "onchain";
-  }
-
-  return ITEM_TRADE_TYPES.collectibles[KNOWN_ITEMS[id]];
+  return tradeType;
 };

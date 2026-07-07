@@ -4,14 +4,14 @@ import { STONE_RECOVERY_TIME } from "features/game/lib/constants";
 import { Context } from "features/game/GameProvider";
 
 import { getTimeLeft } from "lib/utils/time";
-import {
+import type {
   GameState,
   InventoryItemName,
   Rock,
   Skills,
 } from "features/game/types/game";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import Decimal from "decimal.js-light";
 import { DepletedStone } from "./components/DepletedStone";
 import { DepletingStone } from "./components/DepletingStone";
@@ -23,7 +23,7 @@ import {
   getRequiredPickaxeAmount,
   getStoneDropAmount,
 } from "features/game/events/landExpansion/stoneMine";
-import { RockName, StoneRockName } from "features/game/types/resources";
+import type { RockName, StoneRockName } from "features/game/types/resources";
 import { useNow } from "lib/utils/hooks/useNow";
 import { KNOWN_IDS } from "features/game/types";
 
@@ -161,23 +161,21 @@ export const Stone: React.FC<Props> = ({ id }) => {
         }).amount,
     );
 
-    const newState = gameService.send("stoneRock.mined", {
+    gameService.send("stoneRock.mined", {
       index: id,
     });
 
-    if (!newState.matches("hoarding")) {
-      if (showAnimations) {
-        setCollecting(true);
-        harvested.current = stoneMined.toNumber();
-      }
+    if (showAnimations) {
+      setCollecting(true);
+      harvested.current = stoneMined.toNumber();
+    }
 
-      miningFallAudio();
+    miningFallAudio();
 
-      if (showAnimations) {
-        await new Promise((res) => setTimeout(res, 3000));
-        setCollecting(false);
-        harvested.current = 0;
-      }
+    if (showAnimations) {
+      await new Promise((res) => setTimeout(res, 3000));
+      setCollecting(false);
+      harvested.current = 0;
     }
   };
 

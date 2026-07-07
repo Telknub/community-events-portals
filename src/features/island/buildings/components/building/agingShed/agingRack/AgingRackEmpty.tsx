@@ -28,7 +28,11 @@ import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { secondsToString } from "lib/utils/time";
 import { getKeys } from "lib/object";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { Consumable, CONSUMABLES, FISH } from "features/game/types/consumables";
+import {
+  type Consumable,
+  CONSUMABLES,
+  FISH,
+} from "features/game/types/consumables";
 import { getFoodExpBoost } from "features/game/expansion/lib/boosts";
 import { BoostsDisplay } from "components/ui/layouts/BoostsDisplay";
 import classNames from "classnames";
@@ -117,7 +121,7 @@ export const AgingRackEmpty: React.FC<Props> = ({
               >
                 <Box
                   image={opt.icon}
-                  hideCount
+                  count={merged[fishName]}
                   isSelected={selectedFish === fishName}
                   onClick={() => onSelectFish(fishName)}
                   secondaryImage={

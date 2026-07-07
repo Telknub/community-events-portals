@@ -4,13 +4,12 @@ import { SUNSTONE_RECOVERY_TIME } from "features/game/lib/constants";
 import { Context } from "features/game/GameProvider";
 
 import { getTimeLeft } from "lib/utils/time";
-import { InventoryItemName, Rock } from "features/game/types/game";
+import type { InventoryItemName, Rock } from "features/game/types/game";
 import useUiRefresher from "lib/utils/hooks/useUiRefresher";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import Decimal from "decimal.js-light";
 import { canMine } from "features/game/lib/resourceNodes";
-import { getBumpkinLevel } from "features/game/lib/level";
 import { DepletedSunstone } from "./components/DepletedSunstone";
 import { RecoveredSunstone } from "./components/RecoveredSunstone";
 import { DepletingSunstone } from "./components/DepletingSunstone";
@@ -42,9 +41,6 @@ export const getSunstoneStage = (minesLeft: number) => {
   if (minesLeft === 2) return 9;
   return 10;
 };
-
-const _bumpkinLevel = (state: MachineState) =>
-  getBumpkinLevel(state.context.state.bumpkin?.experience ?? 0);
 
 interface Props {
   id: string;
@@ -116,23 +112,21 @@ export const Sunstone: React.FC<Props> = ({ id, index }) => {
   };
 
   const mine = async () => {
-    const newState = gameService.send("sunstoneRock.mined", {
+    gameService.send("sunstoneRock.mined", {
       index: id,
     });
 
-    if (!newState.matches("hoarding")) {
-      if (showAnimations) {
-        setCollecting(true);
-        harvested.current = 1;
-      }
+    if (showAnimations) {
+      setCollecting(true);
+      harvested.current = 1;
+    }
 
-      miningFallAudio();
+    miningFallAudio();
 
-      if (showAnimations) {
-        await new Promise((res) => setTimeout(res, 3000));
-        setCollecting(false);
-        harvested.current = 0;
-      }
+    if (showAnimations) {
+      await new Promise((res) => setTimeout(res, 3000));
+      setCollecting(false);
+      harvested.current = 0;
     }
   };
 

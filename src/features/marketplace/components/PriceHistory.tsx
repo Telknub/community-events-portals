@@ -3,7 +3,7 @@ import sflIcon from "assets/icons/flower_token.webp";
 import { InnerPanel } from "components/ui/Panel";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { SaleHistory as ISaleHistory } from "features/game/types/marketplace";
+import type { SaleHistory as ISaleHistory } from "features/game/types/marketplace";
 import { Loading } from "features/auth/components";
 import classNames from "classnames";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
@@ -124,7 +124,10 @@ export const Sales: React.FC<{ sales: ISaleHistory["sales"] }> = ({
 
                   <td className="p-1.5 hidden sm:table-cell min-w-[70px]">
                     <div className="flex items-center mb-1">
-                      <img src={details.image} className="w-4 mr-1" />
+                      <img
+                        src={details.image}
+                        className="w-4 h-4 object-contain mr-1"
+                      />
                       {quantity > 1 && (
                         <p className="text-xs sm:text-sm mr-1.5">{`${quantity} x `}</p>
                       )}
@@ -148,7 +151,10 @@ export const Sales: React.FC<{ sales: ISaleHistory["sales"] }> = ({
                   </td>
                   <td className="p-1.5 table-cell sm:hidden">
                     <div className="flex items-center mb-1">
-                      <img src={details.image} className="w-4 mr-1" />
+                      <img
+                        src={details.image}
+                        className="w-4 h-4 object-contain mr-1"
+                      />
                       {quantity > 1 && (
                         <p className="text-xs sm:text-sm mr-1.5">{`${quantity} x `}</p>
                       )}

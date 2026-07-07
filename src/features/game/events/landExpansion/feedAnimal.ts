@@ -3,11 +3,11 @@ import Decimal from "decimal.js-light";
 import {
   ANIMAL_FOOD_EXPERIENCE,
   ANIMAL_LEVELS,
-  AnimalLevel,
+  type AnimalLevel,
   ANIMALS,
-  AnimalType,
+  type AnimalType,
 } from "features/game/types/animals";
-import {
+import type {
   Animal,
   AnimalFoodName,
   AnimalMedicineName,
@@ -25,6 +25,7 @@ import { trackFarmActivity } from "features/game/types/farmActivity";
 import { getKeys } from "lib/object";
 import { isWearableActive } from "features/game/lib/wearables";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
+import { isAnimalFeedable } from "./buyAnimal";
 
 export const ANIMAL_SLEEP_DURATION = 24 * 60 * 60 * 1000;
 
@@ -241,6 +242,13 @@ export function feedAnimal({
       return copy; // Early return after curing
     }
 
+    // Animals beyond the building's capacity (e.g. a capacity boosting
+    // collectible was removed or sold after buying animals) cannot be fed.
+    // They can still be cured (handled above) and sold to bounties.
+    if (!isAnimalFeedable(buildingKey, copy, action.id)) {
+      throw new Error("Animal exceeds building capacity and cannot be fed");
+    }
+
     // Handle feeding
     if (animal.state === "sick") {
       throw new Error("Cannot feed a sick animal");
@@ -267,7 +275,11 @@ export function feedAnimal({
 
     // Handle Golden Egg Free Food
     if (action.animal === "Chicken" && hasGoldenEggPlaced) {
-      boostsUsed.push({ name: "Gold Egg", value: "Free" });
+      copy.boostsUsedAt = updateBoostUsed({
+        game: copy,
+        boostNames: [{ name: "Gold Egg", value: "Free" }],
+        createdAt,
+      });
       return handleFreeFeeding({
         animal,
         animalType: action.animal,
@@ -278,7 +290,11 @@ export function feedAnimal({
 
     // Handle Golden Cow Free Food
     if (action.animal === "Cow" && hasGoldenCowPlaced) {
-      boostsUsed.push({ name: "Golden Cow", value: "Free" });
+      copy.boostsUsedAt = updateBoostUsed({
+        game: copy,
+        boostNames: [{ name: "Golden Cow", value: "Free" }],
+        createdAt,
+      });
       return handleFreeFeeding({
         animal,
         animalType: action.animal,
@@ -289,7 +305,11 @@ export function feedAnimal({
 
     // Handle Golden Sheep Free Food
     if (action.animal === "Sheep" && hasGoldenSheepPlaced) {
-      boostsUsed.push({ name: "Golden Sheep", value: "Free" });
+      copy.boostsUsedAt = updateBoostUsed({
+        game: copy,
+        boostNames: [{ name: "Golden Sheep", value: "Free" }],
+        createdAt,
+      });
       return handleFreeFeeding({
         animal,
         animalType: action.animal,

@@ -5,11 +5,11 @@ import { BumpkinEquip } from "features/bumpkins/components/BumpkinEquip";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Modal } from "components/ui/Modal";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
 import { Context } from "features/game/GameProvider";
 import { MoveableComponent } from "features/island/collectibles/MovableComponent";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 
 const _farmHands = (state: MachineState) =>
   state.context.state.farmHands.bumpkins;
@@ -29,7 +29,13 @@ export const FarmHand: React.FC<{
   if (!fh) return null;
 
   if (!fh.coordinates) {
-    return <NPCPlaceable parts={fh.equipped} isManuallyPlaced={true} />;
+    return (
+      <NPCPlaceable
+        parts={fh.equipped}
+        isManuallyPlaced={true}
+        flipped={fh.flipped}
+      />
+    );
   }
 
   if (!isLandscaping) {
@@ -39,6 +45,7 @@ export const FarmHand: React.FC<{
           parts={fh.equipped}
           onClick={() => setShowModal(true)}
           isManuallyPlaced={true}
+          flipped={fh.flipped}
         />
         <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
           <CloseButtonPanel
@@ -76,7 +83,11 @@ export const FarmHand: React.FC<{
       y={fh.coordinates.y}
       location={location}
     >
-      <NPCPlaceable parts={fh.equipped} isManuallyPlaced={true} />
+      <NPCPlaceable
+        parts={fh.equipped}
+        isManuallyPlaced={true}
+        flipped={fh.flipped}
+      />
     </MoveableComponent>
   );
 };

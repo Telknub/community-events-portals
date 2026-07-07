@@ -11,15 +11,19 @@ import xpIcon from "assets/icons/xp.png";
 import recipeIcon from "assets/decorations/page.png";
 import { getKeys } from "lib/object";
 import { ITEM_DETAILS } from "features/game/types/images";
+import { getItemDescription } from "features/game/lib/getItemDescription";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
-import {
+import { type BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
+import type {
   Airdrop as IAirdrop,
   InventoryItemName,
 } from "features/game/types/game";
 import { Label } from "components/ui/Label";
 import { Box } from "components/ui/Box";
-import { CONSUMABLES, ConsumableName } from "features/game/types/consumables";
+import {
+  CONSUMABLES,
+  type ConsumableName,
+} from "features/game/types/consumables";
 import { formatNumber } from "lib/utils/formatNumber";
 import { Context, useGame } from "features/game/GameProvider";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
@@ -27,7 +31,7 @@ import { COLLECTIBLE_BUFF_LABELS } from "features/game/types/collectibleItemBuff
 import { InlineDialogue } from "features/world/ui/TypingMessage";
 import { getImageUrl } from "lib/utils/getImageURLS";
 import { getFoodExpBoost } from "../lib/boosts";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { BUMPKIN_ITEM_BUFF_LABELS } from "features/game/types/bumpkinItemBuffs";
 import { ButtonPanel } from "components/ui/Panel";
 import { OPEN_SEA_WEARABLES } from "metadata/metadata";
@@ -199,10 +203,7 @@ export const Rewards: React.FC<{
 
       {itemNames.length > 0 &&
         itemNames.map((name) => {
-          const buff = COLLECTIBLE_BUFF_LABELS[name]?.({
-            skills: game.bumpkin.skills,
-            collectibles: game.collectibles,
-          });
+          const buff = COLLECTIBLE_BUFF_LABELS[name]?.(game);
           const isVipGift = vipGiftItem === name;
           return (
             <ButtonPanel
@@ -265,9 +266,8 @@ export const Rewards: React.FC<{
                   </div>
                 ) : (
                   <p className="text-xs ml-0.5">
-                    {ITEM_DETAILS[name]?.description
-                      ? ITEM_DETAILS[name].description
-                      : t("reward.collectible")}
+                    {getItemDescription({ item: name, game }) ||
+                      t("reward.collectible")}
                   </p>
                 )}
               </div>

@@ -7,15 +7,15 @@ import { useActor, useSelector } from "@xstate/react";
 import { getKeys } from "lib/object";
 import { getTradeableDisplay } from "../../lib/tradeables";
 import { tradeToId } from "../../lib/offers";
-import { CollectionName } from "features/game/types/marketplace";
+import type { CollectionName } from "features/game/types/marketplace";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Modal } from "components/ui/Modal";
 import { RemoveOffer } from "../RemoveOffer";
 import { ClaimReward } from "features/game/expansion/components/ClaimReward";
 import { NPC_WEARABLES } from "lib/npcs";
-import { AuthMachineState } from "features/auth/lib/authMachine";
-import { InventoryItemName } from "features/game/types/game";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
+import type { InventoryItemName } from "features/game/types/game";
 import { formatNumber } from "lib/utils/formatNumber";
 import { isTradeResource } from "features/game/actions/tradeLimits";
 import { MyTableRow } from "./MyTableRow";
@@ -28,7 +28,11 @@ import { Button } from "components/ui/Button";
 const _authToken = (state: AuthMachineState) =>
   state.context.user.rawToken as string;
 
-export const MyOffers: React.FC = () => {
+type Props = {
+  fullHeight?: boolean;
+};
+
+export const MyOffers: React.FC<Props> = ({ fullHeight = false }) => {
   const { t } = useAppTranslation();
   const params = useParams<{
     collection?: CollectionName;
@@ -152,8 +156,12 @@ export const MyOffers: React.FC = () => {
         />
       </Modal>
 
-      <InnerPanel className="mb-1">
-        <div className="p-2">
+      <InnerPanel
+        className={fullHeight ? "flex h-full min-h-0 flex-col" : "mb-1"}
+      >
+        <div
+          className={fullHeight ? "flex h-full min-h-0 flex-col p-2" : "p-2"}
+        >
           <div className="flex justify-between flex-col mb-2">
             <div className="flex items-center justify-between mb-1">
               <Label type="default" icon={trade}>
@@ -174,11 +182,17 @@ export const MyOffers: React.FC = () => {
               })}
             </Label>
           </div>
-          <div className="flex flex-wrap">
+          <div
+            className={fullHeight ? "flex min-h-0 flex-1" : "flex flex-wrap"}
+          >
             {getKeys(filteredOffers).length === 0 ? (
               <p className="text-sm">{t("marketplace.noMyOffers")}</p>
             ) : (
-              <div className="w-full relative border-collapse mb-2 max-h-[200px] scrollable overflow-y-auto overflow-x-hidden">
+              <div
+                className={`w-full relative border-collapse mb-2 scrollable overflow-y-auto overflow-x-hidden ${
+                  fullHeight ? "h-full min-h-0" : "max-h-[200px]"
+                }`}
+              >
                 {getKeys(filteredOffers).map((id, index) => {
                   const offer = filteredOffers[id];
                   const itemName = getKeys(

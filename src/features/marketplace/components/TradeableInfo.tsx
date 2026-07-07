@@ -5,18 +5,19 @@ import { InnerPanel } from "components/ui/Panel";
 import {
   getMarketPrice,
   getResourceTax,
-  TradeableDetails,
+  type TradeableDetails,
 } from "features/game/types/marketplace";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { TradeableDisplay } from "../lib/tradeables";
+import type { TradeableDisplay } from "../lib/tradeables";
 
 import grassBg from "assets/ui/3x3_bg.png";
 import brownBg from "assets/brand/brown_background.png";
 import lockIcon from "assets/icons/lock.png";
+import bwHeart from "assets/icons/bw_heart.png";
 import crownIcon from "assets/icons/vip.webp";
 import petNFTEggMarketplace from "assets/pets/pet-nft-egg-marketplace.webp";
 
-import { InventoryItemName } from "features/game/types/game";
+import type { InventoryItemName } from "features/game/types/game";
 import { isTradeResource } from "features/game/actions/tradeLimits";
 import { useParams } from "react-router";
 import { TradeableStats } from "./TradeableStats";
@@ -26,7 +27,10 @@ import {
   INVENTORY_RELEASES,
   getPetReleases,
 } from "features/game/types/withdrawables";
-import { BUMPKIN_ITEM_PART, BumpkinItem } from "features/game/types/bumpkin";
+import {
+  BUMPKIN_ITEM_PART,
+  type BumpkinItem,
+} from "features/game/types/bumpkin";
 import { ModalContext } from "features/game/components/modal/ModalProvider";
 import { Modal } from "components/ui/Modal";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
@@ -38,11 +42,11 @@ import {
   getPetLevel,
   getPetNFTReleaseDate,
   PET_CATEGORIES,
-  PetCategory,
+  type PetCategory,
 } from "features/game/types/pets";
 import { getPetTraits } from "features/pets/data/getPetTraits";
-import { PetTraits } from "features/pets/data/types";
-import { Bud } from "lib/buds/types";
+import type { PetTraits } from "features/pets/data/types";
+import type { Bud } from "lib/buds/types";
 import { getBudTraits } from "features/game/types/budBuffs";
 import { setPrecision } from "lib/utils/formatNumber";
 import { useNow } from "lib/utils/hooks/useNow";
@@ -115,7 +119,9 @@ export const getNFTTraits = (
 export const TradeableImage: React.FC<{
   display: TradeableDisplay;
   supply?: number;
-}> = ({ display, supply }) => {
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+}> = ({ display, supply, isFavorite = false, onToggleFavorite }) => {
   const { t } = useAppTranslation();
   const params = useParams();
   const isTradeResourceItem = isTradeResource(
@@ -137,6 +143,29 @@ export const TradeableImage: React.FC<{
   // Pets have a dedicated egg artwork fallback while other tradeables keep their default imagery.
   const fallbackImage =
     display.type === "pets" ? petNFTEggMarketplace : undefined;
+  const favoriteLabel = isFavorite
+    ? t("marketplace.removeFromFavorites")
+    : t("marketplace.addToFavorites");
+  const favoriteIcon = isFavorite ? SUNNYSIDE.icons.heart : bwHeart;
+  const [favoriteFeedback, setFavoriteFeedback] = useState<
+    "added" | "removed"
+  >();
+
+  React.useEffect(() => {
+    if (!favoriteFeedback) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setFavoriteFeedback(undefined);
+    }, 1250);
+
+    return () => window.clearTimeout(timeout);
+  }, [favoriteFeedback]);
+
+  React.useEffect(() => {
+    setFavoriteFeedback(undefined);
+  }, [display.name]);
 
   const isBumpkinBackground = display.name.includes("Background");
   const itemBackground = useResourceBackdrop ? brownBg : grassBg;
@@ -161,12 +190,43 @@ export const TradeableImage: React.FC<{
 
   return (
     <InnerPanel className="w-full flex relative mb-1" style={{ padding: 0 }}>
-      <div className="flex flex-wrap absolute top-2 right-2">
+      <div
+        className={classNames(
+          "flex flex-wrap absolute top-2",
+          onToggleFavorite ? "left-2" : "right-2",
+        )}
+      >
         {supply && (!isTradeResourceItem || isCluckCoin) ? (
           <Label type="default">{t("marketplace.supply", { supply })}</Label>
         ) : null}
       </div>
-
+      {onToggleFavorite && (
+        <>
+          <button
+            type="button"
+            aria-label={favoriteLabel}
+            title={favoriteLabel}
+            className="absolute top-4 right-4 h-8 w-8 cursor-pointer border-0 bg-transparent p-0 hover:img-highlight"
+            onClick={(event) => {
+              event.stopPropagation();
+              setFavoriteFeedback(isFavorite ? "removed" : "added");
+              onToggleFavorite();
+            }}
+          >
+            <img src={favoriteIcon} alt="" className="h-full w-full" />
+          </button>
+          {favoriteFeedback && (
+            <Label
+              type={favoriteFeedback === "added" ? "success" : "default"}
+              className="absolute top-14 -right-6 z-[1] pointer-events-none whitespace-nowrap"
+            >
+              {favoriteFeedback === "added"
+                ? t("marketplace.addedToFavourites")
+                : t("marketplace.removedFromFavourites")}
+            </Label>
+          )}
+        </>
+      )}
       <img
         src={showFullImage ? imageSrc : background}
         className="w-full rounded-sm"
@@ -411,10 +471,17 @@ export const TradeableInfo: React.FC<{
   display: TradeableDisplay;
   tradeable?: TradeableDetails;
   hideLimited?: boolean;
-}> = ({ display, tradeable, hideLimited }) => {
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+}> = ({ display, tradeable, hideLimited, isFavorite, onToggleFavorite }) => {
   return (
     <>
-      <TradeableImage display={display} supply={tradeable?.supply} />
+      <TradeableImage
+        display={display}
+        supply={tradeable?.supply}
+        isFavorite={isFavorite}
+        onToggleFavorite={onToggleFavorite}
+      />
       <TradeableDescription
         display={display}
         tradeable={tradeable}
@@ -430,12 +497,19 @@ export const TradeableMobileInfo: React.FC<{
   display: TradeableDisplay;
   tradeable?: TradeableDetails;
   hideLimited?: boolean;
-}> = ({ display, tradeable, hideLimited }) => {
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+}> = ({ display, tradeable, hideLimited, isFavorite, onToggleFavorite }) => {
   const marketPrice = getMarketPrice({ tradeable });
   return (
     <>
       <div className="flex justify-between gap-1 items-center">
-        <TradeableImage display={display} supply={tradeable?.supply} />
+        <TradeableImage
+          display={display}
+          supply={tradeable?.supply}
+          isFavorite={isFavorite}
+          onToggleFavorite={onToggleFavorite}
+        />
         <TradeableStats
           history={tradeable?.history}
           marketPrice={marketPrice}

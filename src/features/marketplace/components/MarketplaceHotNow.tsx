@@ -10,7 +10,7 @@ import sflIcon from "assets/icons/flower_token.webp";
 import tradeIcon from "assets/icons/trade.png";
 import whaleIcon from "assets/icons/whale.webp";
 import walletIcon from "assets/icons/wallet.png";
-import { MarketplaceTrends } from "features/game/types/marketplace";
+import type { MarketplaceTrends } from "features/game/types/marketplace";
 import { Loading } from "features/auth/components";
 import { loadTrends } from "../actions/loadTrends";
 import * as Auth from "features/auth/lib/Provider";
@@ -138,6 +138,33 @@ export const MarketplaceHotNow: React.FC = () => {
                     </div>
                     <p className="text-xs">
                       {t("marketplace.cosmeticsDescription")}
+                    </p>
+                  </div>
+                </div>
+              </ButtonPanel>
+            </div>
+
+            <div className="w-full sm:w-1/3 xl:w-1/4 pr-1">
+              <ButtonPanel
+                className="w-full h-full"
+                onClick={() =>
+                  navigate(
+                    `${isWorldRoute ? "/world" : ""}/marketplace/favorites`,
+                  )
+                }
+              >
+                <div className="flex items-center">
+                  <img src={SUNNYSIDE.icons.heart} className="w-10 mr-2" />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <p>{t("marketplace.favorites")}</p>
+                      <img
+                        src={SUNNYSIDE.icons.chevron_right}
+                        className="h-4"
+                      />
+                    </div>
+                    <p className="text-xs">
+                      {t("marketplace.favoritesDescription")}
                     </p>
                   </div>
                 </div>

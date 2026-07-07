@@ -9,16 +9,20 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { PeteHelp } from "./PeteHelp";
 import { Context } from "features/game/GameProvider";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
-import { getBumpkinLevel } from "features/game/lib/level";
+import type { MachineState } from "features/game/lib/gameMachine";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { MapPlacement } from "./MapPlacement";
+import { getWharfCoordinates } from "../lib/constants";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 import { getKeys } from "lib/object";
 import { CROPS } from "features/game/types/crops";
 import { translate } from "lib/i18n/translate";
 import { Guide } from "features/helios/components/hayseedHank/components/Guide";
-import { GuidePath } from "features/helios/components/hayseedHank/lib/guide";
+import type { GuidePath } from "features/helios/components/hayseedHank/lib/guide";
 
 const expansions = (state: MachineState) =>
   state.context.state.inventory["Basic Land"]?.toNumber() ?? 0;
@@ -26,9 +30,12 @@ const expansions = (state: MachineState) =>
 const hint = (state: MachineState) => {
   const activity = state.context.state.farmActivity;
   const inventory = state.context.state.inventory;
-  const level = getBumpkinLevel(state.context.state.bumpkin?.experience ?? 0);
+  const ascension = getAscensionLevel({
+    experience: state.context.state.bumpkin.experience ?? 0,
+    ascensionLevel: state.context.state.island.ascensionLevel ?? 0,
+  });
 
-  if (level >= 2) {
+  if (meetsLevelRequirement(ascension, { ascension: 0, level: 2 })) {
     return "Explore";
   }
 
@@ -85,7 +92,7 @@ const hint = (state: MachineState) => {
     return translate("pete.teaser.seven");
   }
 
-  if (inventory["Basic Scarecrow"] && level === 1) {
+  if (inventory["Basic Scarecrow"] && ascension.level === 1) {
     return translate("pete.teaser.eight");
   }
 
@@ -115,15 +122,10 @@ export const TravelTeaser: React.FC = () => {
     speak();
   }, [peteHint]);
 
+  // Pumpkin Pete's boat sits east of the dock/salt and moves with the dock.
   const coords = () => {
-    if (expansionCount < 7) {
-      return { x: 6, y: -4.5 };
-    }
-    if (expansionCount >= 7 && expansionCount < 21) {
-      return { x: 6, y: -10.5 };
-    } else {
-      return { x: 6, y: -16.5 };
-    }
+    const wharf = getWharfCoordinates(expansionCount);
+    return { x: wharf.x + 13, y: wharf.y - 1.5 };
   };
 
   const coordinates = coords();

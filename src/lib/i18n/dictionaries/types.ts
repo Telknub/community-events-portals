@@ -1,4 +1,4 @@
-import en from "./dictionary.json";
+import type en from "./dictionary.json";
 
 type DictionaryTranslationKeys = keyof typeof en;
 type FestivalOfColorsTranslationKeys = Extract<

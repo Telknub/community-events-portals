@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Decimal } from "decimal.js-light";
+import type { Decimal } from "decimal.js-light";
 
-import {
+import type {
   CropName,
   CropSeedName,
   GreenHouseCropName,
   GreenHouseCropSeedName,
 } from "./crops";
 
-import { CollectibleName, CraftableName, Food } from "./craftables";
-import {
+import type { CollectibleName, CraftableName, Food } from "./craftables";
+import type {
   UpgradedResourceName,
   CommodityName,
   MushroomName,
@@ -17,25 +17,30 @@ import {
   ResourceTier,
   TreeName,
 } from "./resources";
-import { LegacyBadgeName } from "./skills";
-import { BuildingName } from "./buildings";
-import { GameEvent } from "../events";
-import { BumpkinItem, Equipped as BumpkinParts } from "./bumpkin";
-import { ConsumableName, CookableName } from "./consumables";
-import { ProcessedResource } from "./processedFood";
-import { BumpkinSkillName, BumpkinRevampSkillName } from "./bumpkinSkills";
-import { AchievementName } from "./achievements";
-import { DecorationName } from "./decorations";
-import { BeanName, ExoticCropName, GiantFruit, MutantCropName } from "./beans";
-import {
+import type { LegacyBadgeName } from "./skills";
+import type { BuildingName } from "./buildings";
+import type { GameEvent } from "../events";
+import type { BumpkinItem, Equipped as BumpkinParts } from "./bumpkin";
+import type { ConsumableName, CookableName } from "./consumables";
+import type { ProcessedResource } from "./processedFood";
+import type { BumpkinSkillName, BumpkinRevampSkillName } from "./bumpkinSkills";
+import type { AchievementName } from "./achievements";
+import type { DecorationName } from "./decorations";
+import type {
+  BeanName,
+  ExoticCropName,
+  GiantFruit,
+  MutantCropName,
+} from "./beans";
+import type {
   FullMoonFruit,
   GreenHouseFruitName,
   GreenHouseFruitSeedName,
   PatchFruitName,
   PatchFruitSeedName,
 } from "./fruits";
-import { BeachBountyTreasure, TreasureName } from "./treasure";
-import {
+import type { BeachBountyTreasure, TreasureName } from "./treasure";
+import type {
   GoblinBlacksmithItemName,
   GoblinPirateItemName,
   HeliosBlacksmithItem,
@@ -46,26 +51,26 @@ import {
   SoldOutCollectibleName,
   TreasureCollectibleItem,
 } from "./collectibles";
-import { TreasureToolName, WorkbenchToolName } from "./tools";
-import { ConversationName } from "./announcements";
-import { NPCName } from "lib/npcs";
-import {
+import type { TreasureToolName, WorkbenchToolName } from "./tools";
+import type { ConversationName } from "./announcements";
+import type { NPCName } from "lib/npcs";
+import type {
   ChapterBanner,
   ChapterTicket,
   ChapterName,
   ChapterRaffleTicket,
 } from "./chapters";
-import { Bud } from "./buds";
-import {
+import type { Bud } from "./buds";
+import type {
   CompostName,
   CropCompostName,
   FruitCompostName,
   GreenhouseCompostName,
   Worm,
 } from "./composters";
-import { FarmActivityName } from "./farmActivity";
-import { MilestoneName } from "./milestones";
-import {
+import type { FarmActivityName } from "./farmActivity";
+import type { MilestoneName } from "./milestones";
+import type {
   AgedFishName,
   PrimeAgedFishName,
   FishName,
@@ -73,59 +78,70 @@ import {
   MarineMarvelName,
   OldFishName,
 } from "./fishing";
-import { MinigameName } from "./minigames";
-import {
+import type { MinigameName } from "./minigames";
+import type {
   FlowerCrossBreedName,
   FlowerName,
   FlowerSeedName,
   MutantFlowerName,
 } from "./flowers";
-import { FermentationProductName } from "./fermentationProducts";
-import { SpiceRackProductName } from "./spiceRackProducts";
-import { PickledCropName } from "./pickled";
+import type { FermentationProductName } from "./fermentationProducts";
+import type { SpiceRackProductName } from "./spiceRackProducts";
+import type { PickledCropName } from "./pickled";
 import { translate } from "lib/i18n/translate";
-import { SpecialEvents } from "./specialEvents";
-import { TradeableName } from "../actions/sellMarketResource";
-import { MinigameCurrency } from "../events/minigames/purchaseMinigameItem";
-import { FactionShopCollectibleName, FactionShopFoodName } from "./factionShop";
-import { DiggingFormationName } from "./desert";
-import {
+import { capitalize } from "lib/utils/capitalize";
+import type { SpecialEvents } from "./specialEvents";
+import type { TradeableName } from "../actions/sellMarketResource";
+import type { MinigameCurrency } from "../events/minigames/purchaseMinigameItem";
+import type {
+  FactionShopCollectibleName,
+  FactionShopFoodName,
+} from "./factionShop";
+import type { DiggingFormationName } from "./desert";
+import type {
   BudNFTName,
   CollectionName,
   MarketplaceTradeableName,
 } from "./marketplace";
-import { GameTransaction } from "./transactions";
-import { CompetitionName, CompetitionProgress } from "./competitions";
-import { AnimalType } from "./animals";
-import { ChoreBoard } from "./choreBoard";
-import { DollName, RecipeCollectibleName, Recipes } from "../lib/crafting";
+import type { GameTransaction } from "./transactions";
+import type { LevelRequirement } from "features/game/lib/level";
+import type { CompetitionName, CompetitionProgress } from "./competitions";
+import type { AnimalType } from "./animals";
+import type { ChoreBoard } from "./choreBoard";
+import type { DollName, RecipeCollectibleName, Recipes } from "../lib/crafting";
 
-import { ChapterCollectibleName, ChapterTierItemName } from "./megastore";
-import { TradeFood } from "../events/landExpansion/redeemTradeReward";
-import {
+import type { ChapterCollectibleName, ChapterTierItemName } from "./megastore";
+import type { TradeFood } from "../events/landExpansion/redeemTradeReward";
+import type {
   CalendarEvent,
   CalendarEventName,
   SeasonalEventName,
 } from "./calendar";
-import { VipBundle } from "../lib/vipAccess";
-import { InGameTaskName } from "../events/landExpansion/completeSocialTask";
-import { TwitterPost, TwitterPostName } from "./social";
-import { NetworkName } from "../events/landExpansion/updateNetwork";
-import { RewardBoxes, RewardBoxName } from "./rewardBoxes";
-import { FloatingIslandShop, FloatingShopItemName } from "./floatingIsland";
-import { Blessing } from "../lib/blessings";
-import { LandBiomeName } from "features/island/biomes/biomes";
-import { MonumentName } from "./monuments";
-import { AOEItemName } from "../expansion/placeable/lib/collisionDetection";
-import { Coordinates } from "../expansion/components/MapPlacement";
-import { ClutterName } from "./clutter";
-import { PetName, PetResourceName, Pets } from "./pets";
-import { RockName } from "./resources";
-import { PetShopItemName } from "./petShop";
-import { League } from "features/leagues/leagues";
-import { Buff, BuffName } from "./buffs";
-import { CrustaceanChum, CrustaceanName, WaterTrapName } from "./crustaceans";
-import { SaltFarm } from "./salt";
+import type { VipBundle } from "../lib/vipAccess";
+import type { InGameTaskName } from "../events/landExpansion/completeSocialTask";
+import type { TwitterPost, TwitterPostName } from "./social";
+import type { NetworkName } from "../events/landExpansion/updateNetwork";
+import type { RewardBoxes, RewardBoxName } from "./rewardBoxes";
+import type {
+  FloatingIslandShop,
+  FloatingShopItemName,
+} from "./floatingIsland";
+import type { LandBiomeName } from "features/island/biomes/biomes";
+import type { MonumentName } from "./monuments";
+import type { AOEItemName } from "../expansion/placeable/lib/collisionDetection";
+import type { Coordinates } from "../expansion/components/MapPlacement";
+import type { ClutterName } from "./clutter";
+import type { PetName, PetResourceName, Pets } from "./pets";
+import type { RockName } from "./resources";
+import type { PetShopItemName } from "./petShop";
+import type { League } from "features/leagues/leagues";
+import type { Buff, BuffName } from "./buffs";
+import type {
+  CrustaceanChum,
+  CrustaceanName,
+  WaterTrapName,
+} from "./crustaceans";
+import type { SaltFarm } from "./salt";
 import type { AgingShed } from "../lib/agingShed";
 import type { SculptureName } from "./saltSculpture";
 
@@ -529,6 +545,7 @@ export type Bumpkin = {
   paidSkillResets?: number;
   coordinates?: Coordinates;
   location?: Exclude<PlaceableLocation, "petHouse">;
+  flipped?: boolean;
 };
 
 export type SpecialEvent = "Chef Apron" | "Chef Hat";
@@ -695,6 +712,7 @@ export type InventoryItemName =
   | ChapterCollectibleName
   | TradeFood
   | ChapterBanner
+  | "Creator Banner"
   | RewardBoxName
   | LandBiomeName
   | MonumentName
@@ -900,6 +918,11 @@ export type PlacedItem = {
   processing?: BuildingProduct[];
   oil?: number;
   flipped?: boolean;
+  /**
+   * Weather-protection collectible (e.g. Tornado Pinwheel) consumed by its
+   * calendar event. Stays placed/owned but grants no protection until renewed.
+   */
+  used?: boolean;
 };
 
 export type ShakeItem = PlacedItem & { shakenAt?: number };
@@ -960,6 +983,66 @@ type PlacedBuildings<Name extends BuildingName> = {
 
 export type Buildings = Partial<PlacedBuildings<BuildingName>>;
 
+/**
+ * A single restorable position within a {@link SavedLayout}. Mirrors the
+ * coordinate shape used by placed items (integer tile x/y + optional render
+ * offsets oX/oY).
+ */
+export type LayoutCoordinates = {
+  x: number;
+  y: number;
+  oX?: number;
+  oY?: number;
+};
+
+/**
+ * A placed collectible/building reduced to what a layout restores: which item
+ * (`id`), where (`coordinates`) and its orientation (`flipped`). Derived from
+ * {@link PlacedItem} so it stays in step with the source shape, without the
+ * per-item state (crafting, readyAt, oil, …) a layout doesn't need.
+ */
+export type LayoutPlacement = Pick<PlacedItem, "id" | "flipped"> & {
+  coordinates: LayoutCoordinates;
+};
+
+/**
+ * A named snapshot of the player's farm arrangement (`location: "farm"`).
+ * Items are keyed by `id` so applying a layout repositions the player's
+ * existing items. Collectibles/buildings mirror the live `name -> PlacedItem[]`
+ * buckets (capturing `flipped`); resources mirror the live `Record<id, {...}>`
+ * buckets whose coordinates live as top-level x/y. See `saveLayout`/`applyLayout`.
+ */
+export type SavedLayout = {
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+  collectibles: Partial<Record<CollectibleName, LayoutPlacement[]>>;
+  buildings: Partial<Record<BuildingName, LayoutPlacement[]>>;
+  resources: {
+    trees: Record<string, LayoutCoordinates>;
+    stones: Record<string, LayoutCoordinates>;
+    gold: Record<string, LayoutCoordinates>;
+    iron: Record<string, LayoutCoordinates>;
+    crimstones: Record<string, LayoutCoordinates>;
+    sunstones: Record<string, LayoutCoordinates>;
+    ascensionCrystals: Record<string, LayoutCoordinates>;
+    oilReserves: Record<string, LayoutCoordinates>;
+    crops: Record<string, LayoutCoordinates>;
+    fruitPatches: Record<string, LayoutCoordinates>;
+    beehives: Record<string, LayoutCoordinates>;
+    flowerBeds: Record<string, LayoutCoordinates>;
+    lavaPits: Record<string, LayoutCoordinates>;
+  };
+};
+
+/**
+ * Maximum number of saved layouts a player can keep. The live farm is the
+ * working arrangement, not a saved layout — these slots are separate from it.
+ */
+export const MAX_SAVED_LAYOUTS = 3;
+/** Maximum character length of a saved layout name. */
+export const MAX_LAYOUT_NAME_LENGTH = 30;
+
 export type ExpansionConstruction = {
   createdAt: number;
   readyAt: number;
@@ -969,7 +1052,7 @@ export interface ExpansionRequirements {
   resources: Partial<Record<InventoryItemName, number>>;
   coins?: number;
   seconds: number;
-  bumpkinLevel: number;
+  bumpkinLevel: LevelRequirement;
 }
 
 export type Airdrop = {
@@ -1045,6 +1128,7 @@ export type FarmHand = {
   equipped: BumpkinParts;
   coordinates?: Coordinates;
   location?: "farm" | "home" | "interior" | "level_one";
+  flipped?: boolean;
 };
 
 export type Mushroom = {
@@ -1118,7 +1202,8 @@ export type BedName =
   | "Royal Bed"
   | "Pearl Bed"
   | "Double Bed"
-  | "Messy Bed";
+  | "Messy Bed"
+  | "Salt Crystal Bed";
 
 export type RecipeCraftableName =
   | "Cushion"
@@ -1225,6 +1310,7 @@ export type NPCS = Partial<Record<NPCName, NPCData>>;
 export type NPCData = {
   deliveryCount: number;
   deliveryCompletedAt?: number;
+  skippedCount?: number;
   questCompletedAt?: number;
   friendship?: {
     updatedAt: number;
@@ -1496,18 +1582,41 @@ export type MegaStore = {
   collectibles: CollectiblesItem[];
 };
 
-export type IslandType = "basic" | "spring" | "desert" | "volcano";
+export const ISLAND_TYPES = ["basic", "spring", "desert", "volcano"] as const;
+export type BasicIslandType = (typeof ISLAND_TYPES)[number];
+
+export const ASCENSION_ISLANDS = [
+  "swamp",
+  "spooky",
+  "crystal",
+  "moon",
+  "marble",
+] as const;
+export type AscensionIslandType = (typeof ASCENSION_ISLANDS)[number];
+
+export const ISLAND_EXPANSIONS = [
+  ...ISLAND_TYPES,
+  ...ASCENSION_ISLANDS,
+] as const;
+
+export type IslandType = (typeof ISLAND_EXPANSIONS)[number];
 
 /**
- * The order of the islands is important as it determines the levels of the islands.
- * Each new island should be added to the end of the array.
+ * Islands that are displayed under a custom name rather than `"{Type} Island"`.
+ * Use {@link getIslandName} for any player-facing island label so these stay
+ * consistent across the UI.
  */
-export const ISLAND_EXPANSIONS: IslandType[] = [
-  "basic",
-  "spring",
-  "desert",
-  "volcano",
-];
+export const ISLAND_DISPLAY_NAMES: Partial<Record<IslandType, string>> = {
+  spring: "Petal Paradise",
+  marble: "Marble Age",
+};
+
+/**
+ * The player-facing display name for an island: its custom name if it has one,
+ * otherwise the title-cased generic `"{Type} Island"`.
+ */
+export const getIslandName = (island: IslandType): string =>
+  ISLAND_DISPLAY_NAMES[island] ?? `${capitalize(island)} Island`;
 
 export type Home = {
   collectibles: Collectibles;
@@ -1810,7 +1919,8 @@ export type SpecialBoostName =
   | "Tier 3 Bonus"
   | "Streak Bonus"
   | "Bee Swarm Bonus"
-  | "Building Oil";
+  | "Building Oil"
+  | "Double Delivery";
 
 export type BoostUsedAt = Partial<Record<BoostName, number>>;
 
@@ -1906,6 +2016,7 @@ export interface GameState {
     previousExpansions?: number;
     sunstones?: number;
     biome?: LandBiomeName;
+    ascensionLevel?: number;
   };
 
   username?: string;
@@ -1915,6 +2026,7 @@ export interface GameState {
     };
     network?: NetworkName;
     economiesEnabled?: boolean;
+    interiorsEnabled?: boolean;
   };
   coins: number;
   balance: Decimal;
@@ -1949,6 +2061,7 @@ export interface GameState {
   iron: Record<string, Rock>;
   crimstones: Record<string, FiniteResource>;
   sunstones: Record<string, FiniteResource>;
+  ascensionCrystals: Record<string, FiniteResource>;
   oilReserves: Record<string, OilReserve>;
 
   crops: Record<string, CropPlot>;
@@ -2031,7 +2144,7 @@ export interface GameState {
   auctioneer: Auctioneer;
   chores?: ChoresV2;
   kingdomChores: KingdomChores;
-  mushrooms: Mushrooms;
+  mushrooms?: Mushrooms;
   potionHouse?: PotionHouse;
 
   bounties: Bounties;
@@ -2109,6 +2222,13 @@ export interface GameState {
   };
   season: Season;
   lavaPits: Record<string, LavaPit>;
+  /**
+   * Saved snapshots of the farm arrangement. The live farm is the "current"
+   * layout; these are the saved alternatives the player can load onto it.
+   * Optional so legacy saves (which never had this field) need no migration.
+   * Capped at {@link MAX_SAVED_LAYOUTS}.
+   */
+  layouts?: SavedLayout[];
   nfts?: Partial<Record<Chain, NFT>>;
 
   faceRecognition?: {
@@ -2146,6 +2266,12 @@ export interface GameState {
       coins?: number;
       sfl?: number;
     };
+    /**
+     * VIP referral milestone thresholds (1, 5, 10, 20 … 90) that have been
+     * claimed, mapped to the timestamp (ms) they were claimed at. Used to make
+     * each milestone prize claimable exactly once.
+     */
+    vipMilestonesClaimed?: Partial<Record<number, number>>;
   };
   socialTasks?: {
     completed: Partial<Record<InGameTaskName, { completedAt: number }>>;
@@ -2173,7 +2299,6 @@ export interface GameState {
   withdrawals?: {
     amount: number;
   };
-  blessing: Blessing;
 
   aoe: AOE;
   socialFarming: SocialFarming;
@@ -2203,7 +2328,8 @@ export type FaceRecognitionEvent =
         faceId: string;
         farmId: number;
       }[];
-    };
+    }
+  | { event: "ownerChanged"; createdAt: number };
 
 export interface Context {
   state?: GameState;

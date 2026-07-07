@@ -3,11 +3,11 @@ import { TEST_BUMPKIN } from "features/game/lib/bumpkinData";
 import { EXPIRY_COOLDOWNS } from "features/game/lib/collectibleBuilt";
 import { INITIAL_FARM, STONE_RECOVERY_TIME } from "features/game/lib/constants";
 import { KNOWN_IDS } from "features/game/types";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { prngChance } from "lib/prng";
 import {
   mineStone,
-  LandExpansionStoneMineAction,
+  type LandExpansionStoneMineAction,
   getStoneDropAmount,
   getMinedAt,
 } from "./stoneMine";
@@ -1385,6 +1385,30 @@ describe("mineStone", () => {
         ...GAME_STATE,
         island: {
           type: "volcano",
+        },
+        inventory: {
+          Pickaxe: new Decimal(1),
+        },
+        farmActivity: { "Stone Rock Mined": counter },
+      },
+      action: {
+        type: "stoneRock.mined",
+        index: "0",
+      } as LandExpansionStoneMineAction,
+      createdAt: now,
+      farmId,
+    });
+
+    expect(state.inventory.Stone).toEqual(new Decimal(1.1));
+  });
+
+  it("applies the +0.1 volcano boost on ascension islands (e.g. spooky)", () => {
+    const counter = findNonCriticalCounter();
+    const state = mineStone({
+      state: {
+        ...GAME_STATE,
+        island: {
+          type: "spooky",
         },
         inventory: {
           Pickaxe: new Decimal(1),

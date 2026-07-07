@@ -4,21 +4,21 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import tradeOffs from "src/assets/icons/tradeOffs.png";
 import { Label } from "components/ui/Label";
 import { InnerPanel } from "components/ui/Panel";
-import { CollectibleName } from "features/game/types/craftables";
+import type { CollectibleName } from "features/game/types/craftables";
 import { getKeys } from "lib/object";
-import { BoostName, GameState } from "features/game/types/game";
+import type { BoostName, GameState } from "features/game/types/game";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { SquareIcon } from "components/ui/SquareIcon";
 import { pixelDarkBorderStyle } from "features/game/lib/style";
 import { BUMPKIN_ITEM_BUFF_LABELS } from "features/game/types/bumpkinItemBuffs";
 import { getRemainingReels } from "features/game/events/landExpansion/castRod";
-import { BuffLabel } from "features/game/types";
-import { BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
+import type { BuffLabel } from "features/game/types";
+import { type BumpkinItem, ITEM_IDS } from "features/game/types/bumpkin";
 import {
   BUMPKIN_REVAMP_SKILL_TREE,
-  BumpkinRevampSkillName,
-  BumpkinSkillRevamp,
+  type BumpkinRevampSkillName,
+  type BumpkinSkillRevamp,
 } from "features/game/types/bumpkinSkills";
 import {
   INNER_CANVAS_WIDTH,
@@ -45,10 +45,7 @@ const BoostReelItems: (
   state: GameState,
 ) => Partial<Record<FishingReelBoostName, BoostReelItem>> = (state) => ({
   "Reelmaster's Chair": {
-    buff: COLLECTIBLE_BUFF_LABELS["Reelmaster's Chair"]?.({
-      skills: state.bumpkin.skills,
-      collectibles: state.collectibles,
-    }) as BuffLabel[],
+    buff: COLLECTIBLE_BUFF_LABELS["Reelmaster's Chair"]?.(state) as BuffLabel[],
     location: "Marketplace",
   },
   "Angler Waders": {
@@ -64,17 +61,11 @@ const BoostReelItems: (
     location: "Fishing Skill Tree",
   },
   Nautilus: {
-    buff: COLLECTIBLE_BUFF_LABELS["Nautilus"]?.({
-      skills: state.bumpkin.skills,
-      collectibles: state.collectibles,
-    }) as BuffLabel[],
+    buff: COLLECTIBLE_BUFF_LABELS["Nautilus"]?.(state) as BuffLabel[],
     location: "Marine Marvel",
   },
   "Deep Sea Slug": {
-    buff: COLLECTIBLE_BUFF_LABELS["Deep Sea Slug"]?.({
-      skills: state.bumpkin.skills,
-      collectibles: state.collectibles,
-    }) as BuffLabel[],
+    buff: COLLECTIBLE_BUFF_LABELS["Deep Sea Slug"]?.(state) as BuffLabel[],
     location: "Marine Marvel",
   },
   "More With Less": {

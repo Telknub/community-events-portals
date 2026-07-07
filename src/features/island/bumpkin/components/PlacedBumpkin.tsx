@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { NPCPlaceable } from "./NPC";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
 import { Context } from "features/game/GameProvider";
 import { MoveableComponent } from "features/island/collectibles/MovableComponent";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 import { PlayerNPC } from "./PlayerNPC";
 
 const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
@@ -20,14 +20,24 @@ export const PlacedBumpkin: React.FC<{
   if (!bumpkin) return null;
 
   if (!bumpkin.coordinates) {
-    return <NPCPlaceable parts={bumpkin.equipped} isManuallyPlaced={true} />;
+    return (
+      <NPCPlaceable
+        parts={bumpkin.equipped}
+        isManuallyPlaced={true}
+        flipped={bumpkin.flipped}
+      />
+    );
   }
 
   if (!isLandscaping) {
     return (
       <>
         <div style={{ position: "relative", top: "-24px" }}>
-          <PlayerNPC parts={bumpkin.equipped} isManuallyPlaced={true} />
+          <PlayerNPC
+            parts={bumpkin.equipped}
+            isManuallyPlaced={true}
+            flipped={bumpkin.flipped}
+          />
         </div>
       </>
     );
@@ -42,7 +52,11 @@ export const PlacedBumpkin: React.FC<{
       y={bumpkin.coordinates.y}
       location={location}
     >
-      <NPCPlaceable parts={bumpkin.equipped} isManuallyPlaced={true} />
+      <NPCPlaceable
+        parts={bumpkin.equipped}
+        isManuallyPlaced={true}
+        flipped={bumpkin.flipped}
+      />
     </MoveableComponent>
   );
 };

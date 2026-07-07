@@ -1,12 +1,12 @@
 import React, { useContext, useLayoutEffect, useMemo, type JSX } from "react";
-import classNames from "classnames";
 import { useSelector } from "@xstate/react";
 import { useNavigate, useSearchParams } from "react-router";
 import ScrollContainer from "react-indiana-drag-scroll";
 
 import { GRID_WIDTH_PX, PIXEL_SCALE } from "features/game/lib/constants";
+import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { COLLECTIBLES_DIMENSIONS } from "features/game/types/craftables";
 import { getKeys, getObjectEntries } from "lib/object";
 import { MapPlacement } from "features/game/expansion/components/MapPlacement";
@@ -16,24 +16,33 @@ import { Placeable } from "features/game/expansion/placeable/Placeable";
 import { Hud } from "features/island/hud/Hud";
 import { LandscapingHud } from "features/island/hud/LandscapingHud";
 import { Section, useScrollIntoView } from "lib/utils/hooks/useScrollIntoView";
-import { hasFeatureAccess } from "lib/flags";
 import { Button } from "components/ui/Button";
+import { LandscapingGrid } from "features/island/landscaping/LandscapingGrid";
 import {
   NON_COLLIDING_OBJECTS,
   FURNITURE_OBJECTS,
 } from "features/game/expansion/placeable/lib/collisionDetection";
-import { INTERIOR_CANVAS } from "features/game/expansion/placeable/lib/interiorLayouts";
+import {
+  getInteriorLayoutBounds,
+  INTERIOR_CANVAS,
+  INTERIOR_LAYOUTS,
+} from "features/game/expansion/placeable/lib/interiorLayouts";
 import {
   INTERIOR_BACKGROUNDS,
   INTERIOR_BACKGROUND_NATIVE,
 } from "./lib/interiorBackgrounds";
 import { InteriorGridOverlay } from "./components/InteriorGridOverlay";
 import { UpgradeButton } from "./components/UpgradeButton";
+import { ImportHomeButton } from "./components/ImportHomeButton";
+import { InteriorWelcomeModal } from "./components/InteriorWelcomeModal";
 import { Bud } from "features/island/buds/Bud";
 import { PetNFT } from "features/island/pets/PetNFT";
 import { FarmHand } from "features/island/farmhand/FarmHand";
 import { PlacedBumpkin } from "features/island/bumpkin/components/PlacedBumpkin";
 import { SUNNYSIDE } from "assets/sunnyside";
+import { animated } from "@react-spring/web";
+import { ZoomContext } from "components/ZoomProvider";
+import { InteriorBumpkins } from "features/home/components/InteriorBumpkins";
 
 const _landscaping = (state: MachineState) => state.matches("landscaping");
 const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
@@ -41,7 +50,7 @@ const _buds = (state: MachineState) => state.context.state.buds ?? {};
 const _petNFTs = (state: MachineState) => state.context.state.pets?.nfts ?? {};
 const _island = (state: MachineState) => state.context.state.island;
 const _hasInteriorAccess = (state: MachineState) =>
-  hasFeatureAccess(state.context.state, "HOME_EXPANSIONS");
+  !!state.context.state.settings.interiorsEnabled;
 const _expansion = (state: MachineState) =>
   state.context.state.interior.expansion;
 
@@ -88,6 +97,7 @@ const _interiorFarmHands = (state: MachineState) => {
  */
 export const Interior: React.FC = () => {
   const { gameService } = useContext(Context);
+  const { scale } = useContext(ZoomContext);
   const [params] = useSearchParams();
   const [scrollIntoView] = useScrollIntoView();
   const navigate = useNavigate();
@@ -125,8 +135,8 @@ export const Interior: React.FC = () => {
     [interiorPositions],
   );
 
-  // Beta-only feature. Render an empty-state with a back-to-mainland button
-  // for any player without HOME_EXPANSIONS access.
+  // Experimental feature. Render an empty-state with a back-to-mainland button
+  // for any player without the `interiors` experiment enabled.
   if (!hasAccess) {
     return (
       <div className="absolute inset-0 bg-[#181425] flex items-center justify-center">
@@ -143,6 +153,10 @@ export const Interior: React.FC = () => {
 
   const canvasWidthPx = INTERIOR_CANVAS.width * GRID_WIDTH_PX;
   const canvasHeightPx = INTERIOR_CANVAS.height * GRID_WIDTH_PX;
+  const bumpkinLayerBounds = getInteriorLayoutBounds(
+    INTERIOR_LAYOUTS[island.type],
+  );
+  const bumpkinLineTop = "-6rem";
 
   const mapPlacements: Array<JSX.Element> = [];
 
@@ -284,12 +298,17 @@ export const Interior: React.FC = () => {
         className="!overflow-scroll relative w-full h-full page-scroll-container overscroll-none"
         ignoreElements={"*[data-prevent-drag-scroll]"}
       >
-        <div
+        <animated.div
           className="absolute bg-[#181425]"
           style={{
             width: `${84 * GRID_WIDTH_PX}px`,
             height: `${56 * GRID_WIDTH_PX}px`,
             imageRendering: "pixelated",
+            // Pinch-to-zoom: same ZoomContext scale GameBoard applies on the
+            // farm. Origin is the canvas centre (where GenesisBlock sits) so
+            // zooming keeps the room centred rather than drifting.
+            transform: scale.to((s) => `scale(${s})`),
+            transformOrigin: "50% 50%",
           }}
         >
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -333,20 +352,48 @@ export const Interior: React.FC = () => {
               {debug && <InteriorGridOverlay island={island.type} />}
 
               <div
-                className={classNames(
-                  "absolute inset-0 pointer-events-none transition-opacity z-10",
-                  {
-                    "opacity-0": !landscaping,
-                    "opacity-100": landscaping,
-                  },
-                )}
+                className="absolute pointer-events-none"
                 style={{
-                  backgroundSize: `${GRID_WIDTH_PX}px ${GRID_WIDTH_PX}px`,
-                  backgroundImage: `
-                    linear-gradient(to right, rgb(255 255 255 / 17%) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgb(255 255 255 / 17%) 1px, transparent 1px)`,
+                  left: `${bumpkinLayerBounds.x * GRID_WIDTH_PX}px`,
+                  top: `${
+                    (INTERIOR_CANVAS.height - bumpkinLayerBounds.y) *
+                    GRID_WIDTH_PX
+                  }px`,
+                  width: `${bumpkinLayerBounds.width * GRID_WIDTH_PX}px`,
+                  height: `${bumpkinLayerBounds.height * GRID_WIDTH_PX}px`,
                 }}
-              />
+              >
+                <div
+                  className="absolute left-0 w-full pointer-events-auto"
+                  style={{ top: bumpkinLineTop }}
+                >
+                  <InteriorBumpkins location="interior" />
+                </div>
+              </div>
+              {/*
+                Import-from-old-home button, pinned to the top-right corner of
+                the house layout. Anchored to the background image's top edge so
+                it sits on the room rather than floating in the black canvas
+                gutter. Self-hides when the old home has no items left.
+              */}
+              {!landscaping && (
+                <div
+                  data-prevent-drag-scroll
+                  className="absolute z-30"
+                  style={{
+                    right: `${PIXEL_SCALE * 6}px`,
+                    top: `${
+                      canvasHeightPx -
+                      INTERIOR_BACKGROUND_NATIVE.height * PIXEL_SCALE +
+                      PIXEL_SCALE * 6
+                    }px`,
+                  }}
+                >
+                  <ImportHomeButton />
+                </div>
+              )}
+
+              <LandscapingGrid />
 
               {landscaping && <Placeable location="interior" />}
 
@@ -364,37 +411,40 @@ export const Interior: React.FC = () => {
                   <UpgradeButton />
                 </MapPlacement>
               )}
-              {expansion && (
-                <MapPlacement
-                  key="upgrade-button"
-                  x={14 - 12}
-                  y={20 - 12}
-                  height={2}
-                  width={1}
-                  className="relative"
-                >
-                  <div
-                    className="h-full w-full cursor-pointer"
-                    onClick={() => navigate("/level_one")}
-                  />
-                  <img
-                    src={SUNNYSIDE.icons.arrow_up}
-                    style={{
-                      width: `${PIXEL_SCALE * 9}px`,
-                      left: `${PIXEL_SCALE * 2}px`,
-                      top: `${PIXEL_SCALE * -2}px`,
-                    }}
-                    className="absolute inset-0 pointer-events-none"
-                  />
-                </MapPlacement>
-              )}
+              {expansion &&
+                hasRequiredIslandExpansion(island.type, "volcano") && (
+                  <MapPlacement
+                    key="upgrade-button"
+                    x={14 - 12}
+                    y={20 - 12}
+                    height={2}
+                    width={1}
+                    className="relative"
+                  >
+                    <div
+                      className="h-full w-full cursor-pointer"
+                      onClick={() => navigate("/level_one")}
+                    />
+                    <img
+                      src={SUNNYSIDE.icons.arrow_up}
+                      style={{
+                        width: `${PIXEL_SCALE * 9}px`,
+                        left: `${PIXEL_SCALE * 2}px`,
+                        top: `${PIXEL_SCALE * -2}px`,
+                      }}
+                      className="absolute inset-0 pointer-events-none"
+                    />
+                  </MapPlacement>
+                )}
             </div>
           </div>
-        </div>
+        </animated.div>
       </ScrollContainer>
 
       {!landscaping && <Hud isFarming location="interior" />}
       {landscaping && <LandscapingHud location="interior" />}
+
+      {!landscaping && <InteriorWelcomeModal />}
     </>
   );
 };

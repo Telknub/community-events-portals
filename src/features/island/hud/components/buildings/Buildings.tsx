@@ -3,7 +3,7 @@ import { useSelector } from "@xstate/react";
 import { Box } from "components/ui/Box";
 import { Context } from "features/game/GameProvider";
 import { ITEM_DETAILS } from "features/game/types/images";
-import { BUILDINGS, BuildingName } from "features/game/types/buildings";
+import { BUILDINGS, type BuildingName } from "features/game/types/buildings";
 import { Button } from "components/ui/Button";
 import { SplitScreenView } from "components/ui/SplitScreenView";
 import { CraftingRequirements } from "components/ui/layouts/CraftingRequirements";
@@ -12,20 +12,24 @@ import Decimal from "decimal.js-light";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Label } from "components/ui/Label";
 import { ITEM_ICONS } from "../inventory/Chest";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  levelRequirementToTotal,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
-import { IslandType } from "features/game/types/game";
-import { capitalize } from "lib/utils/capitalize";
+import type { IslandType } from "features/game/types/game";
+import { getIslandName } from "features/game/types/game";
 import {
   makeUpgradableBuildingKey,
   isBuildingUpgradable,
 } from "features/game/events/landExpansion/upgradeBuilding";
 import { getCurrentBiome } from "features/island/biomes/biomes";
 import { COLLECTIBLE_BUFF_LABELS } from "features/game/types/collectibleItemBuffs";
-import { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
-import { MachineState } from "features/game/lib/gameMachine";
-import { GameState } from "features/game/types/game";
+import type { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { GameState } from "features/game/types/game";
 import { getObjectEntries } from "lib/object";
 
 interface Props {
@@ -55,7 +59,9 @@ const getValidBuildings = (state: GameState): BuildingName[] => {
   ];
 
   const VALID_BUILDINGS = [...UNSORTED_BUILDINGS].sort(
-    (a, b) => BUILDINGS[a].unlocksAtLevel - BUILDINGS[b].unlocksAtLevel,
+    (a, b) =>
+      levelRequirementToTotal(BUILDINGS[a].unlocksAtLevel) -
+      levelRequirementToTotal(BUILDINGS[b].unlocksAtLevel),
   );
 
   return VALID_BUILDINGS;
@@ -84,7 +90,10 @@ export const Buildings: React.FC<Props> = ({ onClose }) => {
   const season = useSelector(gameService, _season);
   const { t } = useAppTranslation();
   const buildingBlueprint = BUILDINGS[selectedName];
-  const bumpkinLevel = getBumpkinLevel(bumpkin.experience ?? 0);
+  const bumpkinLevel = getAscensionLevel({
+    experience: bumpkin.experience ?? 0,
+    ascensionLevel: island.ascensionLevel ?? 0,
+  });
   const buildingUnlockLevel = buildingBlueprint.unlocksAtLevel;
   const buildingsInInventory = inventory[selectedName] || new Decimal(0);
   const isAlreadyCrafted = buildingsInInventory.greaterThanOrEqualTo(1);
@@ -97,11 +106,20 @@ export const Buildings: React.FC<Props> = ({ onClose }) => {
     );
 
   const craft = () => {
-    landscapingMachine.send("SELECT", {
+    const selection = {
       action: "building.constructed",
       placeable: { name: selectedName },
       requirements: { coins, ingredients: buildingIngredients },
-    });
+    };
+
+    // This modal lives on the main screen, not inside the landscaping HUD.
+    // When already landscaping just select the building; otherwise enter
+    // landscaping mode so the player can place what they crafted.
+    if (landscapingMachine) {
+      landscapingMachine.send("SELECT", selection);
+    } else {
+      gameService.send("LANDSCAPE", { ...selection, location: "farm" });
+    }
 
     onClose();
   };
@@ -113,25 +131,20 @@ export const Buildings: React.FC<Props> = ({ onClose }) => {
       return (
         <Label type="danger">
           {t("islandupgrade.requiredIsland", {
-            islandType:
-              buildingBlueprint.requiredIsland === "spring"
-                ? "Petal Paradise"
-                : t("islandupgrade.otherIsland", {
-                    island: capitalize(
-                      buildingBlueprint.requiredIsland as IslandType,
-                    ),
-                  }),
+            islandType: getIslandName(
+              buildingBlueprint.requiredIsland as IslandType,
+            ),
           })}
         </Label>
       );
     }
 
-    if (bumpkinLevel < buildingUnlockLevel)
+    if (!meetsLevelRequirement(bumpkinLevel, buildingUnlockLevel))
       return (
         <div className="flex flex-col w-full justify-center">
           <div className="flex items-center justify-center ">
             <Label type="danger" icon={SUNNYSIDE.icons.player}>
-              {t("warning.level.required", { lvl: buildingUnlockLevel })}
+              {t("warning.level.required", { lvl: buildingUnlockLevel.level })}
             </Label>
           </div>
         </div>
@@ -163,10 +176,7 @@ export const Buildings: React.FC<Props> = ({ onClose }) => {
           details={{
             item: selectedName,
           }}
-          boost={COLLECTIBLE_BUFF_LABELS[selectedName]?.({
-            skills: bumpkin.skills,
-            collectibles,
-          })}
+          boost={COLLECTIBLE_BUFF_LABELS[selectedName]?.(state)}
           requirements={{
             coins,
             resources: buildingIngredients,
@@ -179,7 +189,10 @@ export const Buildings: React.FC<Props> = ({ onClose }) => {
           {[...getValidBuildings(state)].map((name: BuildingName) => {
             const blueprint = BUILDINGS[name];
             const inventoryCount = inventory[name] || new Decimal(0);
-            const isLocked = bumpkinLevel < blueprint.unlocksAtLevel;
+            const isLocked = !meetsLevelRequirement(
+              bumpkinLevel,
+              blueprint.unlocksAtLevel,
+            );
 
             let secondaryIcon = undefined;
             if (isLocked) {

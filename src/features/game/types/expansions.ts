@@ -1,51 +1,36 @@
-import { GameState, InventoryItemName, IslandType } from "./game";
-import { Coordinates } from "../expansion/components/MapPlacement";
-import { TOTAL_EXPANSION_NODES } from "../expansion/lib/expansionNodes";
+import type {
+  BasicIslandType,
+  GameState,
+  InventoryItemName,
+  IslandType,
+} from "./game";
+import type { Coordinates } from "../expansion/components/MapPlacement";
+import type { Nodes } from "../expansion/lib/expansionNodes";
+import {
+  getAscensionExpansionRequirements,
+  getAscensionLayout,
+  getAscensionNodes,
+  getExpectedAscensionCrystals,
+} from "../expansion/lib/ascension";
 import { getKeys } from "lib/object";
+import { hasFeatureAccess } from "lib/flags";
+import type { LevelRequirement } from "features/game/lib/level";
 import {
   ADVANCED_RESOURCES,
   REQUIRED_NODES_TO_FORGE,
   RESOURCES,
   RESOURCES_UPGRADES_TO,
-  ResourceName,
-  UpgradedResourceName,
+  type ResourceName,
+  type UpgradedResourceName,
 } from "./resources";
 
 export type ExpandLandAction = {
   type: "land.expanded";
 };
 
-type Options = {
-  state: Readonly<GameState>;
-  action: ExpandLandAction;
-  createdAt?: number;
-  farmId?: number;
-};
-
 const LAND_GEM_RATIO = 15;
 
-/**
- * We split players into 3 groups
- * This decides what order of expansions they will receive
- * We need to use a seed that will always remain the same even if we lose all DB data = Farm ID
- * Formula = Add individual digits of Farm ID, then modular 3
- * 294 = (2 + 9 + 5) % 3 + 1 = Group 2
- */
-export function getPlayerGroup(id: string): 0 | 1 | 2 {
-  const digits = id.split("").map(Number);
-  const total = digits.reduce((total, digit) => total + digit);
-  const groupId = total % 3;
-
-  return groupId as 0 | 1 | 2;
-}
-
-export function getBasicLand({
-  id,
-  expansion,
-}: {
-  id: number;
-  expansion: number;
-}) {
+export function getBasicLand({ expansion }: { expansion: number }) {
   if (expansion === 4) {
     return LAND_4_LAYOUT();
   }
@@ -70,43 +55,6 @@ export function getBasicLand({
     return LAND_9_LAYOUT();
   }
 
-  if (expansion === 10) {
-    return LAND_10_LAYOUT();
-  }
-
-  if (expansion === 11) {
-    return LAND_11_LAYOUT();
-  }
-
-  // LEGACY - can remove from Feb 1st
-  if (expansion >= 12 && expansion <= 14) {
-    const group = getPlayerGroup(id.toString());
-    const positionInPack = (expansion + group) % 3;
-
-    return LAND_PACK_THREE[positionInPack]();
-  }
-
-  if (expansion >= 15 && expansion <= 17) {
-    const group = getPlayerGroup(id.toString());
-    const positionInPack = (expansion + group) % 3;
-
-    return LAND_PACK_FOUR[positionInPack]();
-  }
-
-  if (expansion >= 18 && expansion <= 20) {
-    const group = getPlayerGroup(id.toString());
-    const positionInPack = (expansion + group) % 3;
-
-    return LAND_PACK_FIVE[positionInPack]();
-  }
-
-  if (expansion >= 21 && expansion <= 23) {
-    const group = getPlayerGroup(id.toString());
-    const positionInPack = (expansion + group) % 3;
-
-    return LAND_PACK_SIX[positionInPack]();
-  }
-
   return null;
 }
 
@@ -116,6 +64,11 @@ const isAdvancedResource = (
   return resource in ADVANCED_RESOURCES;
 };
 
+/**
+ * Determines expected resource node counts for an expansion, incorporating player purchases and upgrade conversions.
+ *
+ * @returns A mapping of resource names to expected cumulative node counts at the given expansion
+ */
 export function getExpectedResources({
   game,
   expansion,
@@ -123,8 +76,14 @@ export function getExpectedResources({
   game: GameState;
   expansion: number;
 }): Record<ResourceName, number> {
+  const baseNodes = getExpansionNodes({
+    island: game.island.type,
+    expansion,
+    ascensionLevel: game.island.ascensionLevel,
+  });
+
   const expectedResources: Record<ResourceName, number> = {
-    ...TOTAL_EXPANSION_NODES[game.island.type][expansion],
+    ...baseNodes,
     "Ancient Tree": 0,
     "Sacred Tree": 0,
     "Fused Stone Rock": 0,
@@ -163,22 +122,37 @@ export function getExpectedResources({
       (expectedResources[resource] ?? 0) + bought - burned + upgraded;
   });
 
+  // Ascension Crystals follow a custom grant schedule (outside the drip model)
+  // and only when the ascension feature is live. Override the base (0) with the
+  // cumulative expected so revealLand's missing-node airdrop can back-pay legacy
+  // players who progressed before the feature shipped.
+  expectedResources["Ascension Crystal"] = hasFeatureAccess(
+    game,
+    "SWAMP_ASCENSION",
+  )
+    ? getExpectedAscensionCrystals({
+        islandType: game.island.type,
+        ascensionLevel: game.island.ascensionLevel ?? 0,
+        basicLand: expansion,
+      })
+    : 0;
+
   return expectedResources;
 }
 
-export function getLand({
-  id,
-  game,
-}: {
-  id: number;
-  game: GameState;
-}): Layout | null {
+/**
+ * Computes the layout for the player's next land expansion with resource availability constraints applied.
+ *
+ * @param game - The current game state
+ * @returns The next land expansion layout with resource placements capped by available resources, or `null` if no layout exists for the computed expansion
+ */
+export function getLand({ game }: { game: GameState }): Layout | null {
   const expansion = (game.inventory["Basic Land"]?.toNumber() ?? 0) + 1;
 
   let land: Layout | null = null;
 
   if (game.island.type === "basic") {
-    land = getBasicLand({ id, expansion });
+    land = getBasicLand({ expansion });
   }
 
   if (game.island.type === "spring") {
@@ -193,6 +167,13 @@ export function getLand({
     land = VOLCANO_LAYOUTS()[expansion];
   }
 
+  if ((game.island.ascensionLevel ?? 0) > 0) {
+    land = getAscensionLayout({
+      expansion,
+      ascensionLevel: game.island.ascensionLevel ?? 0,
+    });
+  }
+
   if (!land) {
     return null;
   }
@@ -204,43 +185,43 @@ export function getLand({
 
   const totalTrees = game.inventory.Tree?.toNumber() ?? 0;
   const availableTrees = expectedResources.Tree - totalTrees;
-  land.trees = land.trees.slice(0, availableTrees);
+  land.trees = land.trees.slice(0, Math.max(0, availableTrees));
 
   const totalStones = game.inventory["Stone Rock"]?.toNumber() ?? 0;
   const availableStones = expectedResources["Stone Rock"] - totalStones;
-  land.stones = land.stones.slice(0, availableStones);
+  land.stones = land.stones.slice(0, Math.max(0, availableStones));
 
   const totalIron = game.inventory["Iron Rock"]?.toNumber() ?? 0;
   const availableIron = expectedResources["Iron Rock"] - totalIron;
-  land.iron = land.iron?.slice(0, availableIron);
+  land.iron = land.iron?.slice(0, Math.max(0, availableIron));
 
   const totalGold = game.inventory["Gold Rock"]?.toNumber() ?? 0;
   const availableGold = expectedResources["Gold Rock"] - totalGold;
-  land.gold = land.gold?.slice(0, availableGold);
+  land.gold = land.gold?.slice(0, Math.max(0, availableGold));
 
   const availableFruit =
     expectedResources["Fruit Patch"] -
     (game.inventory["Fruit Patch"]?.toNumber() ?? 0);
-  land.fruitPatches = land.fruitPatches?.slice(0, availableFruit);
+  land.fruitPatches = land.fruitPatches?.slice(0, Math.max(0, availableFruit));
 
   const availablePlots =
     expectedResources["Crop Plot"] -
     (game.inventory["Crop Plot"]?.toNumber() ?? 0);
-  land.plots = land.plots.slice(0, availablePlots);
+  land.plots = land.plots.slice(0, Math.max(0, availablePlots));
 
   const availableHives =
     expectedResources["Beehive"] - (game.inventory["Beehive"]?.toNumber() ?? 0);
-  land.beehives = land.beehives?.slice(0, availableHives);
+  land.beehives = land.beehives?.slice(0, Math.max(0, availableHives));
 
   const availableFlowers =
     expectedResources["Flower Bed"] -
     (game.inventory["Flower Bed"]?.toNumber() ?? 0);
-  land.flowerBeds = land.flowerBeds?.slice(0, availableFlowers);
+  land.flowerBeds = land.flowerBeds?.slice(0, Math.max(0, availableFlowers));
 
   const availableCrimstones =
     expectedResources["Crimstone Rock"] -
     (game.inventory["Crimstone Rock"]?.toNumber() ?? 0);
-  land.crimstones = land.crimstones?.slice(0, availableCrimstones);
+  land.crimstones = land.crimstones?.slice(0, Math.max(0, availableCrimstones));
 
   // IMPORTANT: We cannot drop extra sunstones
   // We need to consider how many sunstones were dropped on previous lands in `game.island.sunstones`
@@ -250,18 +231,21 @@ export function getLand({
       game.inventory["Sunstone Rock"]?.toNumber() ?? 0,
       game.island.sunstones ?? 0,
     );
-  land.sunstones = land.sunstones?.slice(0, availableSunstones);
+  land.sunstones = land.sunstones?.slice(0, Math.max(0, availableSunstones));
 
   const availableOilReserves =
     expectedResources["Oil Reserve"] -
     (game.inventory["Oil Reserve"]?.toNumber() ?? 0);
-  land.oilReserves = land.oilReserves?.slice(0, availableOilReserves);
+  land.oilReserves = land.oilReserves?.slice(
+    0,
+    Math.max(0, availableOilReserves),
+  );
 
   // Add Lava
   const availableLavaPit =
     expectedResources["Lava Pit"] -
     (game.inventory["Lava Pit"]?.toNumber() ?? 0);
-  land.lavaPits = land.lavaPits?.slice(0, availableLavaPit);
+  land.lavaPits = land.lavaPits?.slice(0, Math.max(0, availableLavaPit));
 
   return land;
 }
@@ -538,416 +522,6 @@ export const LAND_9_LAYOUT: () => Layout = () => ({
   ],
   stones: [],
   trees: [],
-});
-
-export const LAND_10_LAYOUT: () => Layout = () => ({
-  id: "10",
-  plots: [
-    {
-      x: 1,
-      y: 2,
-    },
-    {
-      x: 0,
-      y: 2,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 3,
-    },
-  ],
-  gold: [],
-  iron: [],
-  stones: [
-    {
-      x: 1,
-      y: -1,
-    },
-  ],
-  trees: [
-    {
-      x: -2,
-      y: 1,
-    },
-    {
-      x: -2,
-      y: -1,
-    },
-  ],
-});
-export const LAND_11_LAYOUT: () => Layout = () => ({
-  id: "11",
-  plots: [
-    {
-      x: -1,
-      y: -2,
-    },
-    {
-      x: 0,
-      y: -2,
-    },
-  ],
-  fruitPatches: [],
-  gold: [
-    {
-      x: 1,
-      y: 2,
-    },
-  ],
-  iron: [
-    {
-      x: 0,
-      y: 0,
-    },
-  ],
-  stones: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  trees: [
-    {
-      x: -2,
-      y: 3,
-    },
-  ],
-});
-export const LAND_12_LAYOUT: () => Layout = () => ({
-  id: "12",
-  plots: [],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-    {
-      x: 0,
-      y: 2,
-    },
-  ],
-  gold: [],
-  iron: [],
-  stones: [
-    {
-      x: 0,
-      y: -1,
-    },
-  ],
-  trees: [],
-  boulder: [],
-});
-
-export const LAND_13_LAYOUT: () => Layout = () => ({
-  id: "13",
-  plots: [
-    {
-      x: -2,
-      y: 2,
-    },
-    {
-      x: -2,
-      y: 1,
-    },
-  ],
-  fruitPatches: [],
-  gold: [],
-  iron: [],
-  stones: [
-    {
-      x: -1,
-      y: -1,
-    },
-  ],
-  trees: [
-    {
-      x: 0,
-      y: 2,
-    },
-  ],
-});
-
-export const LAND_14_LAYOUT: () => Layout = () => ({
-  id: "14",
-  plots: [
-    {
-      x: -2,
-      y: 2,
-    },
-    {
-      x: -1,
-      y: 2,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: 1,
-      y: 2,
-    },
-  ],
-  gold: [
-    {
-      x: 1,
-      y: -1,
-    },
-  ],
-  iron: [
-    {
-      x: -1,
-      y: -2,
-    },
-  ],
-  stones: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  trees: [],
-});
-
-export const LAND_15_LAYOUT: () => Layout = () => ({
-  id: "15",
-  plots: [],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-  gold: [],
-  iron: [],
-  stones: [],
-  trees: [
-    {
-      x: 0,
-      y: 0,
-    },
-  ],
-});
-
-export const LAND_16_LAYOUT: () => Layout = () => ({
-  id: "16",
-  plots: [],
-  fruitPatches: [
-    {
-      x: -1,
-      y: 1,
-    },
-  ],
-  gold: [
-    {
-      x: 1,
-      y: -1,
-    },
-  ],
-  iron: [
-    {
-      x: -2,
-      y: -1,
-    },
-  ],
-  stones: [],
-  trees: [],
-});
-
-export const LAND_17_LAYOUT: () => Layout = () => ({
-  id: "17",
-  plots: [
-    {
-      x: 0,
-      y: 2,
-    },
-    {
-      x: 1,
-      y: 2,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: 0,
-      y: 0,
-    },
-  ],
-  gold: [],
-  iron: [],
-  stones: [
-    {
-      x: -2,
-      y: -1,
-    },
-  ],
-  trees: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-});
-
-export const LAND_18_LAYOUT: () => Layout = () => ({
-  id: "18",
-  plots: [
-    {
-      x: 1,
-      y: 1,
-    },
-    {
-      x: 1,
-      y: 0,
-    },
-  ],
-  trees: [],
-  stones: [],
-  fruitPatches: [],
-  gold: [],
-  iron: [],
-});
-
-export const LAND_19_LAYOUT: () => Layout = () => ({
-  id: "19",
-  plots: [],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-  trees: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  stones: [
-    {
-      x: 2,
-      y: 1,
-    },
-  ],
-  iron: [
-    {
-      x: 2,
-      y: 0,
-    },
-  ],
-  gold: [],
-});
-
-export const LAND_20_LAYOUT: () => Layout = () => ({
-  id: "20",
-  plots: [
-    {
-      x: 1,
-      y: 1,
-    },
-    {
-      x: 1,
-      y: 0,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-  trees: [],
-  stones: [],
-  gold: [],
-  iron: [],
-});
-
-export const LAND_21_LAYOUT: () => Layout = () => ({
-  id: "21",
-  plots: [
-    {
-      x: 1,
-      y: 1,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-  trees: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  stones: [
-    {
-      x: 2,
-      y: 1,
-    },
-  ],
-  gold: [],
-  iron: [
-    {
-      x: 2,
-      y: 0,
-    },
-  ],
-});
-
-export const LAND_22_LAYOUT: () => Layout = () => ({
-  id: "22",
-  plots: [
-    {
-      x: 1,
-      y: 1,
-    },
-  ],
-  fruitPatches: [],
-  trees: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  stones: [],
-  gold: [
-    {
-      x: 2,
-      y: 0,
-    },
-  ],
-  iron: [],
-});
-
-export const LAND_23_LAYOUT: () => Layout = () => ({
-  id: "23",
-  plots: [
-    {
-      x: 1,
-      y: 1,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 2,
-    },
-  ],
-  trees: [],
-  stones: [
-    {
-      x: 2,
-      y: 1,
-    },
-  ],
-  gold: [],
-  iron: [
-    {
-      x: 2,
-      y: 0,
-    },
-  ],
 });
 
 export const SPRING_LAND_5_LAYOUT: () => Layout = () => ({
@@ -1395,109 +969,6 @@ export const SPRING_LAND_16_LAYOUT: () => Layout = () => ({
   ],
   id: "spring_16",
 });
-export const SPRING_LAND_17_LAYOUT: () => Layout = () => ({
-  plots: [
-    {
-      x: 0,
-      y: 2,
-    },
-  ],
-  fruitPatches: [
-    {
-      x: -2,
-      y: 3,
-    },
-  ],
-  gold: [],
-  iron: [
-    {
-      x: 0,
-      y: -1,
-    },
-  ],
-  stones: [
-    {
-      x: -2,
-      y: 0,
-    },
-  ],
-  crimstones: [],
-  sunstones: [],
-  trees: [],
-  beehives: [],
-  id: "spring_17",
-});
-export const SPRING_LAND_18_LAYOUT: () => Layout = () => ({
-  plots: [],
-  fruitPatches: [],
-  gold: [],
-  iron: [],
-  stones: [],
-  crimstones: [],
-  sunstones: [
-    {
-      x: -1,
-      y: 1,
-    },
-  ],
-  trees: [],
-  beehives: [],
-  id: "spring_18",
-});
-
-export const SPRING_LAND_19_LAYOUT: () => Layout = () => ({
-  plots: [
-    {
-      x: -1,
-      y: 1,
-    },
-    {
-      x: 0,
-      y: 1,
-    },
-  ],
-  fruitPatches: [],
-  gold: [],
-  iron: [],
-  stones: [],
-  crimstones: [
-    {
-      x: -3,
-      y: 0,
-    },
-  ],
-  sunstones: [],
-  trees: [],
-  beehives: [],
-  id: "spring_19",
-});
-
-export const SPRING_LAND_20_LAYOUT: () => Layout = () => ({
-  plots: [
-    {
-      x: -1,
-      y: 2,
-    },
-    {
-      x: 0,
-      y: 2,
-    },
-  ],
-  fruitPatches: [],
-  gold: [],
-  iron: [],
-  stones: [],
-  crimstones: [],
-  sunstones: [
-    {
-      x: -1,
-      y: 0,
-    },
-  ],
-  trees: [],
-  beehives: [],
-  id: "spring_20",
-});
 
 export const SPRING_LAYOUTS: () => Record<number, Layout> = () => ({
   5: SPRING_LAND_5_LAYOUT(),
@@ -1513,10 +984,6 @@ export const SPRING_LAYOUTS: () => Record<number, Layout> = () => ({
   14: SPRING_LAND_14_LAYOUT(),
   15: SPRING_LAND_15_LAYOUT(),
   16: SPRING_LAND_16_LAYOUT(),
-  17: SPRING_LAND_17_LAYOUT(),
-  18: SPRING_LAND_18_LAYOUT(),
-  19: SPRING_LAND_19_LAYOUT(),
-  20: SPRING_LAND_20_LAYOUT(),
 });
 
 export const DESERT_LAND_5_LAYOUT: () => Layout = () => ({
@@ -1709,12 +1176,9 @@ export const DESERT_LAND_13_LAYOUT: () => Layout = () => ({
   iron: [],
   stones: [],
   crimstones: [],
-  sunstones: [
-    {
-      x: 0,
-      y: 0,
-    },
-  ],
+  // No sunstone here — it was a stray vs the desert node cap (always sliced off)
+  // and is removed so the desert node table derives cleanly, matching the BE.
+  sunstones: [],
   trees: [
     {
       x: 0,
@@ -2522,24 +1986,201 @@ export type Layout = {
   fruitPatches?: Coordinates[];
   oilReserves?: Coordinates[];
   lavaPits?: Coordinates[];
+  ascensionCrystals?: Coordinates[];
+};
+
+// --- Expansion node counts (derived) -------------------------------------
+// How many of each resource node a player should have at each expansion is
+// derived from the layouts above (arrival row + cumulative layout counts) so the
+// counts can never drift from the actual map. Mirror of the BE.
+
+/** Maps each `Layout` resource array to its `Nodes` (resource-count) key. */
+const LAYOUT_FIELD_TO_NODE = {
+  plots: "Crop Plot",
+  trees: "Tree",
+  stones: "Stone Rock",
+  iron: "Iron Rock",
+  gold: "Gold Rock",
+  crimstones: "Crimstone Rock",
+  sunstones: "Sunstone Rock",
+  fruitPatches: "Fruit Patch",
+  flowerBeds: "Flower Bed",
+  beehives: "Beehive",
+  oilReserves: "Oil Reserve",
+  lavaPits: "Lava Pit",
+} as const satisfies Partial<Record<keyof Layout, keyof Nodes>>;
+
+/**
+ * Counts the resource nodes placed by a single expansion's `Layout`.
+ *
+ * @returns A record mapping node types to their counts in the layout.
+ */
+function countLayoutNodes(
+  layout: Layout,
+): Partial<Record<keyof Nodes, number>> {
+  const counts: Partial<Record<keyof Nodes, number>> = {};
+  getKeys(LAYOUT_FIELD_TO_NODE).forEach((field) => {
+    const arr = layout[field];
+    if (arr && arr.length) {
+      const key = LAYOUT_FIELD_TO_NODE[field];
+      counts[key] = (counts[key] ?? 0) + arr.length;
+    }
+  });
+  return counts;
+}
+
+/**
+ * Derives cumulative node counts for each expansion level on an island.
+ *
+ * @param base - Initial node counts when the island is first discovered.
+ * @param layouts - Per-expansion layout definitions.
+ * @returns A record mapping each expansion level to its cumulative node totals.
+ * @throws If `layouts` is empty.
+ */
+export function deriveExpansionNodes(
+  base: Nodes,
+  layouts: Record<number, Layout>,
+): Record<number, Nodes> {
+  const levels = Object.keys(layouts)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  if (levels.length === 0) {
+    throw new Error("deriveExpansionNodes requires at least one layout");
+  }
+
+  const result: Record<number, Nodes> = {};
+  let running: Nodes = { ...base };
+
+  // The arrival row sits at the expansion directly below the first layout.
+  result[levels[0] - 1] = { ...running };
+
+  levels.forEach((level) => {
+    const counts = countLayoutNodes(layouts[level]);
+    running = { ...running };
+    getKeys(counts).forEach((key) => {
+      running[key] = (running[key] ?? 0) + (counts[key] ?? 0);
+    });
+    result[level] = running;
+  });
+
+  return result;
+}
+
+// Only the static, hand-authored islands live here. Ascension islands (swamp
+// onward) are ascension-dependent and cannot be a static 2-D table — read them
+// via `getExpansionNodes` / `getAscensionNodes` instead.
+export type ExpansionNode = Record<BasicIslandType, Record<number, Nodes>>;
+
+const BASIC_BASE_NODES: Nodes = {
+  "Crop Plot": 0,
+  Tree: 3,
+  "Stone Rock": 2,
+  "Iron Rock": 0,
+  "Gold Rock": 0,
+  "Crimstone Rock": 0,
+  "Sunstone Rock": 0,
+  "Fruit Patch": 0,
+  "Flower Bed": 0,
+  Beehive: 0,
+  "Oil Reserve": 0,
+  "Lava Pit": 0,
+  "Ascension Crystal": 0,
+};
+
+const SPRING_BASE_NODES: Nodes = {
+  "Crop Plot": 31,
+  "Fruit Patch": 2,
+  Tree: 9,
+  "Stone Rock": 7,
+  "Iron Rock": 4,
+  "Gold Rock": 2,
+  "Crimstone Rock": 0,
+  "Sunstone Rock": 0,
+  Beehive: 0,
+  "Oil Reserve": 0,
+  "Flower Bed": 0,
+  "Lava Pit": 0,
+  "Ascension Crystal": 0,
+};
+
+const DESERT_BASE_NODES: Nodes = {
+  "Crop Plot": 45,
+  "Fruit Patch": 11,
+  Tree: 18,
+  "Stone Rock": 15,
+  "Iron Rock": 9,
+  "Gold Rock": 6,
+  "Crimstone Rock": 2,
+  "Sunstone Rock": 2,
+  "Oil Reserve": 0,
+  "Lava Pit": 0,
+  Beehive: 3,
+  "Flower Bed": 3,
+  "Ascension Crystal": 0,
+};
+
+const VOLCANO_BASE_NODES: Nodes = {
+  "Crop Plot": 65,
+  Tree: 23,
+  "Stone Rock": 20,
+  "Iron Rock": 12,
+  "Gold Rock": 7,
+  "Fruit Patch": 15,
+  "Crimstone Rock": 4,
+  "Sunstone Rock": 6,
+  "Oil Reserve": 3,
+  "Lava Pit": 0,
+  Beehive: 3,
+  "Flower Bed": 3,
+  "Ascension Crystal": 0,
+};
+
+export const TOTAL_EXPANSION_NODES: ExpansionNode = {
+  // Basic only uses expansions 3-9: it's capped at 9 (see ISLAND_MAX_EXPANSION) and
+  // the node table is read only when expanding/upgrading. Legacy farms still on the
+  // old land-pack expansions (10-23) can't expand, so those rows are never looked up
+  // — they're intentionally omitted (and wouldn't derive cleanly anyway, since the
+  // land packs are randomized per player group).
+  basic: deriveExpansionNodes(BASIC_BASE_NODES, {
+    4: LAND_4_LAYOUT(),
+    5: LAND_5_LAYOUT(),
+    6: LAND_6_LAYOUT(),
+    7: LAND_7_LAYOUT(),
+    8: LAND_8_LAYOUT(),
+    9: LAND_9_LAYOUT(),
+  }),
+  spring: deriveExpansionNodes(SPRING_BASE_NODES, SPRING_LAYOUTS()),
+  desert: deriveExpansionNodes(DESERT_BASE_NODES, DESERT_LAYOUTS()),
+  volcano: deriveExpansionNodes(VOLCANO_BASE_NODES, VOLCANO_LAYOUTS()),
 };
 
 /**
- * Once a player gets past the first 8 pieces of land, they enter the land pack stage
- * A land pack provides 3 expansions in a random order for the player
+ * The single source of truth for "expected cumulative resource nodes at a given
+ * expansion". Ascension islands (swamp onward) are computed from the drip
+ * formula and depend on the ascension level; the static islands use the derived
+ * table. Always read node totals through here rather than indexing
+ * `TOTAL_EXPANSION_NODES` directly, so the ascension dimension is never dropped.
  */
-export const LAND_PACK_TWO = [LAND_9_LAYOUT, LAND_10_LAYOUT, LAND_11_LAYOUT];
-export const LAND_PACK_THREE = [LAND_12_LAYOUT, LAND_13_LAYOUT, LAND_14_LAYOUT];
-export const LAND_PACK_FOUR = [LAND_15_LAYOUT, LAND_16_LAYOUT, LAND_17_LAYOUT];
-export const LAND_PACK_FIVE = [LAND_18_LAYOUT, LAND_19_LAYOUT, LAND_20_LAYOUT];
-export const LAND_PACK_SIX = [LAND_21_LAYOUT, LAND_22_LAYOUT, LAND_23_LAYOUT];
+export const getExpansionNodes = ({
+  island,
+  expansion,
+  ascensionLevel,
+}: {
+  island: IslandType;
+  expansion: number;
+  ascensionLevel?: number;
+}): Nodes =>
+  (ascensionLevel ?? 0) > 0
+    ? getAscensionNodes({ expansion, ascensionLevel: ascensionLevel ?? 0 })
+    : TOTAL_EXPANSION_NODES[island as BasicIslandType][expansion];
 
 export interface Requirements {
   resources: Partial<Record<InventoryItemName, number>>;
   seconds: number;
   sfl?: number;
   coins?: number;
-  bumpkinLevel: number;
+  bumpkinLevel: LevelRequirement;
 }
 
 const LAND_4_REQUIREMENTS: Requirements = {
@@ -2547,7 +2188,7 @@ const LAND_4_REQUIREMENTS: Requirements = {
     Wood: 3,
   },
   seconds: 5,
-  bumpkinLevel: 1,
+  bumpkinLevel: { ascension: 0, level: 1 },
 };
 
 const LAND_5_REQUIREMENTS: Requirements = {
@@ -2555,7 +2196,7 @@ const LAND_5_REQUIREMENTS: Requirements = {
     Wood: 5,
   },
   seconds: 5,
-  bumpkinLevel: 1,
+  bumpkinLevel: { ascension: 0, level: 1 },
   coins: 0.25,
 };
 
@@ -2565,7 +2206,7 @@ const LAND_6_REQUIREMENTS: Requirements = {
   },
   coins: 60,
   seconds: 60,
-  bumpkinLevel: 2,
+  bumpkinLevel: { ascension: 0, level: 2 },
 };
 
 const LAND_7_REQUIREMENTS: Requirements = {
@@ -2575,7 +2216,7 @@ const LAND_7_REQUIREMENTS: Requirements = {
   },
   coins: 100,
   seconds: 30 * 60,
-  bumpkinLevel: 5,
+  bumpkinLevel: { ascension: 0, level: 5 },
 };
 
 const LAND_8_REQUIREMENTS: Requirements = {
@@ -2585,7 +2226,7 @@ const LAND_8_REQUIREMENTS: Requirements = {
   },
   coins: 200,
   seconds: 4 * 60 * 60,
-  bumpkinLevel: 8,
+  bumpkinLevel: { ascension: 0, level: 8 },
 };
 
 const LAND_9_REQUIREMENTS: Requirements = {
@@ -2596,7 +2237,7 @@ const LAND_9_REQUIREMENTS: Requirements = {
   },
   coins: 300,
   seconds: 12 * 60 * 60,
-  bumpkinLevel: 11,
+  bumpkinLevel: { ascension: 0, level: 11 },
 };
 
 const LAND_10_REQUIREMENTS: Requirements = {
@@ -2608,7 +2249,7 @@ const LAND_10_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 13,
+  bumpkinLevel: { ascension: 0, level: 13 },
 };
 
 const LAND_11_REQUIREMENTS: Requirements = {
@@ -2617,7 +2258,7 @@ const LAND_11_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 15,
+  bumpkinLevel: { ascension: 0, level: 15 },
 };
 
 const LAND_12_REQUIREMENTS: Requirements = {
@@ -2628,7 +2269,7 @@ const LAND_12_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 17,
+  bumpkinLevel: { ascension: 0, level: 17 },
 };
 
 const LAND_13_REQUIREMENTS: Requirements = {
@@ -2639,7 +2280,7 @@ const LAND_13_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 20,
+  bumpkinLevel: { ascension: 0, level: 20 },
 };
 
 const LAND_14_REQUIREMENTS: Requirements = {
@@ -2651,7 +2292,7 @@ const LAND_14_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 23,
+  bumpkinLevel: { ascension: 0, level: 23 },
 };
 
 const LAND_15_REQUIREMENTS: Requirements = {
@@ -2661,7 +2302,7 @@ const LAND_15_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 26,
+  bumpkinLevel: { ascension: 0, level: 26 },
 };
 
 const LAND_16_REQUIREMENTS: Requirements = {
@@ -2672,7 +2313,7 @@ const LAND_16_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 30,
+  bumpkinLevel: { ascension: 0, level: 30 },
 };
 
 const LAND_17_REQUIREMENTS: Requirements = {
@@ -2683,7 +2324,7 @@ const LAND_17_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 34,
+  bumpkinLevel: { ascension: 0, level: 34 },
 };
 
 const LAND_18_REQUIREMENTS: Requirements = {
@@ -2695,7 +2336,7 @@ const LAND_18_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 37,
+  bumpkinLevel: { ascension: 0, level: 37 },
 };
 
 const LAND_19_REQUIREMENTS: Requirements = {
@@ -2706,7 +2347,7 @@ const LAND_19_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 40,
+  bumpkinLevel: { ascension: 0, level: 40 },
 };
 
 const LAND_20_REQUIREMENTS: Requirements = {
@@ -2718,7 +2359,7 @@ const LAND_20_REQUIREMENTS: Requirements = {
     Gem: 1 * LAND_GEM_RATIO,
   },
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 45,
+  bumpkinLevel: { ascension: 0, level: 45 },
 };
 
 const LAND_21_REQUIREMENTS: Requirements = {
@@ -2730,7 +2371,7 @@ const LAND_21_REQUIREMENTS: Requirements = {
     Gem: 2 * LAND_GEM_RATIO,
   },
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 50,
+  bumpkinLevel: { ascension: 0, level: 50 },
 };
 const LAND_22_REQUIREMENTS: Requirements = {
   resources: {
@@ -2741,7 +2382,7 @@ const LAND_22_REQUIREMENTS: Requirements = {
     Gem: 2 * LAND_GEM_RATIO,
   },
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 55,
+  bumpkinLevel: { ascension: 0, level: 55 },
 };
 const LAND_23_REQUIREMENTS: Requirements = {
   resources: {
@@ -2752,7 +2393,7 @@ const LAND_23_REQUIREMENTS: Requirements = {
     Gem: 2 * LAND_GEM_RATIO,
   },
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 60,
+  bumpkinLevel: { ascension: 0, level: 60 },
 };
 
 const SPRING_LAND_5_REQUIREMENTS: Requirements = {
@@ -2761,7 +2402,7 @@ const SPRING_LAND_5_REQUIREMENTS: Requirements = {
   },
   coins: 100,
   seconds: 60,
-  bumpkinLevel: 11,
+  bumpkinLevel: { ascension: 0, level: 11 },
 };
 
 const SPRING_LAND_6_REQUIREMENTS: Requirements = {
@@ -2772,7 +2413,7 @@ const SPRING_LAND_6_REQUIREMENTS: Requirements = {
   },
   coins: 200,
   seconds: 5 * 60,
-  bumpkinLevel: 13,
+  bumpkinLevel: { ascension: 0, level: 13 },
 };
 
 const SPRING_LAND_7_REQUIREMENTS: Requirements = {
@@ -2784,7 +2425,7 @@ const SPRING_LAND_7_REQUIREMENTS: Requirements = {
   },
   coins: 300,
   seconds: 30 * 60,
-  bumpkinLevel: 16,
+  bumpkinLevel: { ascension: 0, level: 16 },
 };
 
 const SPRING_LAND_8_REQUIREMENTS: Requirements = {
@@ -2795,7 +2436,7 @@ const SPRING_LAND_8_REQUIREMENTS: Requirements = {
   },
   coins: 400,
   seconds: 2 * 60 * 60,
-  bumpkinLevel: 20,
+  bumpkinLevel: { ascension: 0, level: 20 },
 };
 
 const SPRING_LAND_9_REQUIREMENTS: Requirements = {
@@ -2806,7 +2447,7 @@ const SPRING_LAND_9_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 2 * 60 * 60,
-  bumpkinLevel: 23,
+  bumpkinLevel: { ascension: 0, level: 23 },
 };
 
 const SPRING_LAND_10_REQUIREMENTS: Requirements = {
@@ -2817,7 +2458,7 @@ const SPRING_LAND_10_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 4 * 60 * 60,
-  bumpkinLevel: 25,
+  bumpkinLevel: { ascension: 0, level: 25 },
 };
 
 const SPRING_LAND_11_REQUIREMENTS: Requirements = {
@@ -2830,7 +2471,7 @@ const SPRING_LAND_11_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 8 * 60 * 60,
-  bumpkinLevel: 27,
+  bumpkinLevel: { ascension: 0, level: 27 },
 };
 
 const SPRING_LAND_12_REQUIREMENTS: Requirements = {
@@ -2842,7 +2483,7 @@ const SPRING_LAND_12_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 12 * 60 * 60,
-  bumpkinLevel: 29,
+  bumpkinLevel: { ascension: 0, level: 29 },
 };
 
 const SPRING_LAND_13_REQUIREMENTS: Requirements = {
@@ -2855,7 +2496,7 @@ const SPRING_LAND_13_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 12 * 60 * 60,
-  bumpkinLevel: 32,
+  bumpkinLevel: { ascension: 0, level: 32 },
 };
 
 const SPRING_LAND_14_REQUIREMENTS: Requirements = {
@@ -2867,7 +2508,7 @@ const SPRING_LAND_14_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 36,
+  bumpkinLevel: { ascension: 0, level: 36 },
 };
 
 const SPRING_LAND_15_REQUIREMENTS: Requirements = {
@@ -2881,7 +2522,7 @@ const SPRING_LAND_15_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 40,
+  bumpkinLevel: { ascension: 0, level: 40 },
 };
 
 const SPRING_LAND_16_REQUIREMENTS: Requirements = {
@@ -2894,7 +2535,7 @@ const SPRING_LAND_16_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 43,
+  bumpkinLevel: { ascension: 0, level: 43 },
 };
 
 const SPRING_LAND_17_REQUIREMENTS: Requirements = {
@@ -2908,7 +2549,7 @@ const SPRING_LAND_17_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 47,
+  bumpkinLevel: { ascension: 0, level: 47 },
 };
 
 const SPRING_LAND_18_REQUIREMENTS: Requirements = {
@@ -2922,7 +2563,7 @@ const SPRING_LAND_18_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 51,
+  bumpkinLevel: { ascension: 0, level: 51 },
 };
 
 const SPRING_LAND_19_REQUIREMENTS: Requirements = {
@@ -2936,7 +2577,7 @@ const SPRING_LAND_19_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 53,
+  bumpkinLevel: { ascension: 0, level: 53 },
 };
 
 const SPRING_LAND_20_REQUIREMENTS: Requirements = {
@@ -2950,7 +2591,7 @@ const SPRING_LAND_20_REQUIREMENTS: Requirements = {
   },
   coins: 500,
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 55,
+  bumpkinLevel: { ascension: 0, level: 55 },
 };
 
 const DESERT_LAND_5_REQUIREMENTS: Requirements = {
@@ -2963,7 +2604,7 @@ const DESERT_LAND_5_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 60,
-  bumpkinLevel: 40,
+  bumpkinLevel: { ascension: 0, level: 40 },
 };
 
 const DESERT_LAND_6_REQUIREMENTS: Requirements = {
@@ -2976,7 +2617,7 @@ const DESERT_LAND_6_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 60 * 5,
-  bumpkinLevel: 40,
+  bumpkinLevel: { ascension: 0, level: 40 },
 };
 
 const DESERT_LAND_7_REQUIREMENTS: Requirements = {
@@ -2990,7 +2631,7 @@ const DESERT_LAND_7_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 30 * 60,
-  bumpkinLevel: 41,
+  bumpkinLevel: { ascension: 0, level: 41 },
 };
 
 const DESERT_LAND_8_REQUIREMENTS: Requirements = {
@@ -3006,7 +2647,7 @@ const DESERT_LAND_8_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 2 * 60 * 60,
-  bumpkinLevel: 42,
+  bumpkinLevel: { ascension: 0, level: 42 },
 };
 
 const DESERT_LAND_9_REQUIREMENTS: Requirements = {
@@ -3022,7 +2663,7 @@ const DESERT_LAND_9_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 2 * 60 * 60,
-  bumpkinLevel: 43,
+  bumpkinLevel: { ascension: 0, level: 43 },
 };
 
 const DESERT_LAND_10_REQUIREMENTS: Requirements = {
@@ -3038,7 +2679,7 @@ const DESERT_LAND_10_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 384,
   seconds: 8 * 60 * 60,
-  bumpkinLevel: 44,
+  bumpkinLevel: { ascension: 0, level: 44 },
 };
 
 const DESERT_LAND_11_REQUIREMENTS: Requirements = {
@@ -3054,7 +2695,7 @@ const DESERT_LAND_11_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 768,
   seconds: 12 * 60 * 60,
-  bumpkinLevel: 45,
+  bumpkinLevel: { ascension: 0, level: 45 },
 };
 
 const DESERT_LAND_12_REQUIREMENTS: Requirements = {
@@ -3070,7 +2711,7 @@ const DESERT_LAND_12_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 1536,
   seconds: 12 * 60 * 60,
-  bumpkinLevel: 47,
+  bumpkinLevel: { ascension: 0, level: 47 },
 };
 
 const DESERT_LAND_13_REQUIREMENTS: Requirements = {
@@ -3086,7 +2727,7 @@ const DESERT_LAND_13_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3072,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 50,
+  bumpkinLevel: { ascension: 0, level: 50 },
 };
 
 const DESERT_LAND_14_REQUIREMENTS: Requirements = {
@@ -3102,7 +2743,7 @@ const DESERT_LAND_14_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3840,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 53,
+  bumpkinLevel: { ascension: 0, level: 53 },
 };
 
 const DESERT_LAND_15_REQUIREMENTS: Requirements = {
@@ -3118,7 +2759,7 @@ const DESERT_LAND_15_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3840,
   seconds: 24 * 60 * 60,
-  bumpkinLevel: 56,
+  bumpkinLevel: { ascension: 0, level: 56 },
 };
 
 const DESERT_LAND_16_REQUIREMENTS: Requirements = {
@@ -3134,7 +2775,7 @@ const DESERT_LAND_16_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3840,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 58,
+  bumpkinLevel: { ascension: 0, level: 58 },
 };
 
 const DESERT_LAND_17_REQUIREMENTS: Requirements = {
@@ -3150,7 +2791,7 @@ const DESERT_LAND_17_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 5760,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 60,
+  bumpkinLevel: { ascension: 0, level: 60 },
 };
 
 const DESERT_LAND_18_REQUIREMENTS: Requirements = {
@@ -3166,7 +2807,7 @@ const DESERT_LAND_18_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 5760,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 63,
+  bumpkinLevel: { ascension: 0, level: 63 },
 };
 
 const DESERT_LAND_19_REQUIREMENTS: Requirements = {
@@ -3182,7 +2823,7 @@ const DESERT_LAND_19_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 7680,
   seconds: 36 * 60 * 60,
-  bumpkinLevel: 65,
+  bumpkinLevel: { ascension: 0, level: 65 },
 };
 
 const DESERT_LAND_20_REQUIREMENTS: Requirements = {
@@ -3198,7 +2839,7 @@ const DESERT_LAND_20_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 7680,
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 68,
+  bumpkinLevel: { ascension: 0, level: 68 },
 };
 
 const DESERT_LAND_21_REQUIREMENTS: Requirements = {
@@ -3214,7 +2855,7 @@ const DESERT_LAND_21_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 9600,
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 70,
+  bumpkinLevel: { ascension: 0, level: 70 },
 };
 
 const DESERT_LAND_22_REQUIREMENTS: Requirements = {
@@ -3230,7 +2871,7 @@ const DESERT_LAND_22_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 9600,
   seconds: 48 * 60 * 60,
-  bumpkinLevel: 72,
+  bumpkinLevel: { ascension: 0, level: 72 },
 };
 
 const DESERT_LAND_23_REQUIREMENTS: Requirements = {
@@ -3246,7 +2887,7 @@ const DESERT_LAND_23_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 9600,
   seconds: 60 * 60 * 60,
-  bumpkinLevel: 73,
+  bumpkinLevel: { ascension: 0, level: 73 },
 };
 
 const DESERT_LAND_24_REQUIREMENTS: Requirements = {
@@ -3262,7 +2903,7 @@ const DESERT_LAND_24_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 11520,
   seconds: 60 * 60 * 60,
-  bumpkinLevel: 74,
+  bumpkinLevel: { ascension: 0, level: 74 },
 };
 
 const DESERT_LAND_25_REQUIREMENTS: Requirements = {
@@ -3278,7 +2919,7 @@ const DESERT_LAND_25_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 13440,
   seconds: 60 * 60 * 60,
-  bumpkinLevel: 75,
+  bumpkinLevel: { ascension: 0, level: 75 },
 };
 
 const VOLCANO_LAND_6_REQUIREMENTS: Requirements = {
@@ -3291,7 +2932,7 @@ const VOLCANO_LAND_6_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 500,
   seconds: 10, // 10 seconds
-  bumpkinLevel: 70,
+  bumpkinLevel: { ascension: 0, level: 70 },
 };
 
 const VOLCANO_LAND_7_REQUIREMENTS: Requirements = {
@@ -3307,7 +2948,7 @@ const VOLCANO_LAND_7_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 384,
   seconds: 5 * 60, // 5 minutes
-  bumpkinLevel: 72,
+  bumpkinLevel: { ascension: 0, level: 72 },
 };
 
 const VOLCANO_LAND_8_REQUIREMENTS: Requirements = {
@@ -3323,7 +2964,7 @@ const VOLCANO_LAND_8_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 768,
   seconds: 0.5 * 60 * 60, // 30 minutes
-  bumpkinLevel: 74,
+  bumpkinLevel: { ascension: 0, level: 74 },
 };
 
 const VOLCANO_LAND_9_REQUIREMENTS: Requirements = {
@@ -3339,7 +2980,7 @@ const VOLCANO_LAND_9_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 1152,
   seconds: 1 * 60 * 60, // 1 hour
-  bumpkinLevel: 76,
+  bumpkinLevel: { ascension: 0, level: 76 },
 };
 
 const VOLCANO_LAND_10_REQUIREMENTS: Requirements = {
@@ -3356,7 +2997,7 @@ const VOLCANO_LAND_10_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 1920,
   seconds: 2 * 60 * 60, // 2 hours
-  bumpkinLevel: 78,
+  bumpkinLevel: { ascension: 0, level: 78 },
 };
 
 const VOLCANO_LAND_11_REQUIREMENTS: Requirements = {
@@ -3372,7 +3013,7 @@ const VOLCANO_LAND_11_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3000,
   seconds: 4 * 60 * 60, // 4 hours
-  bumpkinLevel: 80,
+  bumpkinLevel: { ascension: 0, level: 80 },
 };
 
 const VOLCANO_LAND_12_REQUIREMENTS: Requirements = {
@@ -3389,7 +3030,7 @@ const VOLCANO_LAND_12_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 3840,
   seconds: 8 * 60 * 60, // 8 hours
-  bumpkinLevel: 82,
+  bumpkinLevel: { ascension: 0, level: 82 },
 };
 
 const VOLCANO_LAND_13_REQUIREMENTS: Requirements = {
@@ -3405,7 +3046,7 @@ const VOLCANO_LAND_13_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 4800,
   seconds: 12 * 60 * 60, // 12 hours
-  bumpkinLevel: 84,
+  bumpkinLevel: { ascension: 0, level: 84 },
 };
 
 const VOLCANO_LAND_14_REQUIREMENTS: Requirements = {
@@ -3422,7 +3063,7 @@ const VOLCANO_LAND_14_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 5760,
   seconds: 12 * 60 * 60, // 12 hours
-  bumpkinLevel: 86,
+  bumpkinLevel: { ascension: 0, level: 86 },
 };
 
 const VOLCANO_LAND_15_REQUIREMENTS: Requirements = {
@@ -3439,7 +3080,7 @@ const VOLCANO_LAND_15_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 6720,
   seconds: 24 * 60 * 60, // 24 hours
-  bumpkinLevel: 88,
+  bumpkinLevel: { ascension: 0, level: 88 },
 };
 
 const VOLCANO_LAND_16_REQUIREMENTS: Requirements = {
@@ -3456,7 +3097,7 @@ const VOLCANO_LAND_16_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 7680,
   seconds: 24 * 60 * 60, // 24 hours
-  bumpkinLevel: 90,
+  bumpkinLevel: { ascension: 0, level: 90 },
 };
 
 const VOLCANO_LAND_17_REQUIREMENTS: Requirements = {
@@ -3473,7 +3114,7 @@ const VOLCANO_LAND_17_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 9600,
   seconds: 24 * 60 * 60, // 24 hours
-  bumpkinLevel: 92,
+  bumpkinLevel: { ascension: 0, level: 92 },
 };
 
 const VOLCANO_LAND_18_REQUIREMENTS: Requirements = {
@@ -3490,7 +3131,7 @@ const VOLCANO_LAND_18_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 12000,
   seconds: 36 * 60 * 60, // 36 hours
-  bumpkinLevel: 94,
+  bumpkinLevel: { ascension: 0, level: 94 },
 };
 
 const VOLCANO_LAND_19_REQUIREMENTS: Requirements = {
@@ -3507,7 +3148,7 @@ const VOLCANO_LAND_19_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 15360,
   seconds: 36 * 60 * 60, // 36 hours
-  bumpkinLevel: 96,
+  bumpkinLevel: { ascension: 0, level: 96 },
 };
 
 const VOLCANO_LAND_20_REQUIREMENTS: Requirements = {
@@ -3524,7 +3165,7 @@ const VOLCANO_LAND_20_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 18000,
   seconds: 48 * 60 * 60, // 48 hours
-  bumpkinLevel: 98,
+  bumpkinLevel: { ascension: 0, level: 98 },
 };
 
 const VOLCANO_LAND_21_REQUIREMENTS: Requirements = {
@@ -3541,7 +3182,7 @@ const VOLCANO_LAND_21_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 21600,
   seconds: 48 * 60 * 60, // 48 hours
-  bumpkinLevel: 100,
+  bumpkinLevel: { ascension: 0, level: 100 },
 };
 
 const VOLCANO_LAND_22_REQUIREMENTS: Requirements = {
@@ -3558,7 +3199,7 @@ const VOLCANO_LAND_22_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 25200,
   seconds: 48 * 60 * 60, // 48 hours
-  bumpkinLevel: 102,
+  bumpkinLevel: { ascension: 0, level: 102 },
 };
 
 const VOLCANO_LAND_23_REQUIREMENTS: Requirements = {
@@ -3575,7 +3216,7 @@ const VOLCANO_LAND_23_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 30000,
   seconds: 48 * 60 * 60, // 48 hours
-  bumpkinLevel: 104,
+  bumpkinLevel: { ascension: 0, level: 104 },
 };
 
 const VOLCANO_LAND_24_REQUIREMENTS: Requirements = {
@@ -3592,7 +3233,7 @@ const VOLCANO_LAND_24_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 33600,
   seconds: 48 * 60 * 60, // 48 hours
-  bumpkinLevel: 106,
+  bumpkinLevel: { ascension: 0, level: 106 },
 };
 
 const VOLCANO_LAND_25_REQUIREMENTS: Requirements = {
@@ -3609,7 +3250,7 @@ const VOLCANO_LAND_25_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 38400,
   seconds: 60 * 60 * 60, // 60 hours
-  bumpkinLevel: 108,
+  bumpkinLevel: { ascension: 0, level: 108 },
 };
 
 const VOLCANO_LAND_26_REQUIREMENTS: Requirements = {
@@ -3626,7 +3267,7 @@ const VOLCANO_LAND_26_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 42000,
   seconds: 60 * 60 * 60, // 60 hours
-  bumpkinLevel: 110,
+  bumpkinLevel: { ascension: 0, level: 110 },
 };
 
 const VOLCANO_LAND_27_REQUIREMENTS: Requirements = {
@@ -3643,7 +3284,7 @@ const VOLCANO_LAND_27_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 45600,
   seconds: 60 * 60 * 60, // 60 hours
-  bumpkinLevel: 112,
+  bumpkinLevel: { ascension: 0, level: 112 },
 };
 
 const VOLCANO_LAND_28_REQUIREMENTS: Requirements = {
@@ -3660,7 +3301,7 @@ const VOLCANO_LAND_28_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 50400,
   seconds: 60 * 60 * 60, // 60 hours
-  bumpkinLevel: 114,
+  bumpkinLevel: { ascension: 0, level: 114 },
 };
 
 const VOLCANO_LAND_29_REQUIREMENTS: Requirements = {
@@ -3677,7 +3318,7 @@ const VOLCANO_LAND_29_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 54000,
   seconds: 72 * 60 * 60, // 72 hours
-  bumpkinLevel: 116,
+  bumpkinLevel: { ascension: 0, level: 116 },
 };
 
 const VOLCANO_LAND_30_REQUIREMENTS: Requirements = {
@@ -3694,11 +3335,14 @@ const VOLCANO_LAND_30_REQUIREMENTS: Requirements = {
   sfl: 0,
   coins: 60000,
   seconds: 72 * 60 * 60, // 72 hours
-  bumpkinLevel: 120,
+  bumpkinLevel: { ascension: 0, level: 120 },
 };
 
+// Only the static, hand-authored islands live here. Ascension islands (swamp
+// onward) are formula-driven and ascension-dependent — read them via
+// `getExpansionRequirements` / `getAscensionExpansionRequirements` instead.
 export const EXPANSION_REQUIREMENTS: Record<
-  IslandType,
+  BasicIslandType,
   Record<number, Requirements>
 > = {
   basic: {
@@ -3793,3 +3437,25 @@ export const EXPANSION_REQUIREMENTS: Record<
     30: VOLCANO_LAND_30_REQUIREMENTS,
   },
 };
+
+/**
+ * The single source of truth for a given expansion's requirements. Ascension
+ * islands (swamp onward) are computed from the formula and depend on the
+ * ascension level; the static islands use the table. Always read through here
+ * rather than indexing `EXPANSION_REQUIREMENTS` directly.
+ */
+export const getExpansionRequirements = ({
+  island,
+  expansion,
+  ascensionLevel,
+}: {
+  island: IslandType;
+  expansion: number;
+  ascensionLevel?: number;
+}): Requirements | undefined =>
+  (ascensionLevel ?? 0) > 0
+    ? getAscensionExpansionRequirements({
+        expansion,
+        ascensionLevel: ascensionLevel ?? 0,
+      })
+    : EXPANSION_REQUIREMENTS[island as BasicIslandType][expansion];

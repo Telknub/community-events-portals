@@ -1,16 +1,16 @@
 import Decimal from "decimal.js-light";
-import { ProcessingBuildingName } from "features/game/types/buildings";
-import { BuildingProduct, GameState } from "features/game/types/game";
+import type { ProcessingBuildingName } from "features/game/types/buildings";
+import type { BuildingProduct, GameState } from "features/game/types/game";
 import { produce } from "immer";
 import {
   chargeCoinsForSpeedUp,
   getInstantGems,
   makeGemHistory,
-  SpeedUpPaymentMethod,
+  type SpeedUpPaymentMethod,
 } from "features/game/lib/getInstantGems";
 import { recalculateProcessingQueue } from "./cancelProcessedResource";
 import { getProcessedResourceAmount } from "./collectProcessedResource";
-import { ProcessedResource } from "features/game/types/processedFood";
+import type { ProcessedResource } from "features/game/types/processedFood";
 import { trackFarmActivity } from "features/game/types/farmActivity";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 
@@ -81,10 +81,12 @@ export const speedUpProcessing = ({
       game = makeGemHistory({ game, amount: gems, createdAt });
     }
 
+    const resource = currentProcessingItem.name as ProcessedResource;
     const { amount, boostsUsed } = getProcessedResourceAmount({
       game,
-      resource: currentProcessingItem.name as ProcessedResource,
+      resource,
       farmId,
+      counter: game.farmActivity[`${resource} Processed`] ?? 0,
     });
 
     game.inventory[currentProcessingItem.name] = (

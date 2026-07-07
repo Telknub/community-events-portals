@@ -11,17 +11,20 @@ import { Box } from "components/ui/Box";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { InnerPanel, Panel } from "components/ui/Panel";
-import {
+import type {
   GameState,
   Inventory,
   InventoryItemName,
 } from "features/game/types/game";
-import { ITEM_DETAILS } from "features/game/types/images";
+import {
+  getTranslatedItemName,
+  ITEM_DETAILS,
+} from "features/game/types/images";
 import {
   CHUM_AMOUNTS,
-  Chum,
-  FishName,
-  FishingBait,
+  type Chum,
+  type FishName,
+  type FishingBait,
   getSeasonalGuaranteedCatch,
   isGuaranteedBait,
 } from "features/game/types/fishing";
@@ -35,6 +38,7 @@ import Decimal from "decimal.js-light";
 import {
   getReelsPackGemPrice,
   getRemainingReels,
+  getRodCost,
 } from "features/game/events/landExpansion/castRod";
 import { isFishFrenzy, isFullMoon } from "features/game/types/calendar";
 import { SEASON_ICONS } from "../buildings/components/building/market/SeasonalSeeds";
@@ -211,7 +215,10 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
       ) - Math.floor(previousCasts / SHRIMP_ONESIE_REEL_INTERVAL)
     : 0;
 
-  const rodsRequired = hasAncientRod ? 0 : effectiveMultiplier;
+  const { rodCost: rodsRequired } = getRodCost({
+    game: state,
+    multiplier: effectiveMultiplier,
+  });
   // Get reels required to make the cast
   const packsRequired = fishingLimitReached ? getExtraReelPacksRequired() : 0;
   // Get the gems cost for the reels
@@ -243,9 +250,9 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
     setShowConfirmationModal(false);
   };
 
-  const missingRod =
-    !hasAncientRod &&
-    (!state.inventory["Rod"] || state.inventory.Rod.lt(rodsRequired));
+  const missingRod = (state.inventory["Rod"] ?? new Decimal(0)).lt(
+    rodsRequired,
+  );
   const guaranteedCatchOptions = selectedBait
     ? getGuaranteedOptions(selectedBait)
     : [];
@@ -382,7 +389,7 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
             value: bait,
             label: (
               <div className="flex flex-col gap-1">
-                <p className="text-xs">{`${effectiveMultiplier} x ${bait} (${items[bait]?.toString() ?? 0})`}</p>
+                <p className="text-xs">{`${effectiveMultiplier} x ${getTranslatedItemName(bait)} (${items[bait]?.toString() ?? 0})`}</p>
                 <p className="text-xxs">{ITEM_DETAILS[bait].description}</p>
               </div>
             ),
@@ -394,7 +401,9 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
         />
         {notEnoughBait && (
           <Label className="ml-1" type="danger">
-            {t("fishing.dont.have.enough.bait", { bait: selectedBait })}
+            {t("fishing.dont.have.enough.bait", {
+              bait: getTranslatedItemName(selectedBait),
+            })}
           </Label>
         )}
         {selectedBait && isGuaranteedBait(selectedBait) && guaranteedCatch && (
@@ -426,7 +435,7 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
 
         <InnerPanel>
           <div className="flex flex-col justify-between space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Label type="default" className="text-xs ml-1" icon={multiCast}>
                 {t("fishing.multiCast")}
               </Label>
@@ -479,7 +488,7 @@ export const BaitSelection: React.FC<Props> = ({ onCast, state }) => {
                   >
                     {t("fishermanModal.chum", {
                       count: CHUM_AMOUNTS[chum] * effectiveMultiplier,
-                      type: chum,
+                      type: getTranslatedItemName(chum),
                     })}
                   </Label>
                 </div>

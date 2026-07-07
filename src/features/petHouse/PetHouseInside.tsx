@@ -8,10 +8,10 @@ import { Section, useScrollIntoView } from "lib/utils/hooks/useScrollIntoView";
 import { useNavigate } from "react-router";
 import { Context } from "features/game/GameProvider";
 import { Context as AuthContext } from "features/auth/lib/Provider";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import { EXTERIOR_ISLAND_BG } from "features/barn/BarnInside";
 import { getCurrentBiome } from "features/island/biomes/biomes";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
 import { UpgradeBuildingModal } from "features/game/expansion/components/UpgradeBuildingModal";
 import { Hud } from "features/island/hud/Hud";
@@ -29,6 +29,7 @@ import { VisitingHud } from "features/island/hud/VisitingHud";
 import { PetHouseModal } from "features/island/buildings/components/building/petHouse/PetHouseModal";
 import { PlayerModal } from "features/social/PlayerModal";
 import { hasFeatureAccess } from "lib/flags";
+import { useLandscapingGridBackgroundImage } from "features/island/landscaping/LandscapingGrid";
 
 import followIcon from "assets/icons/follow.webp";
 
@@ -80,6 +81,7 @@ export const PetHouseInside: React.FC = () => {
   const petNFTs = useSelector(gameService, _petNFTs);
   const pets = useSelector(gameService, _petHousePets);
   const biome = useSelector(gameService, _biome);
+  const gridBackgroundImage = useLandscapingGridBackgroundImage();
 
   const level = petHouse.level;
   const nextLevel = Math.min(level + 1, 3);
@@ -222,9 +224,7 @@ export const PetHouseInside: React.FC = () => {
                 width: `${bounds.width * GRID_WIDTH_PX}px`,
 
                 backgroundSize: `${GRID_WIDTH_PX}px ${GRID_WIDTH_PX}px`,
-                backgroundImage: `
-            linear-gradient(to right, rgb(255 255 255 / 17%) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(255 255 255 / 17%) 1px, transparent 1px)`,
+                backgroundImage: gridBackgroundImage,
               }}
             />
 

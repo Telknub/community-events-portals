@@ -2,12 +2,15 @@ import Decimal from "decimal.js-light";
 import { TEST_BUMPKIN } from "features/game/lib/bumpkinData";
 import { INITIAL_FARM } from "features/game/lib/constants";
 import { FISH_PROCESSING_TIME_SECONDS } from "features/game/types/fishProcessing";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import {
   collectProcessedResource,
-  CollectProcessedResourceAction,
+  type CollectProcessedResourceAction,
+  getProcessedResourceAmount,
 } from "./collectProcessedResource";
-import { ProcessingBuildingName } from "features/game/types/buildings";
+import type { ProcessingBuildingName } from "features/game/types/buildings";
+import type * as PrngModule from "lib/prng";
+import type * as GameTypesModule from "features/game/types";
 
 const createdAt = Date.now();
 
@@ -202,10 +205,10 @@ describe("collectProcessedFood", () => {
     it("yields 2 when the prng roll passes (deterministic hit counter)", () => {
       const { prngChance } = jest.requireActual(
         "lib/prng",
-      ) as typeof import("lib/prng");
+      ) as typeof PrngModule;
       const { KNOWN_IDS } = jest.requireActual(
         "features/game/types",
-      ) as typeof import("features/game/types");
+      ) as typeof GameTypesModule;
       const farmId = 42;
       let hitCounter = -1;
       for (let counter = 0; counter < 200; counter++) {
@@ -243,10 +246,10 @@ describe("collectProcessedFood", () => {
     it("yields 1 when the prng roll fails (deterministic miss counter)", () => {
       const { prngChance } = jest.requireActual(
         "lib/prng",
-      ) as typeof import("lib/prng");
+      ) as typeof PrngModule;
       const { KNOWN_IDS } = jest.requireActual(
         "features/game/types",
-      ) as typeof import("features/game/types");
+      ) as typeof GameTypesModule;
       const farmId = 42;
       let missCounter = -1;
       for (let counter = 0; counter < 200; counter++) {
@@ -279,6 +282,110 @@ describe("collectProcessedFood", () => {
         farmId,
       });
       expect(updated.inventory["Fish Flake"]).toEqual(new Decimal(1));
+    });
+  });
+
+  describe("getProcessedResourceAmount counter override", () => {
+    const auraState: GameState = {
+      ...SPRING_STATE,
+      bumpkin: {
+        ...SPRING_STATE.bumpkin!,
+        equipped: {
+          ...SPRING_STATE.bumpkin!.equipped,
+          aura: "Bubble Aura",
+        },
+      },
+    };
+
+    // Predictor scenario: two pending same-resource jobs are forecast in a
+    // single batch by passing successive counter values. Each counter must
+    // drive its own independent Bubble Aura roll — they must not correlate.
+    it("uses the explicit counter so adjacent values can produce different rolls", () => {
+      const { prngChance } = jest.requireActual(
+        "lib/prng",
+      ) as typeof PrngModule;
+      const { KNOWN_IDS } = jest.requireActual(
+        "features/game/types",
+      ) as typeof GameTypesModule;
+      const farmId = 42;
+
+      let hitCounter = -1;
+      let missCounter = -1;
+      for (let c = 0; c < 500; c++) {
+        const roll = prngChance({
+          farmId,
+          itemId: KNOWN_IDS["Fish Flake"],
+          counter: c,
+          chance: 20,
+          criticalHitName: "Bubble Aura",
+        });
+        if (roll && hitCounter === -1) hitCounter = c;
+        if (!roll && missCounter === -1) missCounter = c;
+        if (hitCounter !== -1 && missCounter !== -1) break;
+      }
+      expect(hitCounter).toBeGreaterThanOrEqual(0);
+      expect(missCounter).toBeGreaterThanOrEqual(0);
+
+      const hit = getProcessedResourceAmount({
+        game: auraState,
+        resource: "Fish Flake",
+        farmId,
+        counter: hitCounter,
+      });
+      const miss = getProcessedResourceAmount({
+        game: auraState,
+        resource: "Fish Flake",
+        farmId,
+        counter: missCounter,
+      });
+
+      expect(hit.amount).toEqual(new Decimal(2));
+      expect(hit.boostsUsed).toEqual([{ name: "Bubble Aura", value: "+1" }]);
+      expect(miss.amount).toEqual(new Decimal(1));
+      expect(miss.boostsUsed).toEqual([]);
+    });
+
+    it("ignores farmActivity when an explicit counter is passed", () => {
+      const { prngChance } = jest.requireActual(
+        "lib/prng",
+      ) as typeof PrngModule;
+      const { KNOWN_IDS } = jest.requireActual(
+        "features/game/types",
+      ) as typeof GameTypesModule;
+      const farmId = 42;
+
+      let hitCounter = -1;
+      let missCounter = -1;
+      for (let c = 0; c < 500; c++) {
+        const roll = prngChance({
+          farmId,
+          itemId: KNOWN_IDS["Fish Flake"],
+          counter: c,
+          chance: 20,
+          criticalHitName: "Bubble Aura",
+        });
+        if (roll && hitCounter === -1) hitCounter = c;
+        if (!roll && missCounter === -1) missCounter = c;
+        if (hitCounter !== -1 && missCounter !== -1) break;
+      }
+
+      // farmActivity says the hit counter, but caller threads the miss counter.
+      const stateWithHitActivity: GameState = {
+        ...auraState,
+        farmActivity: {
+          ...auraState.farmActivity,
+          "Fish Flake Processed": hitCounter,
+        },
+      };
+
+      const result = getProcessedResourceAmount({
+        game: stateWithHitActivity,
+        resource: "Fish Flake",
+        farmId,
+        counter: missCounter,
+      });
+      expect(result.amount).toEqual(new Decimal(1));
+      expect(result.boostsUsed).toEqual([]);
     });
   });
 });

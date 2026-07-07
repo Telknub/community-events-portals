@@ -1,9 +1,10 @@
 import { ITEM_DETAILS } from "features/game/types/images";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { getObjectEntries } from "lib/object";
-import { PetName, isPetNFTRevealed } from "features/game/types/pets";
-import { MachineState } from "features/game/lib/gameMachine";
-import { GameState } from "features/game/types/game";
+import { getCollectiblesAcrossLocations } from "features/game/lib/getCollectiblesAcrossLocations";
+import { type PetName, isPetNFTRevealed } from "features/game/types/pets";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { GameState } from "features/game/types/game";
 
 import barkleyAsleep from "assets/sfts/pets/dogs/barkley_asleep.webp";
 import biscuitAsleep from "assets/sfts/pets/dogs/biscuit_asleep.webp";
@@ -218,9 +219,9 @@ export const isPetExcludedByMissingPetHouse = ({
     return game.pets?.nfts?.[pet]?.location === "petHouse";
   }
 
-  const placedOutsidePetHouse =
-    game.collectibles[pet]?.some((p) => !!p.coordinates) ||
-    game.home.collectibles[pet]?.some((p) => !!p.coordinates);
+  const placedOutsidePetHouse = getCollectiblesAcrossLocations(game, pet).some(
+    (p) => !!p.coordinates,
+  );
   const placedInPetHouse = game.petHouse?.pets[pet]?.some(
     (p) => !!p.coordinates,
   );

@@ -7,18 +7,18 @@ import {
   STONE_RECOVERY_TIME,
   SUNSTONE_RECOVERY_TIME,
 } from "features/game/lib/constants";
-import { ResourceItem } from "../expansion/placeable/lib/collisionDetection";
-import { Rock, Tree, GameState } from "../types/game";
+import type { ResourceItem } from "../expansion/placeable/lib/collisionDetection";
+import type { Rock, Tree, GameState } from "../types/game";
 import {
-  UpgradedResourceName,
+  type UpgradedResourceName,
   ADVANCED_RESOURCES,
   RESOURCE_STATE_ACCESSORS,
-  RockName,
+  type RockName,
   RESOURCES,
-  UpgradeableResource,
-  TreeName,
+  type UpgradeableResource,
+  type TreeName,
   BASIC_RESOURCES,
-  BasicResourceName,
+  type BasicResourceName,
 } from "../types/resources";
 
 export const canGatherResource = (
@@ -105,6 +105,7 @@ export function canMine(
     "Tempered Iron Rock": IRON_RECOVERY_TIME,
     "Pure Gold Rock": GOLD_RECOVERY_TIME,
     "Prime Gold Rock": GOLD_RECOVERY_TIME,
+    "Ascension Crystal": 0,
   };
 
   const recoveryTime = resourceRecoveryTime[rockName];

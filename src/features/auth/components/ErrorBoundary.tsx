@@ -1,5 +1,5 @@
 import { PIXEL_SCALE } from "features/game/lib/constants";
-import React, { Component, ReactNode } from "react";
+import React, { Component, type ReactNode } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { BoundaryError } from "./SomethingWentWrong";
 import { Modal } from "components/ui/Modal";
@@ -16,6 +16,10 @@ interface State {
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     error: null,
+  };
+
+  private refreshPage = () => {
+    window.location.reload();
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -40,6 +44,7 @@ class ErrorBoundary extends Component<Props, State> {
               <BoundaryError
                 error={this.state.error.message}
                 stack={this.state.error.stack}
+                onAcknowledge={this.refreshPage}
               />
             </Panel>
           </Modal>

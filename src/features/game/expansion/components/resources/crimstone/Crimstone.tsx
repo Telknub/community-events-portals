@@ -5,9 +5,13 @@ import { Context } from "features/game/GameProvider";
 
 import { getTimeLeft } from "lib/utils/time";
 import useUiRefresher from "lib/utils/hooks/useUiRefresher";
-import { GameState, InventoryItemName, Rock } from "features/game/types/game";
+import type {
+  GameState,
+  InventoryItemName,
+  Rock,
+} from "features/game/types/game";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import Decimal from "decimal.js-light";
 import { canMine } from "features/game/lib/resourceNodes";
 import { RecoveredCrimstone } from "./components/RecoveredCrimstone";
@@ -172,23 +176,21 @@ export const Crimstone: React.FC<Props> = ({ id }) => {
         ...{ minesLeft: crimstoneStage === 1 ? 5 : resource.minesLeft },
       },
     });
-    const newState = gameService.send("crimstoneRock.mined", {
+    gameService.send("crimstoneRock.mined", {
       index: id,
     });
 
-    if (!newState.matches("hoarding")) {
-      if (showAnimations) {
-        setCollecting(true);
-        harvested.current = crimstoneMined.toNumber();
-      }
+    if (showAnimations) {
+      setCollecting(true);
+      harvested.current = crimstoneMined.toNumber();
+    }
 
-      miningFallAudio();
+    miningFallAudio();
 
-      if (showAnimations) {
-        await new Promise((res) => setTimeout(res, 3000));
-        setCollecting(false);
-        harvested.current = 0;
-      }
+    if (showAnimations) {
+      await new Promise((res) => setTimeout(res, 3000));
+      setCollecting(false);
+      harvested.current = 0;
     }
   };
 

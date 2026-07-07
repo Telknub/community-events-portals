@@ -1,9 +1,12 @@
-import { HourglassType } from "features/island/collectibles/components/Hourglass";
-import { CollectibleName } from "../types/craftables";
+import type { HourglassType } from "features/island/collectibles/components/Hourglass";
+import type { CollectibleName } from "../types/craftables";
 import { getKeys } from "lib/object";
-import { GameState } from "../types/game";
-import { PET_SHRINES, PetShrineName } from "../types/pets";
+import type { GameState } from "../types/game";
+import { PET_SHRINES, type PetShrineName } from "../types/pets";
 import { isPetCollectible } from "../events/landExpansion/placeCollectible";
+import { getCollectiblesAcrossLocations } from "./getCollectiblesAcrossLocations";
+
+export { getCollectiblesAcrossLocations };
 
 export function isCollectibleBuilt({
   name,
@@ -12,26 +15,21 @@ export function isCollectibleBuilt({
   name: CollectibleName;
   game: GameState;
 }) {
-  const isReady = (placed: { readyAt?: number; coordinates?: unknown }) =>
-    (placed.readyAt ?? 0) <= Date.now() && !!placed.coordinates;
+  const isReady = (placed: {
+    readyAt?: number;
+    coordinates?: unknown;
+    used?: boolean;
+  }) =>
+    (placed.readyAt ?? 0) <= Date.now() && !!placed.coordinates && !placed.used;
 
-  const placedOnFarm = game.collectibles[name]?.some(isReady);
-  const placedInHome = game.home.collectibles[name]?.some(isReady);
-  const placedInInterior =
-    game.interior?.ground.collectibles[name]?.some(isReady);
-  const placedInLevelOne =
-    game.interior?.level_one?.collectibles[name]?.some(isReady);
+  const placedAcrossLocations = getCollectiblesAcrossLocations(game, name).some(
+    isReady,
+  );
 
   const placedInPetHouse =
-    isPetCollectible(name) && game.petHouse.pets[name]?.some(isReady);
+    isPetCollectible(name) && !!game.petHouse.pets[name]?.some(isReady);
 
-  return (
-    !!placedOnFarm ||
-    !!placedInHome ||
-    !!placedInInterior ||
-    !!placedInLevelOne ||
-    !!placedInPetHouse
-  );
+  return placedAcrossLocations || placedInPetHouse;
 }
 
 export type TemporaryCollectibleName = Extract<
@@ -80,13 +78,8 @@ export function isTemporaryCollectibleActive({
   game: GameState;
 }) {
   const cooldown = EXPIRY_COOLDOWNS[name];
-  const stillFresh = (placed: { createdAt?: number }) =>
-    (placed.createdAt ?? 0) + cooldown > Date.now();
 
-  return (
-    !!game.collectibles[name]?.some(stillFresh) ||
-    !!game.home.collectibles[name]?.some(stillFresh) ||
-    !!game.interior?.ground.collectibles[name]?.some(stillFresh) ||
-    !!game.interior?.level_one?.collectibles[name]?.some(stillFresh)
+  return getCollectiblesAcrossLocations(game, name).some(
+    (placed) => (placed.createdAt ?? 0) + cooldown > Date.now(),
   );
 }

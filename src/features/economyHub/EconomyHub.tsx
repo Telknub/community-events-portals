@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import useSWR from "swr";
 import { useActor, useSelector } from "@xstate/react";
@@ -10,12 +10,12 @@ import { useSafeAreaPaddingTop } from "lib/utils/hooks/useSafeAreaPaddingTop";
 
 import * as AuthProvider from "features/auth/lib/Provider";
 import { Context as GameContext } from "features/game/GameProvider";
-import {
+import type {
   Context as GameMachineContext,
   MachineState,
-  type BlockchainEvent,
+  BlockchainEvent,
 } from "features/game/lib/gameMachine";
-import { hasFeatureAccess } from "lib/flags";
+
 import { useOnMachineTransition } from "lib/utils/hooks/useOnMachineTransition";
 
 import {
@@ -26,11 +26,8 @@ import {
   marketplaceEconomiesPageSwrKey,
 } from "features/marketplace/actions/loadEconomiesMarketplaceData";
 
-import { RewardsWidget } from "./components/RewardsWidget";
-import { CreateEconomyWidget } from "./components/CreateEconomyWidget";
 import { TopTradeablesWidget } from "./components/TopTradeablesWidget";
 import { MinigameList } from "./components/MinigameList";
-import { mapEconomyOfferToExchangeRow } from "./lib/mapEconomyOffers";
 
 const _state = (state: MachineState) => state.context.state;
 const _farmId = (state: MachineState) => Number(state.context.farmId);
@@ -56,19 +53,12 @@ export const EconomyHub: React.FC = () => {
   const [authState] = useActor(authService);
   const token = authState.context.user.rawToken as string;
 
-  // In offline/dev mode (no `CONFIG.API_URL`) we skip the feature flag and
-  // farm-id gates entirely — the loaders short-circuit to mock data, so we
-  // want SWR to run regardless of the live game settings.
   const offline = isEconomyHubOffline();
-  const playerEconomiesAllowed =
-    offline || hasFeatureAccess(state, "PLAYER_ECONOMIES");
 
-  const tradeablesSwrKey = playerEconomiesAllowed
-    ? marketplaceEconomiesPageSwrKey(token ?? "")
-    : null;
+  const tradeablesSwrKey = marketplaceEconomiesPageSwrKey(token ?? "");
 
   const economiesSwrKey =
-    playerEconomiesAllowed && (offline || farmId > 0)
+    offline || farmId > 0
       ? economiesListPageSwrKey(token ?? "", farmId || 0)
       : null;
 
@@ -91,26 +81,10 @@ export const EconomyHub: React.FC = () => {
     () => {
       void mutateEconomies();
     },
-    playerEconomiesAllowed,
   );
 
   const items = tradeablesData?.items ?? [];
   const economies = economiesData?.economies ?? [];
-
-  const labelBySlug = useMemo(
-    () => Object.fromEntries(economies.map((e) => [e.slug, e.label])),
-    [economies],
-  );
-
-  const exchanges = useMemo(() => {
-    const offers = economiesData?.exchanges ?? [];
-    return offers.map((offer) =>
-      mapEconomyOfferToExchangeRow(
-        offer,
-        labelBySlug[offer.slug] ?? offer.slug,
-      ),
-    );
-  }, [economiesData?.exchanges, labelBySlug]);
 
   // When the player returns to the hub (e.g. after closing a minigame
   // iframe), force-refetch so counters and leaderboards reflect any
@@ -177,8 +151,6 @@ export const EconomyHub: React.FC = () => {
         {/* Body: skinny left column + wide right column. */}
         <div className="flex flex-col lg:flex-row gap-2 pb-4">
           <div className="w-full lg:w-1/5">
-            <RewardsWidget exchanges={exchanges} />
-            <CreateEconomyWidget />
             <TopTradeablesWidget items={items} isLoading={tradeablesLoading} />
           </div>
 

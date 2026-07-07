@@ -1,6 +1,6 @@
 import Decimal from "decimal.js-light";
-import { CropSeedName } from "./crops";
-import {
+import type { CropSeedName } from "./crops";
+import type {
   BedName,
   FactionBanner,
   InventoryItemName,
@@ -8,11 +8,11 @@ import {
   MutantAnimal,
 } from "./game";
 import { Section } from "lib/utils/hooks/useScrollIntoView";
-import { Flag, FLAGS } from "./flags";
+import { type Flag, FLAGS } from "./flags";
 import { LimitedItemType } from ".";
-import { DecorationName, DECORATION_DIMENSIONS } from "./decorations";
-import { BeanName, MutantCropName } from "./beans";
-import {
+import { type DecorationName, DECORATION_DIMENSIONS } from "./decorations";
+import type { BeanName, MutantCropName } from "./beans";
+import type {
   GoblinBlacksmithItemName,
   GoblinPirateItemName,
   HeliosBlacksmithItem,
@@ -21,20 +21,20 @@ import {
   SoldOutCollectibleName,
   TreasureCollectibleItem,
 } from "./collectibles";
-import { BoostTreasure } from "./treasure";
-import { MarineMarvelName, OldFishName } from "./fishing";
-import { ChapterBanner } from "./chapters";
-import {
+import type { BoostTreasure } from "./treasure";
+import type { MarineMarvelName, OldFishName } from "./fishing";
+import type { ChapterBanner } from "./chapters";
+import type {
   EpicFlowerName,
   MutantFlowerName,
   PlaceableFlowerName,
 } from "./flowers";
 import { translate } from "lib/i18n/translate";
-import { FactionShopCollectibleName } from "./factionShop";
+import type { FactionShopCollectibleName } from "./factionShop";
 import { BED_FARMHAND_COUNT } from "./beds";
-import { ChapterCollectibleName } from "./megastore";
-import { MonumentName } from "./monuments";
-import { PetName, PetShrineName } from "./pets";
+import type { ChapterCollectibleName } from "./megastore";
+import type { MonumentName } from "./monuments";
+import type { PetName, PetShrineName } from "./pets";
 import { getKeys } from "lib/object";
 
 export { FLAGS };
@@ -219,6 +219,7 @@ export type CollectibleName =
   | PlaceableFlowerName
   | FactionBanner
   | "Lifetime Farmer Banner"
+  | "Creator Banner"
   | FactionShopCollectibleName
   | TreasureCollectibleItem
   | MutantFlowerName
@@ -1063,13 +1064,15 @@ const flagsDimension = getKeys(FLAGS).reduce(
   {} as Record<Flag, Dimensions>,
 );
 
-const bedsDimension = getKeys(BED_FARMHAND_COUNT).reduce(
-  (previous, bedName) => ({
-    ...previous,
-    [bedName]: { width: 1, height: 1 },
-  }),
-  {} as Record<Exclude<BedName, "Double Bed">, Dimensions>,
-);
+const bedsDimension = getKeys(BED_FARMHAND_COUNT)
+  .filter((bedName) => bedName !== "Double Bed" && bedName !== "Pearl Bed")
+  .reduce(
+    (previous, bedName) => ({
+      ...previous,
+      [bedName]: { width: 1, height: 1 },
+    }),
+    {} as Record<Exclude<BedName, "Double Bed" | "Pearl Bed">, Dimensions>,
+  );
 
 export const COLLECTIBLES_DIMENSIONS: Record<CollectibleName, Dimensions> = {
   // Salesman Items
@@ -1222,6 +1225,7 @@ export const COLLECTIBLES_DIMENSIONS: Record<CollectibleName, Dimensions> = {
   "Clash of Factions Banner": { width: 1, height: 2 },
   "Pharaoh's Treasure Banner": { width: 1, height: 2 },
   "Lifetime Farmer Banner": { width: 1, height: 2 },
+  "Creator Banner": { width: 1, height: 2 },
   "Better Together Banner": { width: 1, height: 2 },
   "Paw Prints Banner": { width: 1, height: 2 },
   "Crabs and Traps Banner": { width: 1, height: 2 },
@@ -1309,7 +1313,6 @@ export const COLLECTIBLES_DIMENSIONS: Record<CollectibleName, Dimensions> = {
   "Crystal Altar": { width: 3, height: 2 },
   "Dino Egg Trophy": { width: 2, height: 1 },
   "Salt Lamp": { width: 1, height: 1 },
-  "Salt Crystal Bed": { width: 1, height: 1 },
   "World Map Rug": { width: 3, height: 2 },
   "Ripped Salt Bag": { width: 1, height: 1 },
 

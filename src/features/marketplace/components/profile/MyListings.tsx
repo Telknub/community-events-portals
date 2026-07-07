@@ -11,17 +11,17 @@ import { getKeys } from "lib/object";
 import { getTradeableDisplay } from "../../lib/tradeables";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { InventoryItemName } from "features/game/types/game";
+import type { InventoryItemName } from "features/game/types/game";
 import { Modal } from "components/ui/Modal";
 import { ClaimPurchase } from "./ClaimPurchase";
-import { MachineState } from "features/game/lib/gameMachine";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import { RemoveListing } from "../RemoveListing";
 import { tradeToId } from "features/marketplace/lib/offers";
 import { isTradeResource } from "features/game/actions/tradeLimits";
 import { MyTableRow } from "./MyTableRow";
 import {
-  CollectionName,
+  type CollectionName,
   MARKETPLACE_TAX,
 } from "features/game/types/marketplace";
 import { Button } from "components/ui/Button";
@@ -34,7 +34,11 @@ const _authToken = (state: AuthMachineState) =>
   state.context.user.rawToken as string;
 const _state = (state: MachineState) => state.context.state;
 
-export const MyListings: React.FC = () => {
+type Props = {
+  fullHeight?: boolean;
+};
+
+export const MyListings: React.FC<Props> = ({ fullHeight = false }) => {
   const { t } = useAppTranslation();
   const params = useParams<{
     collection?: CollectionName;
@@ -148,8 +152,12 @@ export const MyListings: React.FC = () => {
         )}
       </Modal>
 
-      <InnerPanel className="mb-1">
-        <div className="p-2">
+      <InnerPanel
+        className={fullHeight ? "flex h-full min-h-0 flex-col" : "mb-1"}
+      >
+        <div
+          className={fullHeight ? "flex h-full min-h-0 flex-col p-2" : "p-2"}
+        >
           <div className="flex items-center justify-between mb-2">
             <Label type="default" icon={trade}>
               {t("marketplace.myListings")}
@@ -163,11 +171,17 @@ export const MyListings: React.FC = () => {
               </p>
             </Button>
           </div>
-          <div className="flex flex-wrap">
+          <div
+            className={fullHeight ? "flex min-h-0 flex-1" : "flex flex-wrap"}
+          >
             {getKeys(filteredListings).length === 0 ? (
               <p className="text-sm">{t("marketplace.noMyListings")}</p>
             ) : (
-              <div className="w-full relative border-collapse mb-2 max-h-[200px] scrollable overflow-y-auto overflow-x-hidden">
+              <div
+                className={`w-full relative border-collapse mb-2 scrollable overflow-y-auto overflow-x-hidden ${
+                  fullHeight ? "h-full min-h-0" : "max-h-[200px]"
+                }`}
+              >
                 {getKeys(filteredListings).map((id, index) => {
                   const listing = listings[id];
                   const itemName = getKeys(

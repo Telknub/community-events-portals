@@ -10,7 +10,8 @@ import { COLLECTIBLES_DIMENSIONS } from "../types/craftables";
 import { getKeys } from "lib/object";
 import { LandBase } from "./components/LandBase";
 import { UpcomingExpansion } from "./components/UpcomingExpansion";
-import { BUILDINGS_DIMENSIONS, Home } from "../types/buildings";
+import { useLandscapingGridBackgroundImage } from "features/island/landscaping/LandscapingGrid";
+import { BUILDINGS_DIMENSIONS, type Home } from "../types/buildings";
 import { Building } from "features/island/buildings/components/building/Building";
 import { Collectible } from "features/island/collectibles/Collectible";
 import { Water } from "./components/Water";
@@ -18,7 +19,7 @@ import { DirtRenderer } from "./components/DirtRenderer";
 import { Hud } from "features/island/hud/Hud";
 import { Resource } from "features/island/resources/Resource";
 import { Placeable } from "./placeable/Placeable";
-import { MachineState } from "../lib/gameMachine";
+import type { MachineState } from "../lib/gameMachine";
 import { getGameGrid } from "./placeable/lib/makeGrid";
 import { LandscapingHud } from "features/island/hud/LandscapingHud";
 import { Mushroom } from "features/island/mushrooms/Mushroom";
@@ -44,9 +45,11 @@ import {
   getSortedResourcePositions,
   getSortedCollectiblePositions,
 } from "./lib/utils";
+import { restoreIslandScrollPosition } from "./lib/islandScroll";
 import { Clutter } from "features/island/clutter/Clutter";
 import { PetNFT } from "features/island/pets/PetNFT";
 import { WaterTrapSpot } from "features/island/fisherman/WaterTrapSpot";
+import { getWaterTrapCoordinates } from "features/game/types/crustaceans";
 import { FarmHand } from "features/island/farmhand/FarmHand";
 import { PlacedBumpkin } from "features/island/bumpkin/components/PlacedBumpkin";
 import { SaltNode } from "./components/salt/SaltNode";
@@ -56,6 +59,7 @@ import {
   getSaltNodesWithPositions,
 } from "features/game/types/salt";
 import { getPendingSaltNodeIdsForUpgrade } from "features/game/types/salt";
+import { hasRequiredIslandExpansion } from "../lib/hasRequiredIslandExpansion";
 
 export const LAND_WIDTH = 6;
 
@@ -103,6 +107,14 @@ const _sunstonePositions = (state: MachineState) => {
   return {
     sunstones: state.context.state.sunstones,
     positions: getSortedResourcePositions(state.context.state.sunstones),
+  };
+};
+const _ascensionCrystalPositions = (state: MachineState) => {
+  return {
+    ascensionCrystals: state.context.state.ascensionCrystals,
+    positions: getSortedResourcePositions(
+      state.context.state.ascensionCrystals,
+    ),
   };
 };
 const _beehivePositions = (state: MachineState) => {
@@ -315,6 +327,7 @@ export const LandComponent: React.FC = () => {
   const island = useSelector(gameService, _island);
   const season = useSelector(gameService, _season);
   const expansionCount = useSelector(gameService, _expansionCount);
+  const gridBackgroundImage = useLandscapingGridBackgroundImage();
   const { crops, positions: cropPositions } = useSelector(
     gameService,
     _cropPositions,
@@ -341,6 +354,11 @@ export const LandComponent: React.FC = () => {
   const { sunstones } = useSelector(
     gameService,
     _sunstonePositions,
+    comparePositions,
+  );
+  const { ascensionCrystals } = useSelector(
+    gameService,
+    _ascensionCrystalPositions,
     comparePositions,
   );
   const { beehives } = useSelector(
@@ -408,10 +426,15 @@ export const LandComponent: React.FC = () => {
   );
   const landscaping = useSelector(gameService, isLandscaping);
 
-  // As the land gets bigger, expand the gameboard
-  // The distance between the edge of the gameboard and the edge of island should remain roughly the same for higher expansions
+  // As the land gets bigger, expand the gameboard so the static cloud frame
+  // (and the ocean margin) keeps clearing the land + mushroom island.
+  // The frame's bands are a fixed fraction of the board, so this multiplier
+  // has to outpace the land's growth (≈ √expansions); LAND_WIDTH (6) left the
+  // top of the land touching the clouds at the 42-land (7x6) layout, so it's
+  // bumped here. Keep the result even.
+  const GAMEBOARD_MARGIN_FACTOR = 10;
   const gameboardSizeOffset =
-    Math.ceil((Math.sqrt(expansionCount) * LAND_WIDTH) / 2) * 2; // make sure this is even
+    Math.ceil((Math.sqrt(expansionCount) * GAMEBOARD_MARGIN_FACTOR) / 2) * 2;
   const gameboardDimensions = {
     x: 84 + gameboardSizeOffset,
     y: 56 + gameboardSizeOffset,
@@ -420,6 +443,8 @@ export const LandComponent: React.FC = () => {
   const [scrollIntoView] = useScrollIntoView();
 
   useLayoutEffect(() => {
+    if (restoreIslandScrollPosition()) return;
+
     scrollIntoView(Section.GenesisBlock, "auto");
   }, []);
 
@@ -741,6 +766,38 @@ export const LandComponent: React.FC = () => {
       });
   }, [sunstones]);
 
+  const ascensionCrystalElements = useMemo(() => {
+    return getObjectEntries(ascensionCrystals)
+      .filter(
+        ([, crystal]) => crystal.x !== undefined && crystal.y !== undefined,
+      )
+      .map(([id, crystal], index) => {
+        const { x, y, oX, oY } = crystal;
+
+        return (
+          <MapPlacement
+            key={`ascension-crystal-${id}`}
+            x={x!}
+            y={y!}
+            oX={oX}
+            oY={oY}
+            {...RESOURCE_DIMENSIONS["Ascension Crystal"]}
+          >
+            <Resource
+              key={`ascension-crystal-${id}`}
+              name="Ascension Crystal"
+              createdAt={0}
+              readyAt={0}
+              id={id}
+              index={index}
+              x={x!}
+              y={y!}
+            />
+          </MapPlacement>
+        );
+      });
+  }, [ascensionCrystals]);
+
   const beehiveElements = useMemo(() => {
     return getObjectEntries(beehives)
       .filter(
@@ -1053,20 +1110,26 @@ export const LandComponent: React.FC = () => {
   const waterTrapElements = useMemo(() => {
     if (!waterTraps) return [];
 
-    return Object.entries(waterTraps).map(([id, waterTrap]) => {
-      return (
+    // Trap coordinates are a client render concern anchored to the dock (see
+    // getWaterTrapCoordinates); the state only owns which ids exist and whether
+    // each holds a trap. Iterate the ids, compute the position.
+    return Object.keys(waterTraps).flatMap((id) => {
+      const coords = getWaterTrapCoordinates(expansionCount, island.type, id);
+      if (!coords) return [];
+
+      return [
         <MapPlacement
           key={`water-trap-${id}`}
-          x={waterTrap.x}
-          y={waterTrap.y}
+          x={coords.x}
+          y={coords.y}
           height={1}
           width={1}
         >
           <WaterTrapSpot key={`water-trap-${id}`} id={id} />
-        </MapPlacement>
-      );
+        </MapPlacement>,
+      ];
     });
-  }, [waterTraps]);
+  }, [waterTraps, expansionCount, island.type]);
 
   const saltNodeElements = useMemo(() => {
     return getObjectEntries(
@@ -1117,6 +1180,7 @@ export const LandComponent: React.FC = () => {
       ironElements,
       crimstoneElements,
       sunstoneElements,
+      ascensionCrystalElements,
       beehiveElements,
       flowerBedElements,
       fruitPatchElements,
@@ -1162,6 +1226,7 @@ export const LandComponent: React.FC = () => {
     ironElements,
     crimstoneElements,
     sunstoneElements,
+    ascensionCrystalElements,
     beehiveElements,
     flowerBedElements,
     fruitPatchElements,
@@ -1184,7 +1249,7 @@ export const LandComponent: React.FC = () => {
           // dynamic gameboard
           width: `${gameboardDimensions.x * GRID_WIDTH_PX}px`,
           height: `${gameboardDimensions.y * GRID_WIDTH_PX}px`,
-          backgroundImage: `url(${season === "winter" ? SUNNYSIDE.decorations.frozenOcean : island.type === "volcano" ? SUNNYSIDE.decorations.darkOcean : SUNNYSIDE.decorations.ocean})`,
+          backgroundImage: `url(${season === "winter" ? SUNNYSIDE.decorations.frozenOcean : hasRequiredIslandExpansion(island.type, "volcano") ? SUNNYSIDE.decorations.darkOcean : SUNNYSIDE.decorations.ocean})`,
           backgroundSize: `${64 * PIXEL_SCALE}px`,
           imageRendering: "pixelated",
         }}
@@ -1226,9 +1291,10 @@ export const LandComponent: React.FC = () => {
               )}
               style={{
                 backgroundSize: `${GRID_WIDTH_PX}px ${GRID_WIDTH_PX}px`,
-                backgroundImage: `
-            linear-gradient(to right, rgb(255 255 255 / 17%) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(255 255 255 / 17%) 1px, transparent 1px)`,
+                // Pin a grid line to the centre (MapPlacement's 0,0) so it tracks the placement
+                // cells for any land image size, not just even-tile-width ones.
+                backgroundPosition: `calc(50% + ${GRID_WIDTH_PX / 2}px) calc(50% + ${GRID_WIDTH_PX / 2}px)`,
+                backgroundImage: gridBackgroundImage,
               }}
             />
 

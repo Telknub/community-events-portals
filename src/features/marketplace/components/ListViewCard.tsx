@@ -6,15 +6,15 @@ import lightning from "assets/icons/lightning.png";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { formatNumber } from "lib/utils/formatNumber";
 import { getItemId } from "../lib/offers";
-import { TradeableDisplay } from "../lib/tradeables";
+import type { TradeableDisplay } from "../lib/tradeables";
 import { isTradeResource } from "features/game/actions/tradeLimits";
-import { InventoryItemName } from "features/game/types/game";
+import type { InventoryItemName } from "features/game/types/game";
 import { secondsToString } from "lib/utils/time";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
-import { BumpkinItem } from "features/game/types/bumpkin";
+import type { BumpkinItem } from "features/game/types/bumpkin";
 import { CountLabel } from "components/ui/CountLabel";
 import classNames from "classnames";
 import { ListViewImage } from "./ListViewImage";
@@ -30,6 +30,7 @@ type Props = {
   lastSalePrice?: Decimal;
   onClick?: () => void;
   expiresAt?: number;
+  variant?: "default" | "favorites";
 };
 
 const _inventoryCount = (name: InventoryItemName) => (state: MachineState) =>
@@ -47,6 +48,7 @@ export const ListViewCard: React.FC<Props> = ({
   lastSalePrice,
   onClick,
   expiresAt,
+  variant = "default",
 }) => {
   const [isHover, setIsHover] = useState(false);
   const { gameService } = useContext(Context);
@@ -73,6 +75,8 @@ export const ListViewCard: React.FC<Props> = ({
   const isCluckCoin = name === "CluckCoin";
   const isResources =
     isTradeResource(name as InventoryItemName) && type === "collectibles";
+  const isNft = details.type === "buds" || details.type === "pets";
+  const isFavoritesVariant = variant === "favorites";
 
   // Check inventory count
   const getTotalCount = () => {
@@ -107,10 +111,12 @@ export const ListViewCard: React.FC<Props> = ({
       >
         <div
           className={classNames("flex flex-col items-center relative", {
-            "h-[70px] p-2 pt-4":
-              details.type !== "buds" && details.type !== "pets",
-            "h-32": details.type === "buds",
-            "h-[138px]": details.type === "pets",
+            "h-[70px] p-2 pt-4": !isNft && !isFavoritesVariant,
+            "h-[138px] p-2 pt-4": !isNft && isFavoritesVariant,
+            "h-32": details.type === "buds" && !isFavoritesVariant,
+            "h-[138px]":
+              details.type === "pets" ||
+              (details.type === "buds" && isFavoritesVariant),
           })}
         >
           {isCluckCoin && (
@@ -128,6 +134,7 @@ export const ListViewCard: React.FC<Props> = ({
             }
             type={type}
             isResources={isResources || isCluckCoin}
+            variant={variant}
           />
         </div>
 

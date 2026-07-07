@@ -4,7 +4,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { DEV_TimeMachine } from "./DEV_TimeMachine";
 import { createPortal } from "react-dom";
-import { ContentComponentProps } from "../GameOptions";
+import type { ContentComponentProps } from "../types";
 import { CONFIG } from "lib/config";
 import { Context as GameContext } from "features/game/GameProvider";
 import { hasFeatureAccess } from "lib/flags";
@@ -29,29 +29,17 @@ export const DeveloperOptions: React.FC<ContentComponentProps> = ({
   };
 
   const hasAirdrop = hasFeatureAccess(game, "AIRDROP_PLAYER");
-  const hasHoardingCheck = hasFeatureAccess(game, "HOARDING_CHECK");
   const isModerator = hasFeatureAccess(game, "MODERATOR");
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-        <Button className="p-1" onClick={() => onSubMenuClick("experiments")}>
-          <span>{t("experiments")}</span>
-        </Button>
         <Button className="p-1" onClick={() => onSubMenuClick("apiKey")}>
           <span>{t("share.apiKey")}</span>
         </Button>
         {hasAirdrop && (
           <Button className="p-1" onClick={() => onSubMenuClick("admin")}>
             <span>{`Airdrop Player`}</span>
-          </Button>
-        )}
-        {hasHoardingCheck && (
-          <Button
-            onClick={() => onSubMenuClick("hoardingCheck")}
-            className="p-1"
-          >
-            {`Hoarding Check`}
           </Button>
         )}
         {isModerator && (

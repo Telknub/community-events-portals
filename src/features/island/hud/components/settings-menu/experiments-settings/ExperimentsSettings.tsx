@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "components/ui/Button";
-import { ContentComponentProps } from "../GameOptions";
+import type { ContentComponentProps } from "../types";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 export const ExperimentsSettings: React.FC<ContentComponentProps> = ({
@@ -15,6 +15,18 @@ export const ExperimentsSettings: React.FC<ContentComponentProps> = ({
         onClick={() => onSubMenuClick("economyEditor")}
       >
         <span>{t("gameOptions.experiments.economyEditor")}</span>
+      </Button>
+      <Button
+        className="self-start"
+        onClick={() => onSubMenuClick("interiorExperiment")}
+      >
+        <span>{t("gameOptions.experiments.interiors")}</span>
+      </Button>
+      <Button
+        className="self-start"
+        onClick={() => onSubMenuClick("designShowcase")}
+      >
+        <span>{t("gameOptions.experiments.designShowcase")}</span>
       </Button>
     </div>
   );

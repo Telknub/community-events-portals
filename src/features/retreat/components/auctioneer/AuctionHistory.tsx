@@ -8,7 +8,7 @@ import { Label } from "components/ui/Label";
 import { Loading } from "features/auth/components";
 import * as AuthProvider from "features/auth/lib/Provider";
 import { Context as GameContext } from "features/game/GameProvider";
-import { Auction, AuctionResults } from "features/game/lib/auctionMachine";
+import type { Auction, AuctionResults } from "features/game/lib/auctionMachine";
 import { getAuctionResults } from "features/game/actions/getAuctionResults";
 import { loadAuctions } from "./actions/loadAuctions";
 import { getAuctionItemDisplay } from "./lib/getAuctionItemDisplay";
@@ -145,8 +145,7 @@ export const AuctionHistory: React.FC = () => {
   if (selectedAuction) {
     const selectedDisplay = getAuctionItemDisplay({
       auction: selectedAuction,
-      skills: game.bumpkin.skills,
-      collectibles: game.collectibles,
+      game: game,
     });
 
     return (
@@ -245,8 +244,7 @@ export const AuctionHistory: React.FC = () => {
                 typeLabel,
               } = getAuctionItemDisplay({
                 auction: item.auction,
-                skills: game.bumpkin.skills,
-                collectibles: game.collectibles,
+                game: game,
               });
 
               return (

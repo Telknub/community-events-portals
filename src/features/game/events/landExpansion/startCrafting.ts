@@ -1,6 +1,10 @@
 import Decimal from "decimal.js-light";
-import { Recipe, RecipeIngredient, Recipes } from "features/game/lib/crafting";
-import {
+import type {
+  Recipe,
+  RecipeIngredient,
+  Recipes,
+} from "features/game/lib/crafting";
+import type {
   BoostName,
   CraftingQueueItem,
   GameState,
@@ -14,8 +18,9 @@ import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 import { getCountAndType } from "features/island/hud/components/inventory/utils/inventory";
 import { isTemporaryCollectibleActive } from "features/game/lib/collectibleBuilt";
 import { KNOWN_IDS } from "features/game/types";
-import { ITEM_IDS, BumpkinItem } from "features/game/types/bumpkin";
+import { ITEM_IDS, type BumpkinItem } from "features/game/types/bumpkin";
 import { prngChance } from "lib/prng";
+import { grantCraftedItem } from "./collectCrafting";
 
 export type StartCraftingAction = {
   type: "crafting.started";
@@ -112,14 +117,17 @@ export function startCrafting({
       throw new Error("Invalid queue item id");
     }
 
+    // Discovered recipes carry the ingredient layout in game state. The static
+    // RECIPES on the FE only holds time/type metadata (ingredients are []), so
+    // matching against it would never succeed.
+    const recipe = findMatchingRecipe(ingredients, copy.craftingBox.recipes);
+    const isBaseInstantRecipe = recipe?.time === 0;
     const availableSlots = hasVipAccess({ game: copy, now: createdAt }) ? 4 : 1;
 
-    if (effectiveQueue.length >= availableSlots) {
+    if (effectiveQueue.length >= availableSlots && !isBaseInstantRecipe) {
       throw new Error("No available slots");
     }
 
-    // Find matching recipe
-    const recipe = findMatchingRecipe(ingredients, copy.craftingBox.recipes);
     if (!recipe) {
       if (effectiveQueue.length === 0) {
         copy.craftingBox.status = "pending";
@@ -164,10 +172,34 @@ export function startCrafting({
       }
     });
 
-    const recipeStartAt =
-      effectiveQueue.length > 0
-        ? effectiveQueue[effectiveQueue.length - 1].readyAt
-        : createdAt;
+    copy.farmActivity = trackFarmActivity(
+      `${recipe.name} Crafting Started`,
+      copy.farmActivity ?? {},
+    );
+
+    if (isBaseInstantRecipe) {
+      grantCraftedItem({ type: recipe.type, name: recipe.name }, copy);
+
+      copy.craftingBox = {
+        status: effectiveQueue.length > 0 ? "crafting" : "idle",
+        queue: effectiveQueue,
+        recipes: {
+          ...copy.craftingBox.recipes,
+          [recipe.name]: { ...recipe },
+        },
+      };
+
+      return copy;
+    }
+
+    // Start when the crafting box next becomes free: the latest readyAt across
+    // the queue, but never before now. Finished-but-uncollected items keep a
+    // readyAt in the past, so without clamping to createdAt the elapsed wait
+    // would be discounted from (or instantly complete) the new craft.
+    const recipeStartAt = effectiveQueue.reduce(
+      (latest, queued) => Math.max(latest, queued.readyAt),
+      createdAt,
+    );
 
     const { seconds: recipeTime, boostsUsed } = getBoostedCraftingTime({
       game: state,
@@ -198,11 +230,6 @@ export function startCrafting({
     if (effectiveQueue.length > 0) {
       copy.farmActivity = trackFarmActivity("Recipe Queued", copy.farmActivity);
     }
-
-    copy.farmActivity = trackFarmActivity(
-      `${recipe.name} Crafting Started`,
-      copy.farmActivity ?? {},
-    );
 
     copy.craftingBox = {
       status: "crafting",

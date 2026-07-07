@@ -6,7 +6,7 @@ import token from "assets/icons/flower_token.webp";
 import { Decimal } from "decimal.js-light";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import { interpretTokenUri } from "lib/utils/tokenUriBuilder";
-import { TradeableDisplay } from "../lib/tradeables";
+import type { TradeableDisplay } from "../lib/tradeables";
 import { MINIGAME_TOKEN_IMAGE_FALLBACK } from "features/minigame/lib/minigameTokenIcons";
 import { formatNumber } from "lib/utils/formatNumber";
 import { Checkbox } from "components/ui/Checkbox";
@@ -108,7 +108,7 @@ export const TableRow: React.FC<RowProps> = ({
             }}
           />
           <p className="py-0.5 text-xxs sm:text-sm">
-            {`${isResource ? quantity : details.name}`}
+            {`${isResource || details.type === "economies" ? quantity : details.name}`}
           </p>
         </div>
       </div>

@@ -1,13 +1,13 @@
 import Decimal from "decimal.js-light";
 import { TEST_FARM } from "features/game/lib/constants";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import {
   detectCollision,
   isOverlapping,
   isWithinAOE,
-  Position,
+  type Position,
 } from "./collisionDetection";
-import { Dimensions } from "features/game/types/buildings";
+import type { Dimensions } from "features/game/types/buildings";
 import cloneDeep from "lodash.clonedeep";
 import { RESOURCE_DIMENSIONS } from "features/game/types/resources";
 
@@ -94,15 +94,17 @@ describe("detectCollisions", () => {
     expect(hasCollision).toBe(true);
   });
 
-  it("returns true if a collision is detected with a corner", () => {
+  it("allows placement in a land corner", () => {
     const state: GameState = cloneDeep(TEST_FARM);
     state.inventory["Basic Land"] = new Decimal(1);
 
+    // Bottom-left corner tile of the starting expansion — previously blocked by
+    // the land-corner collision, now placeable.
     const hasCollision = detectCollision({
       state,
       position: {
         x: -3,
-        y: 3,
+        y: -2,
         width: 1,
         height: 1,
       },
@@ -110,7 +112,7 @@ describe("detectCollisions", () => {
       name: "Abandoned Bear",
     });
 
-    expect(hasCollision).toBe(true);
+    expect(hasCollision).toBe(false);
   });
 
   it("returns true if a collision is detected with a building", () => {
@@ -205,7 +207,112 @@ describe("detectCollisions", () => {
 
     expect(hasCollision).toBe(true);
   });
+
+  it("returns true if a collision is detected with a farmhand placed on the farm", () => {
+    const state: GameState = clearPlaceables(cloneDeep(TEST_FARM));
+    state.farmHands = {
+      bumpkins: {
+        "fh-1": {
+          equipped: state.bumpkin.equipped,
+          coordinates: { x: 1, y: 1 },
+          location: "farm",
+        },
+      },
+    };
+
+    const hasCollision = detectCollision({
+      state,
+      position: { x: 1, y: 1, height: 1, width: 1 },
+      location: "farm",
+      name: "Abandoned Bear",
+    });
+
+    expect(hasCollision).toBe(true);
+  });
+
+  it("returns true if a collision is detected with the bumpkin placed on the farm", () => {
+    const state: GameState = clearPlaceables(cloneDeep(TEST_FARM));
+    state.bumpkin.coordinates = { x: 1, y: 1 };
+    state.bumpkin.location = "farm";
+
+    const hasCollision = detectCollision({
+      state,
+      position: { x: 1, y: 1, height: 1, width: 1 },
+      location: "farm",
+      name: "Abandoned Bear",
+    });
+
+    expect(hasCollision).toBe(true);
+  });
+
+  it("returns false when placing the bumpkin on its own coordinates (self-collision excluded)", () => {
+    const state: GameState = clearPlaceables(cloneDeep(TEST_FARM));
+    state.bumpkin.coordinates = { x: 1, y: 1 };
+    state.bumpkin.location = "farm";
+
+    const hasCollision = detectCollision({
+      state,
+      position: { x: 1, y: 1, height: 1, width: 1 },
+      location: "farm",
+      name: "Bumpkin",
+    });
+
+    expect(hasCollision).toBe(false);
+  });
+
+  it("returns false if the bumpkin is placed at home and a placeable is added on the farm at the same coordinates", () => {
+    const state: GameState = clearPlaceables(cloneDeep(TEST_FARM));
+    state.bumpkin.coordinates = { x: 1, y: 1 };
+    state.bumpkin.location = "home";
+
+    const hasCollision = detectCollision({
+      state,
+      position: { x: 1, y: 1, height: 1, width: 1 },
+      location: "farm",
+      name: "Abandoned Bear",
+    });
+
+    expect(hasCollision).toBe(false);
+  });
+
+  it("returns false if the bumpkin has no coordinates set", () => {
+    const state: GameState = clearPlaceables(cloneDeep(TEST_FARM));
+    delete state.bumpkin.coordinates;
+    delete state.bumpkin.location;
+
+    const hasCollision = detectCollision({
+      state,
+      position: { x: 1, y: 1, height: 1, width: 1 },
+      location: "farm",
+      name: "Abandoned Bear",
+    });
+
+    expect(hasCollision).toBe(false);
+  });
 });
+
+function clearPlaceables(state: GameState): GameState {
+  state.collectibles = {};
+  state.buildings = {};
+  state.crops = {};
+  state.trees = {};
+  state.stones = {};
+  state.gold = {};
+  state.iron = {};
+  state.crimstones = {};
+  state.sunstones = {};
+  state.oilReserves = {};
+  state.lavaPits = {};
+  state.fruitPatches = {};
+  state.beehives = {};
+  state.flowers = { discovered: {}, flowerBeds: {} };
+  state.buds = {};
+  state.pets = { common: {}, nfts: {} };
+  state.farmHands = { bumpkins: {} };
+  state.airdrops = [];
+  state.mushrooms = { spawnedAt: 0, mushrooms: {} };
+  return state;
+}
 
 describe("isWithinAOE", () => {
   const plotDimensions: Dimensions = { ...RESOURCE_DIMENSIONS["Crop Plot"] };

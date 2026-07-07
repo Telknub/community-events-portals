@@ -6,22 +6,21 @@ import { useInterval } from "lib/utils/hooks/useInterval";
 import * as AuthProvider from "features/auth/lib/Provider";
 
 import { Loading } from "features/auth/components";
-import { ErrorCode } from "lib/errors";
+import type { ErrorCode } from "lib/errors";
 import { ErrorMessage } from "features/auth/ErrorMessage";
 import { Refreshing } from "features/auth/components/Refreshing";
 import { AddingSFL } from "features/auth/components/AddingSFL";
 import { Context } from "../GameProvider";
 import {
-  BlockchainState,
+  type BlockchainState,
   INITIAL_SESSION,
-  MachineState,
-  StateValues,
+  type MachineState,
+  type StateValues,
 } from "../lib/gameMachine";
 import { ToastProvider } from "../toast/ToastProvider";
 import { ToastPanel } from "../toast/ToastPanel";
 import { Panel } from "components/ui/Panel";
 
-import { Hoarding } from "../components/Hoarding";
 import { Swarming } from "../components/Swarming";
 import { Cooldown } from "../components/Cooldown";
 import { Route, Routes } from "react-router";
@@ -50,7 +49,7 @@ import { Home } from "features/home/Home";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Listed } from "../components/Listed";
 import { ListingDeleted } from "../components/listingDeleted";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import { usePWAInstall } from "features/pwa/PWAInstallProvider";
 import { fixInstallPromptTextStyles } from "features/pwa/lib/fixInstallPromptStyles";
 import { hasFeatureAccess } from "lib/flags";
@@ -58,6 +57,7 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { PriceChange } from "../components/PriceChange";
 import { VIPOffer } from "../components/modal/components/VIPItems";
 import { StarterOfferModal } from "../components/modal/components/StarterOfferModal";
+import { RoninWaypointLoginModal } from "features/roninMigration/RoninWaypointLoginModal";
 import { GreenhouseInside } from "features/greenhouse/GreenhouseInside";
 import { useSound } from "lib/utils/hooks/useSound";
 import { SomethingArrived } from "./components/SomethingArrived";
@@ -72,8 +72,8 @@ import {
   STATE_MACHINE_EFFECTS,
   STATE_MACHINE_VISIT_EFFECTS,
 } from "../actions/effect";
-import { TranslationKeys } from "lib/i18n/dictionaries/types";
-import { GameState } from "../types/game";
+import type { TranslationKeys } from "lib/i18n/dictionaries/types";
+import type { GameState } from "../types/game";
 import { Ocean } from "features/world/ui/Ocean";
 import { OffersAcceptedPopup } from "./components/OffersAcceptedPopup";
 import { Marketplace } from "features/marketplace/Marketplace";
@@ -91,7 +91,6 @@ import { ClaimReferralRewards } from "./components/ClaimReferralRewards";
 import { ReferralsAnnouncement } from "./components/ReferralsAnnouncement";
 import { SoftBan } from "features/retreat/components/personhood/SoftBan";
 import { RewardBox } from "features/rewardBoxes/RewardBox";
-import { ClaimBlessingReward } from "features/loveIsland/blessings/ClaimBlessing";
 import { SystemMessageWidget } from "features/announcements/SystemMessageWidget";
 import { TradesCleared } from "./components/TradesCleared";
 import { RevealPet } from "features/island/pets/RevealPet";
@@ -176,6 +175,22 @@ const SHOW_MODAL: Record<StateValues, boolean> = {
   unlockingFarmhandSuccess: false,
   resettingPetRequests: false,
   resettingPetRequestsSuccess: false,
+  linkingSocial: false,
+  linkingSocialSuccess: false,
+  linkingSocialFailed: false,
+  togglingSocialLogin: false,
+  togglingSocialLoginSuccess: false,
+  togglingSocialLoginFailed: false,
+  linkingWallet: false,
+  linkingWalletSuccess: false,
+  linkingWalletFailed: false,
+  // Showcasing / removing a tweet is handled inline in the mailbox Community tab.
+  showcasingTwitter: false,
+  showcasingTwitterSuccess: false,
+  showcasingTwitterFailed: false,
+  removingShowcase: false,
+  removingShowcaseSuccess: false,
+  removingShowcaseFailed: false,
 
   // Every new state should be added below here
   gems: true,
@@ -188,7 +203,6 @@ const SHOW_MODAL: Record<StateValues, boolean> = {
   error: true,
   buyingBlockBucks: true,
   refreshing: true,
-  hoarding: true,
   landscaping: false,
   swarming: true,
   coolingDown: true,
@@ -225,7 +239,6 @@ const SHOW_MODAL: Record<StateValues, boolean> = {
   seasonChanged: false,
   jinAirdrop: true,
   investigating: true,
-  blessing: true,
   leagueResults: false,
   linkWallet: true,
   dailyReward: true,
@@ -253,7 +266,6 @@ const hasMarketPriceChanged = (state: MachineState) =>
 const isRefreshing = (state: MachineState) => state.matches("refreshing");
 const isBuyingSFL = (state: MachineState) => state.matches("buyingSFL");
 const isError = (state: MachineState) => state.matches("error");
-const isHoarding = (state: MachineState) => state.matches("hoarding");
 const isSwarming = (state: MachineState) => state.matches("swarming");
 const isPurchasing = (state: MachineState) =>
   state.matches("purchasing") || state.matches("buyingBlockBucks");
@@ -283,11 +295,11 @@ const isRefundingAuction = (state: MachineState) =>
   state.matches("refundAuction");
 const isPromoing = (state: MachineState) => state.matches("promo");
 const isBlacklisted = (state: MachineState) => state.matches("blacklisted");
+const getBanReason = (state: MachineState) => state.context.banReason;
 const hasAirdrop = (state: MachineState) => state.matches("airdrop");
 const isOnChainRaffleAcknowledgment = (state: MachineState) =>
   state.matches("onChainRaffleAcknowledgment");
 const isInvestigating = (state: MachineState) => state.matches("investigating");
-const isBlessing = (state: MachineState) => state.matches("blessing");
 const hasFulfilledOffers = (state: MachineState) => state.matches("offers");
 const hasVipNotification = (state: MachineState) => state.matches("vip");
 const isPlaying = (state: MachineState) => state.matches("playing");
@@ -314,6 +326,8 @@ const isCalendarEvent = (state: MachineState) => state.matches("calendarEvent");
 const isJinAirdrop = (state: MachineState) => state.matches("jinAirdrop");
 const isLinkWallet = (state: MachineState) => state.matches("linkWallet");
 const isStarterOffer = (state: MachineState) => state.matches("starterOffer");
+const isRoninMigration = (state: MachineState) =>
+  state.matches("roninMigration");
 const _isVisiting = (state: MachineState) =>
   state.context.visitorId !== undefined;
 const isLeagueResultsReleased = (state: MachineState) =>
@@ -468,7 +482,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   const buyingSFL = useSelector(gameService, isBuyingSFL);
   const error = useSelector(gameService, isError);
   const purchasing = useSelector(gameService, isPurchasing);
-  const hoarding = useSelector(gameService, isHoarding);
   const swarming = useSelector(gameService, isSwarming);
   const coolingDown = useSelector(gameService, isCoolingDown);
   const depositing = useSelector(gameService, isDepositing);
@@ -482,6 +495,7 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   const refundAuction = useSelector(gameService, isRefundingAuction);
   const promo = useSelector(gameService, isPromoing);
   const blacklisted = useSelector(gameService, isBlacklisted);
+  const banReason = useSelector(gameService, getBanReason);
   const airdrop = useSelector(gameService, hasAirdrop);
   const onChainRaffleAcknowledgment = useSelector(
     gameService,
@@ -508,7 +522,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   const jinAirdrop = useSelector(gameService, isJinAirdrop);
   const showPWAInstallPrompt = useSelector(authService, _showPWAInstallPrompt);
   const investigating = useSelector(gameService, isInvestigating);
-  const blessing = useSelector(gameService, isBlessing);
   const linkWallet = useSelector(gameService, isLinkWallet);
   const tradesCleared = useSelector(gameService, isTradesCleared);
   const isVisiting = useSelector(gameService, _isVisiting);
@@ -518,6 +531,7 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
   );
   const dailyReward = useSelector(gameService, isDailyReward);
   const starterOffer = useSelector(gameService, isStarterOffer);
+  const roninMigration = useSelector(gameService, isRoninMigration);
   const { t } = useAppTranslation();
 
   useInterval(() => {
@@ -629,13 +643,13 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
 
   if (blacklisted) {
     return (
-      <div className="h-screen w-full fixed top-0" style={{ zIndex: 49 }}>
+      <Ocean>
         <Modal show backdrop={false}>
           <Panel>
-            <Blacklisted />
+            <Blacklisted banReason={banReason} />
           </Panel>
         </Modal>
-      </div>
+      </Ocean>
     );
   }
 
@@ -693,7 +707,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
             {buyingSFL && <AddingSFL />}
             {error && <ErrorMessage errorCode={errorCode as ErrorCode} />}
             {purchasing && <Purchasing />}
-            {hoarding && <Hoarding />}
             {swarming && <Swarming />}
             {coolingDown && <Cooldown />}
             {dailyReward && <DailyRewardClaim showClose />}
@@ -722,11 +735,6 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
             {jinAirdrop && <RoninJinClaim />}
             {showReferralRewards && <ClaimReferralRewards />}
             {investigating && <SoftBan />}
-            {blessing && (
-              <ClaimBlessingReward
-                onClose={() => gameService.send("ACKNOWLEDGE")}
-              />
-            )}
             {linkWallet && <MigrateToLinkedWallet />}
           </Panel>
         </Modal>
@@ -735,6 +743,7 @@ export const GameWrapper: React.FC<React.PropsWithChildren> = ({
         {refundAuction && <RefundAuction />}
         {onChainRaffleAcknowledgment && <OnChainRaffleRewardModal />}
         {seasonChanged && <SeasonChanged />}
+        {roninMigration && <RoninWaypointLoginModal />}
         {calendarEvent && <CalendarEvent />}
         {referralsAnnouncement && <ReferralsAnnouncement />}
         {competition && (

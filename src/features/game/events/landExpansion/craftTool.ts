@@ -1,20 +1,26 @@
 import Decimal from "decimal.js-light";
 import {
-  TreasureToolName,
+  type TreasureToolName,
   TREASURE_TOOLS,
-  Tool,
-  WorkbenchToolName,
+  type Tool,
+  type WorkbenchToolName,
   WORKBENCH_TOOLS,
   LOVE_ANIMAL_TOOLS,
 } from "features/game/types/tools";
 import { trackFarmActivity } from "features/game/types/farmActivity";
 import cloneDeep from "lodash.clonedeep";
 
-import { GameState, IslandType } from "../../types/game";
+import type { GameState, IslandType } from "../../types/game";
 import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
-import { getWeatherShop, WeatherShopItem } from "features/game/types/calendar";
+import {
+  getWeatherShop,
+  type WeatherShopItem,
+} from "features/game/types/calendar";
 import { getObjectEntries } from "lib/object";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 
 type CraftableToolName = WorkbenchToolName | TreasureToolName | WeatherShopItem;
 
@@ -111,6 +117,14 @@ export function craftTool({ state, action }: Options) {
     throw new Error("Tool is disabled");
   }
 
+  const isWeatherItem = action.tool in getWeatherShop(stateCopy.island.type);
+  if (
+    isWeatherItem &&
+    (stateCopy.inventory[action.tool] ?? new Decimal(0)).add(amount).gt(1)
+  ) {
+    throw new Error("You can only have one of this weather item");
+  }
+
   if (!hasRequiredIslandExpansion(stateCopy.island.type, requiredIsland)) {
     throw new Error("You do not have the required island expansion");
   }
@@ -128,7 +142,16 @@ export function craftTool({ state, action }: Options) {
     throw new Error("Insufficient Coins");
   }
 
-  if (requiredLevel && getBumpkinLevel(bumpkin.experience) < requiredLevel) {
+  if (
+    requiredLevel &&
+    !meetsLevelRequirement(
+      getAscensionLevel({
+        experience: bumpkin.experience,
+        ascensionLevel: stateCopy.island.ascensionLevel ?? 0,
+      }),
+      requiredLevel,
+    )
+  ) {
     throw new Error("You do not have the required level");
   }
 

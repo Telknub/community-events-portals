@@ -5,10 +5,12 @@ import flowerIcon from "assets/icons/flower_token.webp";
 import crownIcon from "assets/icons/vip.webp";
 import { Route, Routes, useNavigate } from "react-router";
 import { Collection, preloadCollections } from "../Collection";
+import { Favourites } from "../Favourites";
 import { Modal } from "components/ui/Modal";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { MarketplaceProfile } from "../MarketplaceProfile";
 import { MyTrades } from "../profile/MyTrades";
+import { MyCollection } from "../profile/MyCollection";
 import { MarketplaceRewards } from "../MarketplaceRewards";
 import { Tradeable } from "../Tradeable";
 import { MarketplaceHotNow } from "../MarketplaceHotNow";
@@ -220,6 +222,10 @@ export const MarketplaceNavigation: React.FC = () => {
               <Route path="/profile" element={<MarketplaceProfile />} />
               <Route path="/hot" element={<MarketplaceHotNow />} />
               <Route
+                path="/favorites"
+                element={<Favourites hideLimited={hideLimited} />}
+              />
+              <Route
                 path="/economies/:economy/:id"
                 element={<Tradeable hideLimited={hideLimited} />}
               />
@@ -231,8 +237,16 @@ export const MarketplaceNavigation: React.FC = () => {
                 path="/:collection/:id"
                 element={<Tradeable hideLimited={hideLimited} />}
               />
-              <Route path="/profile/:id" element={<MarketplaceUser />} />
               <Route path="/profile/:id/trades" element={<MyTrades />} />
+              <Route path="/profile/:id" element={<MarketplaceUser />} />
+              <Route
+                path="/profile/:id/history"
+                element={<MarketplaceUser view="history" />}
+              />
+              <Route
+                path="/profile/:id/collection"
+                element={<MyCollection fullHeight />}
+              />
               <Route path="/profile/rewards" element={<MarketplaceRewards />} />
               {/* default to hot */}
               <Route path="/" element={<MarketplaceHotNow />} />

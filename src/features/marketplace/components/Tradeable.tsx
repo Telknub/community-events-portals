@@ -1,7 +1,7 @@
 import {
-  CollectionName,
+  type CollectionName,
   getMarketPrice,
-  MarketplaceTradeableName,
+  type MarketplaceTradeableName,
 } from "features/game/types/marketplace";
 import React, { useContext, useState } from "react";
 import * as Auth from "features/auth/lib/Provider";
@@ -31,10 +31,9 @@ import { getKeys } from "lib/object";
 import { tradeToId } from "../lib/offers";
 import useSWR from "swr";
 import { getWeekKey } from "features/game/lib/factions";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { hasFeatureAccess } from "lib/flags";
-import { Button } from "components/ui/Button";
+import { useMarketplaceFavorites } from "../lib/marketplaceFavorites";
 
 const _trades = (state: MachineState) => state.context.state.trades;
 const _farmId = (state: MachineState) => state.context.farmId;
@@ -55,10 +54,10 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
   const location = useLocation();
 
   const farmId = useSelector(gameService, _farmId);
+  const { isFavorite, toggleFavorite } = useMarketplaceFavorites(farmId);
   const authToken = authState.context.user.rawToken as string;
   const state = useSelector(gameService, _state);
   const trades = useSelector(gameService, _trades);
-  const playerEconomiesAllowed = hasFeatureAccess(state, "PLAYER_ECONOMIES");
 
   const params = useParams<{
     collection?: CollectionName;
@@ -89,7 +88,7 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
     mutate: reload,
   } = useSWR(
     collection === "economies"
-      ? economy && playerEconomiesAllowed
+      ? economy
         ? [collection, id, authState.context.user.rawToken as string, economy]
         : null
       : [collection, id, authState.context.user.rawToken as string],
@@ -120,21 +119,6 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
     return (
       <InnerPanel className="m-2 p-4">
         <p className="text-sm">{t("marketplace.tradeable.invalidLink")}</p>
-      </InnerPanel>
-    );
-  }
-
-  if (collection === "economies" && !playerEconomiesAllowed) {
-    const isWorldRoute = location.pathname.includes("/world");
-    const base = `${isWorldRoute ? "/world" : ""}/marketplace`;
-    return (
-      <InnerPanel className="m-2 p-4 flex flex-col gap-2">
-        <p className="text-sm">
-          {t("minigame.dashboard.playerEconomiesNotAvailable")}
-        </p>
-        <Button onClick={() => navigate(base)}>
-          {t("marketplace.backToMarketplace")}
-        </Button>
       </InnerPanel>
     );
   }
@@ -233,6 +217,14 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
   const marketPrice = getMarketPrice({ tradeable });
 
   const isStoneBeetle = collection === "collectibles" && Number(id) === 2129;
+  const favoriteItem =
+    collection === "economies"
+      ? undefined
+      : {
+          collection: collection as CollectionName,
+          id: Number(id),
+        };
+  const isFavorited = favoriteItem ? isFavorite(favoriteItem) : false;
 
   return (
     <div className="flex sm:flex-row flex-col w-full scrollable overflow-y-auto h-[calc(100vh-112px)] pr-1 pb-8">
@@ -255,12 +247,20 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
             hideLimited={hideLimited}
             display={display}
             tradeable={tradeable}
+            isFavorite={isFavorited}
+            onToggleFavorite={
+              favoriteItem ? () => toggleFavorite(favoriteItem) : undefined
+            }
           />
         ) : (
           <TradeableInfo
             display={display}
             tradeable={tradeable}
             hideLimited={hideLimited}
+            isFavorite={isFavorited}
+            onToggleFavorite={
+              favoriteItem ? () => toggleFavorite(favoriteItem) : undefined
+            }
           />
         )}
       </div>
@@ -270,7 +270,6 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
           farmId={farmId}
           limitedTradesLeft={limitedTradesLeft}
           limitedPurchasesLeft={limitedPurchasesLeft}
-          collection={collection as CollectionName}
           count={count}
           tradeable={tradeable}
           display={display}

@@ -4,6 +4,13 @@ import { TEAM_USERNAMES } from "./access";
 
 export const RONIN_AIRDROP_ENDDATE = new Date("2025-11-04T00:00:00Z");
 
+// Ronin Waypoint (and the migration flow / transfer option for it) stops being
+// available after 16th Sept 2026
+export const WAYPOINT_WALLET_ENDDATE = new Date("2026-09-16T00:00:00Z");
+
+export const isWaypointWalletDisabled = () =>
+  Date.now() >= WAYPOINT_WALLET_ENDDATE.getTime();
+
 export const adminFeatureFlag = ({ wardrobe, inventory }: GameState) =>
   CONFIG.NETWORK === "amoy" ||
   (!!((wardrobe["Gift Giver"] ?? 0) > 0) && !!inventory["Beta Pass"]?.gt(0));
@@ -65,9 +72,17 @@ export type TimeBasedFeatureWindow = { start: Date; end: Date | null };
 
 export const TIME_BASED_FEATURE_FLAG_WINDOWS = {
   TICKETS_FROM_COIN_NPC: { start: new Date("2026-02-24T00:00:00Z"), end: null },
+  TICKETS_FROM_FLOWER_NPC: {
+    start: new Date("2026-05-11T00:00:00Z"),
+    end: null,
+  },
   APRIL_FOOLS_EVENT_FLAG: {
     start: new Date("2026-04-01T00:00:00Z"),
     end: new Date("2026-04-08T00:00:00Z"),
+  },
+  RONIN_WAYPOINT_DEPRECATION: {
+    start: WAYPOINT_WALLET_ENDDATE,
+    end: null,
   },
 } satisfies Record<string, TimeBasedFeatureWindow>;
 
@@ -83,7 +98,9 @@ export const TIME_BASED_FEATURE_FLAGS: Record<
   TimeBasedFeatureFlag
 > = {
   TICKETS_FROM_COIN_NPC: timePeriodFeatureFlag,
+  TICKETS_FROM_FLOWER_NPC: timePeriodFeatureFlag,
   APRIL_FOOLS_EVENT_FLAG: betaTimePeriodFeatureFlag,
+  RONIN_WAYPOINT_DEPRECATION: timePeriodFeatureFlag,
 };
 
 /**
@@ -119,7 +136,6 @@ const FEATURE_FLAGS = {
   // Permanent Feature Flags
   ADMIN_DASHBOARDS: usernameFeatureFlag,
   AIRDROP_PLAYER: adminFeatureFlag,
-  HOARDING_CHECK: betaFeatureFlag,
   STREAMER_HAT: (game) =>
     (game.wardrobe["Streamer Hat"] ?? 0) > 0 || testnetFeatureFlag(),
 
@@ -136,12 +152,6 @@ const FEATURE_FLAGS = {
   MODERATOR: (game) =>
     !!((game.wardrobe.Halo ?? 0) > 0) && !!game.inventory["Beta Pass"]?.gt(0),
 
-  CHAACS_TEMPLE_BETA: betaFeatureFlag,
-
-  /** Pixel-perfect placement: nudge selected items by sub-tile pixels via on-screen
-   * arrows + WASD/arrow keys. Stored coordinates can become decimals; collision
-   * detection rounds at read time so grid behaviour is preserved. */
-  PIXEL_PERFECT_PLACEMENT: betaFeatureFlag,
   /**
    * Gates the new home-interior placement system: the /interior route, the
    * /level_one upgrade route, and the `interior.upgrade` event. Beta-pass /
@@ -149,13 +159,15 @@ const FEATURE_FLAGS = {
    */
   HOME_EXPANSIONS: betaFeatureFlag,
 
-  /** Quick drag-and-drop landscaping panel shown at the bottom of the screen. */
-  QUICK_LANDSCAPING_PANEL: betaFeatureFlag,
+  BOOSTS_DISPLAY: betaFeatureFlag,
 
-  /** Player economies: token dashboard, portal player-economy API, marketplace minigames row. */
-  PLAYER_ECONOMIES: (game) => !!game.settings.economiesEnabled,
-  /** @deprecated Use PLAYER_ECONOMIES */
-  TOKEN_MINIGAMES: (game) => !!game.settings.economiesEnabled,
+  // Saving & re-applying named farm layouts in landscaping mode.
+  SAVED_LAYOUTS: betaFeatureFlag,
+
+  // Importing leftover items from the old home into the new interior.
+  HOME_ITEM_MIGRATION: betaFeatureFlag,
+
+  SWAMP_ASCENSION: testnetFeatureFlag,
 } satisfies Record<string, FeatureFlag>;
 
 export type FeatureName = keyof typeof FEATURE_FLAGS;

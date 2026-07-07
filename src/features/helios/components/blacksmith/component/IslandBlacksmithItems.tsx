@@ -9,9 +9,9 @@ import { ITEM_DETAILS } from "features/game/types/images";
 
 import { Button } from "components/ui/Button";
 import {
-  CraftableCollectible,
+  type CraftableCollectible,
   HELIOS_BLACKSMITH_ITEMS,
-  HeliosBlacksmithItem,
+  type HeliosBlacksmithItem,
 } from "features/game/types/collectibles";
 import { SplitScreenView } from "components/ui/SplitScreenView";
 import { CraftingRequirements } from "components/ui/layouts/CraftingRequirements";
@@ -19,24 +19,27 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { gameAnalytics } from "lib/gameAnalytics";
 import { getChapterTicket } from "features/game/types/chapters";
-import Decimal from "decimal.js-light";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { COLLECTIBLE_BUFF_LABELS } from "features/game/types/collectibleItemBuffs";
+import { needsBasicScarecrow } from "features/island/buildings/components/building/workBench/lib/onboarding";
 import {
-  MonumentName,
+  type MonumentName,
   REQUIRED_CHEERS,
   REWARD_ITEMS,
-  VillageProjectName,
+  type VillageProjectName,
   WORKBENCH_MONUMENTS,
-  WorkbenchMonumentName,
+  type WorkbenchMonumentName,
 } from "features/game/types/monuments";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { Label } from "components/ui/Label";
 import helpIcon from "assets/icons/help.webp";
-import { getBumpkinLevel } from "features/game/lib/level";
+import {
+  getAscensionLevel,
+  meetsLevelRequirement,
+} from "features/game/lib/level";
 import { useNow } from "lib/utils/hooks/useNow";
-import { MachineState } from "features/game/lib/gameMachine";
-import { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { MachineInterpreter } from "features/game/expansion/placeable/landscapingMachine";
 
 const PROJECTS: WorkbenchMonumentName[] = [
   "Basic Cooking Pot",
@@ -119,7 +122,11 @@ const _bumpkin = (state: MachineState) => state.context.state.bumpkin;
 const _landscapingMachine = (state: MachineState) =>
   state.children.landscaping as MachineInterpreter;
 
-export const IslandBlacksmithItems: React.FC = () => {
+interface Props {
+  onClose: () => void;
+}
+
+export const IslandBlacksmithItems: React.FC<Props> = ({ onClose }) => {
   const { t } = useAppTranslation();
   const [selectedName, setSelectedName] = useState<
     HeliosBlacksmithItem | WorkbenchMonumentName
@@ -150,6 +157,11 @@ export const IslandBlacksmithItems: React.FC = () => {
 
   const isAlreadyCrafted = inventory[selectedName]?.greaterThanOrEqualTo(1);
 
+  // Nudge new players towards crafting their first Basic Scarecrow once they
+  // have planted enough sunflowers to need one.
+  const showScarecrowHelper =
+    selectedName === "Basic Scarecrow" && needsBasicScarecrow(state);
+
   const lessIngredients = () =>
     getKeys(selectedItem?.ingredients ?? {}).some((name) =>
       (selectedItem?.ingredients ?? {})[name]?.greaterThan(
@@ -161,29 +173,34 @@ export const IslandBlacksmithItems: React.FC = () => {
 
   const hasLevel =
     !selectedItem?.level ||
-    getBumpkinLevel(bumpkin?.experience ?? 0) >= selectedItem?.level;
+    meetsLevelRequirement(
+      getAscensionLevel({
+        experience: bumpkin.experience ?? 0,
+        ascensionLevel: state.island.ascensionLevel ?? 0,
+      }),
+      selectedItem.level,
+    );
 
   const craft = () => {
-    if (selectedName in WORKBENCH_MONUMENTS) {
-      landscapingMachine.send("SELECT", {
-        placeable: { name: selectedName },
-        action: "monument.bought",
-        requirements: {
-          coins: selectedItem?.coins ?? 0,
-          ingredients: selectedItem?.ingredients ?? {},
-        },
-        multiple: false,
-      });
+    const isMonument = selectedName in WORKBENCH_MONUMENTS;
+
+    const selection = {
+      placeable: { name: selectedName },
+      action: isMonument ? "monument.bought" : "collectible.crafted",
+      requirements: {
+        coins: selectedItem?.coins ?? 0,
+        ingredients: selectedItem?.ingredients ?? {},
+      },
+      multiple: false,
+    };
+
+    // This modal lives on the main screen, not inside the landscaping HUD.
+    // When already landscaping just select the item; otherwise enter
+    // landscaping mode so the player can place what they crafted.
+    if (landscapingMachine) {
+      landscapingMachine.send("SELECT", selection);
     } else {
-      landscapingMachine.send("SELECT", {
-        placeable: { name: selectedName },
-        action: "collectible.crafted",
-        // Not used yet
-        requirements: {
-          sfl: new Decimal(0),
-          ingredients: {},
-        },
-      });
+      gameService.send("LANDSCAPE", { ...selection, location: "farm" });
     }
 
     const count = inventory[selectedName]?.toNumber() ?? 1;
@@ -201,6 +218,8 @@ export const IslandBlacksmithItems: React.FC = () => {
     }
 
     shortcutItem(selectedName);
+
+    onClose();
   };
 
   const hasBuiltMonument = () => {
@@ -232,14 +251,11 @@ export const IslandBlacksmithItems: React.FC = () => {
             from: selectedItem?.from,
             to: selectedItem?.to,
           }}
-          boost={COLLECTIBLE_BUFF_LABELS[selectedName]?.({
-            skills: state.bumpkin.skills,
-            collectibles: state.collectibles,
-          })}
+          boost={COLLECTIBLE_BUFF_LABELS[selectedName]?.(state)}
           requirements={{
             resources: selectedItem?.ingredients ?? {},
             coins: selectedItem?.coins ?? 0,
-            level: selectedItem?.level ?? 0,
+            level: selectedItem?.level,
           }}
           actionView={
             isAlreadyCrafted ? (
@@ -254,7 +270,7 @@ export const IslandBlacksmithItems: React.FC = () => {
                     selectedName={selectedName}
                   />
                 </div>
-                <div>
+                <div className="relative">
                   <Button
                     disabled={
                       lessIngredients() ||
@@ -266,6 +282,17 @@ export const IslandBlacksmithItems: React.FC = () => {
                   >
                     {t("craft")}
                   </Button>
+                  {showScarecrowHelper && (
+                    <img
+                      className="absolute pointer-events-none z-30 animate-pulsate"
+                      src={SUNNYSIDE.icons.click_icon}
+                      style={{
+                        width: `${PIXEL_SCALE * 18}px`,
+                        right: `${PIXEL_SCALE * -4}px`,
+                        top: `${PIXEL_SCALE * 2}px`,
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             )

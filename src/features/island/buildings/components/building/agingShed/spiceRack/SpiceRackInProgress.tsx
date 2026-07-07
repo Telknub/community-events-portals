@@ -10,7 +10,7 @@ import { RequirementLabel } from "components/ui/RequirementsLabel";
 import type { SpiceRackJob } from "features/game/lib/agingShed";
 import {
   getSpiceRackRecipe,
-  SpiceRackRecipeName,
+  type SpiceRackRecipeName,
 } from "features/game/types/spiceRack";
 import type { InventoryItemName } from "features/game/types/game";
 import { ITEM_DETAILS } from "features/game/types/images";
@@ -89,10 +89,7 @@ export const SpiceRackInProgress: React.FC<Props> = ({
         </div>
         <div className="flex flex-wrap gap-1 mt-1">
           {outputItem &&
-            COLLECTIBLE_BUFF_LABELS[outputItem]?.({
-              skills,
-              collectibles: state.collectibles,
-            }).map((label) => {
+            COLLECTIBLE_BUFF_LABELS[outputItem]?.(state).map((label) => {
               return (
                 <Label
                   key={label.shortDescription}

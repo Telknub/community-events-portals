@@ -11,33 +11,34 @@ import classNames from "classnames";
 
 import { Context } from "features/game/GameProvider";
 import {
-  LandscapingPlaceable,
-  LandscapingPlaceableType,
-  MachineInterpreter,
+  type LandscapingPlaceable,
+  type LandscapingPlaceableType,
+  type MachineInterpreter,
   placeEvent,
 } from "features/game/expansion/placeable/landscapingMachine";
-import { PlaceableLocation } from "features/game/types/collectibles";
+import type { PlaceableLocation } from "features/game/types/collectibles";
 import { getKeys } from "lib/object";
 import {
   getChestBuds,
+  getChestFlowers,
   getChestFarmHands,
   getChestItems,
   getChestPets,
 } from "./inventory/utils/inventory";
-import { RESOURCES, ResourceName } from "features/game/types/resources";
+import { hasBoost } from "./inventory/utils/boosts";
+import { RESOURCES, type ResourceName } from "features/game/types/resources";
 import {
   BUILDINGS,
   BUILDINGS_DIMENSIONS,
-  BuildingName,
+  type BuildingName,
 } from "features/game/types/buildings";
-import { COLLECTIBLE_BUFF_LABELS } from "features/game/types/collectibleItemBuffs";
 import { BANNERS } from "features/game/types/banners";
 import { BED_FARMHAND_COUNT } from "features/game/types/beds";
 import { MONUMENTS, REWARD_ITEMS } from "features/game/types/monuments";
 import { DOLLS } from "features/game/lib/crafting";
 import { PET_TYPES, isPetNFTRevealed } from "features/game/types/pets";
 import { WEATHER_SHOP_ITEM_COSTS } from "features/game/types/calendar";
-import { Box, BoxProps } from "components/ui/Box";
+import { Box, type BoxProps } from "components/ui/Box";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { SUNNYSIDE } from "assets/sunnyside";
 import lightning from "assets/icons/lightning.png";
@@ -47,10 +48,10 @@ import { getCurrentBiome } from "features/island/biomes/biomes";
 import {
   isBuildingUpgradable,
   makeUpgradableBuildingKey,
-  UpgradableBuildingType,
+  type UpgradableBuildingType,
 } from "features/game/events/landExpansion/upgradeBuilding";
 import {
-  CollectibleName,
+  type CollectibleName,
   COLLECTIBLES_DIMENSIONS,
 } from "features/game/types/craftables";
 import { getBudImage } from "lib/buds/types";
@@ -60,7 +61,7 @@ import {
   PlacementConfirmationModal,
 } from "features/game/expansion/placeable/PlacementConfirmationModal";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { NFTName } from "features/game/events/landExpansion/placeNFT";
+import type { NFTName } from "features/game/events/landExpansion/placeNFT";
 import { NPCPlaceable } from "features/island/bumpkin/components/NPC";
 import { PIXEL_SCALE, GRID_WIDTH_PX } from "features/game/lib/constants";
 import { Section } from "lib/utils/hooks/useScrollIntoView";
@@ -78,13 +79,14 @@ type TabId =
   | "buildings"
   | "boosts"
   | "projects"
+  | "flowers"
   | "decorations";
 
 // Persists scroll position across panel unmount/remount (item select → place → idle)
 let _savedScrollLeft = 0;
 let _savedPage = 0;
 
-const TWO_ROW_HEIGHT_PX = PIXEL_SCALE * (13.7 + 4 + 3 + 2) * 2;
+const TWO_ROW_HEIGHT_PX = PIXEL_SCALE * (13.7 + 4 + 3 + 2) * 2 + 8;
 
 const DRAG_THRESHOLD_PX = 8;
 
@@ -366,6 +368,9 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
   const weatherItems = collectibleNames.filter(
     (name) => name in WEATHER_SHOP_ITEM_COSTS,
   );
+  const flowers = getChestFlowers(collectibleNames).filter(
+    (name) => !hasBoost(name, state),
+  );
   const dolls = collectibleNames.filter((name) => name in DOLLS);
   const pets = collectibleNames.filter((name) => name in PET_TYPES);
 
@@ -376,27 +381,20 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
   const bedsSet = new Set(beds);
   const bannersSet = new Set(banners);
   const weatherItemsSet = new Set(weatherItems);
+  const flowersSet = new Set<string>(flowers);
   const dollsSet = new Set(dolls);
   const petsSet = new Set(pets);
 
   const boosts = collectibleNames
-    .filter(
-      (name) =>
-        name in COLLECTIBLE_BUFF_LABELS &&
-        (
-          COLLECTIBLE_BUFF_LABELS[name]?.({
-            skills: state.bumpkin.skills,
-            collectibles: state.collectibles,
-          }) ?? []
-        ).length > 0,
-    )
+    .filter((name) => hasBoost(name, state))
     .filter(
       (name) =>
         !resourcesSet.has(name) &&
         !buildingsSet.has(name) &&
         !monumentsSet.has(name) &&
         !villageProjectsSet.has(name) &&
-        !bedsSet.has(name),
+        !bedsSet.has(name) &&
+        !flowersSet.has(name),
     );
 
   const boostsSet = new Set(boosts);
@@ -412,6 +410,7 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
       !monumentsSet.has(name) &&
       !dollsSet.has(name) &&
       !petsSet.has(name) &&
+      !flowersSet.has(name) &&
       !villageProjectsSet.has(name),
   );
 
@@ -459,11 +458,17 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
         decorations.length > 0,
     },
     {
+      id: "flowers",
+      label: t("flowers"),
+      emptyLabel: t("landscaping.quickPanel.empty.flowers"),
+      icon: ITEM_DETAILS["Prism Petal"].image,
+      hasItems: flowers.length > 0,
+    },
+    {
       id: "projects",
       label: "Projects",
       emptyLabel: "No projects available.",
       icon: ITEM_DETAILS["Farmer's Monument"].image,
-      farmOnly: true,
       hasItems: monuments.length > 0 || villageProjects.length > 0,
     },
     {
@@ -686,6 +691,23 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
           );
         });
 
+      case "flowers":
+        return flowers.map((name) => {
+          const image = getItemImage(name as CollectibleName);
+          const item: LandscapingPlaceableType = {
+            name: name as CollectibleName | BuildingName | ResourceName,
+          };
+          return wrapBox(
+            name,
+            item,
+            <Box
+              count={chestMap[name]}
+              image={image}
+              onClick={() => handleClick(item)}
+            />,
+          );
+        });
+
       default:
         return [];
     }
@@ -769,7 +791,8 @@ export const LandscapingQuickPanel: React.FC<Props> = ({
                 <div
                   ref={scrollContainerRef}
                   className={classNames("flex items-center", {
-                    "overflow-x-auto overflow-y-hidden": !isMobile,
+                    "overflow-x-auto scrollable overflow-y-hidden pb-1":
+                      !isMobile,
                   })}
                   style={{ height: `${TWO_ROW_HEIGHT_PX}px` }}
                 >

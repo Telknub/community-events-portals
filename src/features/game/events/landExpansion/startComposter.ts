@@ -1,12 +1,12 @@
 import Decimal from "decimal.js-light";
 import { isCollectibleBuilt } from "features/game/lib/collectibleBuilt";
 import {
-  ComposterName,
+  type ComposterName,
   SEASON_COMPOST_REQUIREMENTS,
   composterDetails,
 } from "features/game/types/composters";
 import { getKeys } from "lib/object";
-import {
+import type {
   BoostName,
   CompostBuilding,
   GameState,
@@ -83,11 +83,6 @@ export function getCompostAmount({
   if (skills["Premium Worms"] && building === "Premium Composter") {
     produceAmount += 10;
     boostsUsed.push({ name: "Premium Worms", value: "+10" });
-  }
-
-  if (skills["Composting Overhaul"]) {
-    produceAmount -= 5;
-    boostsUsed.push({ name: "Composting Overhaul", value: "-5" });
   }
 
   if (skills["Composting Revamp"]) {

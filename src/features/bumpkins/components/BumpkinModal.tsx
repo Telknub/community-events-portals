@@ -4,16 +4,19 @@ import levelIcon from "assets/icons/level_up.png";
 
 import { ButtonPanel, InnerPanel, OuterPanel } from "components/ui/Panel";
 import {
-  getBumpkinLevel,
+  getAscensionDisplayText,
+  getAscensionLevel,
   getExperienceToNextLevel,
+  getMaxBumpkinLevel,
   isMaxLevel,
+  type BumpkinLevel as BumpkinLevelValue,
 } from "features/game/lib/level";
 
 import { AchievementsModal } from "./Achievements";
 import { Skills } from "./revamp/Skills";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { Bumpkin, GameState, Inventory } from "features/game/types/game";
+import type { Bumpkin, GameState, Inventory } from "features/game/types/game";
 import { ResizableBar } from "components/ui/ProgressBar";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { BumpkinEquip } from "./BumpkinEquip";
@@ -22,7 +25,7 @@ import { Context } from "features/game/GameProvider";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { useSelector } from "@xstate/react";
 import { formatNumber } from "lib/utils/formatNumber";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { MyReputation } from "features/island/hud/components/reputation/Reputation";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { LEGACY_BADGE_TREE } from "features/game/types/skills";
@@ -30,17 +33,18 @@ import { setImageWidth } from "lib/images";
 import { LegacyBadges } from "./LegacyBadges";
 import { getKeys } from "lib/object";
 import { PowerSkills } from "features/island/hud/components/PowerSkills";
-import { PanelTabs } from "features/game/components/CloseablePanel";
+import type { PanelTabs } from "features/game/components/CloseablePanel";
 import foodIcon from "assets/food/chicken_drumstick.png";
-import { Equipped } from "features/game/types/bumpkin";
+import type { Equipped } from "features/game/types/bumpkin";
 import { Feed } from "features/island/bumpkin/components/Feed";
 import { LevelUp } from "features/island/bumpkin/components/LevelUp";
 import { getAvailableFood } from "features/game/lib/availableFood";
+import type { ConsumableName } from "features/game/types/consumables";
 import { ModalContext } from "features/game/components/modal/ModalProvider";
 import {
   getPowerSkills,
-  BumpkinSkillRevamp,
-  BumpkinRevampSkillName,
+  type BumpkinSkillRevamp,
+  type BumpkinRevampSkillName,
 } from "features/game/types/bumpkinSkills";
 import { getSkillCooldown } from "features/game/events/landExpansion/skillUsed";
 import { getAvailableBumpkinSkillPoints } from "features/game/events/landExpansion/choseSkill";
@@ -56,16 +60,24 @@ export type ViewState =
 const _experience = (state: MachineState) =>
   state.context.state.bumpkin?.experience ?? 0;
 
-export const BumpkinLevel: React.FC<{ experience?: number }> = ({
-  experience = 0,
-}) => {
-  const maxLevel = isMaxLevel(experience);
+export const BumpkinLevel: React.FC<{
+  experience?: number;
+  ascensionLevel?: number;
+  maxLevel?: BumpkinLevelValue;
+}> = ({ experience = 0, ascensionLevel = 0, maxLevel }) => {
+  const ascension =
+    ascensionLevel >= 1
+      ? getAscensionLevel({ experience, ascensionLevel })
+      : undefined;
+  const atMax = ascension
+    ? ascension.isReadyToAscend
+    : isMaxLevel(experience, maxLevel);
   const { currentExperienceProgress, experienceToNextLevel } =
-    getExperienceToNextLevel(experience);
+    ascension ?? getExperienceToNextLevel(experience, maxLevel);
 
   const getProgressPercentage = () => {
     let progressRatio = 1;
-    if (!maxLevel) {
+    if (!atMax) {
       progressRatio = Math.min(
         1,
         currentExperienceProgress / experienceToNextLevel,
@@ -90,7 +102,7 @@ export const BumpkinLevel: React.FC<{ experience?: number }> = ({
       <p className="font-secondary mt-0.5 ml-2">{`${formatNumber(
         currentExperienceProgress,
         { decimalPlaces: 0 },
-      )}/${maxLevel ? "-" : formatNumber(experienceToNextLevel, { decimalPlaces: 0 })} XP`}</p>
+      )}/${atMax ? "-" : formatNumber(experienceToNextLevel, { decimalPlaces: 0 })} XP`}</p>
     </div>
   );
 };
@@ -98,6 +110,9 @@ type Tab = "info" | "equip" | "skills" | "feed";
 
 interface Props {
   initialTab: Tab;
+  // When true, always open on `initialTab` instead of restoring the last-used
+  // tab. Used when clicking the Bumpkin NPC so it always lands on Feed.
+  forceTab?: boolean;
   onClose: () => void;
   bumpkin: Bumpkin;
   inventory: Inventory;
@@ -107,6 +122,7 @@ interface Props {
 
 export const BumpkinModal: React.FC<Props> = ({
   initialTab,
+  forceTab = false,
   onClose,
   bumpkin,
   inventory,
@@ -116,12 +132,25 @@ export const BumpkinModal: React.FC<Props> = ({
   const { gameService } = useContext(Context);
   const { openModal } = useContext(ModalContext);
   const experience = useSelector(gameService, _experience);
-  const level = getBumpkinLevel(experience);
-  const currentBumpkinLevel = level;
-  const maxLevel = isMaxLevel(experience);
+  const ascensionLevel = gameState.island.ascensionLevel ?? 0;
+  const maxBumpkinLevel = getMaxBumpkinLevel(gameState);
+  const isAscended = ascensionLevel >= 1;
+  const ascension = getAscensionLevel({
+    experience,
+    ascensionLevel,
+    maxLevel: maxBumpkinLevel,
+  });
+  // Displayed level: within-ascension (0..50) when ascended, else the capped Bumpkin level.
+  const level = ascension.level;
+  const maxLevel = isAscended
+    ? ascension.isReadyToAscend
+    : isMaxLevel(experience, maxBumpkinLevel);
+  // Fires the level-up modal once per level; the within-ascension (or legacy) level
+  // increments per level-up and resets on ascend (no spurious modal on prestige).
+  const currentBumpkinLevel = ascension.level;
   const [view, setView] = useState<ViewState>("home");
   const [tab, setTab] = useState<Tab>(() => {
-    if (initialTab !== "feed" || readonly) return initialTab;
+    if (forceTab || initialTab !== "feed" || readonly) return initialTab;
     const stored = localStorage.getItem("bumpkinModalTab") as Tab | null;
     const valid: Tab[] = ["feed", "equip", "skills", "info"];
     return stored && valid.includes(stored) ? stored : initialTab;
@@ -169,8 +198,12 @@ export const BumpkinModal: React.FC<Props> = ({
   const hasLeveledUp = currentBumpkinLevel > acknowledgedLevel;
   const acknowledgeLevelUp = () => setAcknowledgedLevel(currentBumpkinLevel);
 
+  const [selectedFoodName, setSelectedFoodName] = useState<
+    ConsumableName | undefined
+  >(undefined);
+
   const availableFood = getAvailableFood(inventory);
-  const availableSkillPoints = getAvailableBumpkinSkillPoints(bumpkin);
+  const availableSkillPoints = getAvailableBumpkinSkillPoints(gameState);
 
   if (view === "achievements") {
     return (
@@ -256,10 +289,14 @@ export const BumpkinModal: React.FC<Props> = ({
           />
           <div className="flex-1">
             <p className="text-sm">
-              {t("lvl")} {level}
+              {getAscensionDisplayText({ ascension, length: "full" })}
               {maxLevel ? " (Max)" : ""}
             </p>
-            <BumpkinLevel experience={bumpkin.experience} />
+            <BumpkinLevel
+              experience={bumpkin.experience}
+              ascensionLevel={ascensionLevel}
+              maxLevel={maxBumpkinLevel}
+            />
           </div>
           {availableSkillPoints > 0 && (
             <p className="hidden sm:block text-xs text-right ml-2">
@@ -304,19 +341,26 @@ export const BumpkinModal: React.FC<Props> = ({
             {hasLeveledUp ? (
               <InnerPanel>
                 <LevelUp
-                  level={currentBumpkinLevel}
+                  level={level}
+                  ascension={isAscended ? ascensionLevel : undefined}
                   onClose={() => {
-                    onClose();
-                    if (currentBumpkinLevel === 2) {
+                    if (currentBumpkinLevel === 2 && !isAscended) {
+                      onClose();
                       openModal("SECOND_LEVEL");
+                      setTimeout(() => acknowledgeLevelUp(), 500);
+                    } else {
+                      acknowledgeLevelUp();
                     }
-                    setTimeout(() => acknowledgeLevelUp(), 500);
                   }}
                   wearables={bumpkin.equipped as Equipped}
                 />
               </InnerPanel>
             ) : (
-              <Feed food={availableFood} />
+              <Feed
+                food={availableFood}
+                selectedName={selectedFoodName}
+                setSelectedName={setSelectedFoodName}
+              />
             )}
           </>
         )}

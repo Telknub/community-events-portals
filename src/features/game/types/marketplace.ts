@@ -1,10 +1,10 @@
-import { BumpkinItem } from "./bumpkin";
-import { GameState, InventoryItemName, IslandType } from "./game";
+import type { BumpkinItem } from "./bumpkin";
+import type { GameState, InventoryItemName, IslandType } from "./game";
 import { KNOWN_ITEMS } from ".";
 import { TRADE_LIMITS } from "../actions/tradeLimits";
 import { hasVipAccess } from "../lib/vipAccess";
 import { isTemporaryCollectibleActive } from "../lib/collectibleBuilt";
-import { PetNFTName } from "./pets";
+import type { PetNFTName } from "./pets";
 import { setPrecision } from "lib/utils/formatNumber";
 import Decimal from "decimal.js-light";
 
@@ -231,7 +231,10 @@ export type MarketplaceTrends = {
 export type MarketplaceProfile = {
   id: number;
   username: string;
+  /** Within-ascension level. Meaningless without `ascension`. */
   level: number;
+  /** Ascension band this level belongs to (0 = pre-ascension). */
+  ascension: number;
   tokenUri: string;
   totalTrades: number;
   profit: number;
@@ -402,6 +405,12 @@ const ISLAND_RESOURCE_TAXES: Record<IslandType, number> = {
   spring: 0.5,
   desert: 0.2,
   volcano: 0.15,
+  swamp: 0.15,
+  // Ascension islands (spooky onward) reuse the swamp value for now.
+  spooky: 0.15,
+  crystal: 0.15,
+  moon: 0.15,
+  marble: 0.15,
 };
 
 export function getResourceTax({

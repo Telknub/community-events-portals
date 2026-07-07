@@ -3,8 +3,8 @@ import React, { useContext } from "react";
 import { useSelector } from "@xstate/react";
 import { Button } from "components/ui/Button";
 import { Context as GameContext } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
-import { ContentComponentProps } from "../GameOptions";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { ContentComponentProps } from "../types";
 import lockIcon from "assets/icons/lock.png";
 
 const _canRefresh = (state: MachineState) => !state.context.state.transaction;
@@ -32,6 +32,9 @@ export const Advanced: React.FC<ContentComponentProps> = ({
       </Button>
       <Button onClick={() => onSubMenuClick("amoy")}>
         <span>{t("gameOptions.developerOptions")}</span>
+      </Button>
+      <Button onClick={() => onSubMenuClick("experiments")}>
+        <span>{t("experiments")}</span>
       </Button>
       {!hideRefresh && (
         <Button

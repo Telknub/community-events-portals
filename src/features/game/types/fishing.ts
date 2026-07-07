@@ -1,5 +1,5 @@
-import { Worm } from "./composters";
-import {
+import type { Worm } from "./composters";
+import type {
   BoostName,
   GameState,
   InventoryItemName,
@@ -7,13 +7,13 @@ import {
 } from "./game";
 import { isWearableActive } from "../lib/wearables";
 import { translate } from "lib/i18n/translate";
-import { PurchaseOptions } from "./buyOptionPurchaseItem";
+import type { PurchaseOptions } from "./buyOptionPurchaseItem";
 import { Decimal } from "decimal.js-light";
 import { isCollectibleBuilt } from "../lib/collectibleBuilt";
 import type { ChapterName } from "./chapters";
 import { getCurrentChapter } from "./chapters";
 import { hasVipAccess } from "../lib/vipAccess";
-import { CrustaceanChum } from "./crustaceans";
+import type { CrustaceanChum } from "./crustaceans";
 
 export type PurchaseableBait = "Fishing Lure";
 export type GuaranteedBait =
@@ -808,8 +808,8 @@ export function getDailyFishingLimit(
 
   // +10 daily limit if player has the More With Less skill
   if (game.bumpkin?.skills["More With Less"]) {
-    limit += 15;
-    boostsUsed.push({ name: "More With Less", value: "+15" });
+    limit += 10;
+    boostsUsed.push({ name: "More With Less", value: "+10" });
   }
 
   // +5 daily limit if player has Saw Fish

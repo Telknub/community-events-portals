@@ -1,13 +1,13 @@
 import loveIslandJSON from "assets/map/love_island_map.json";
 import loveIslandTileset from "assets/map/love_island_tileset.json";
 
-import { SceneId } from "../mmoMachine";
-import { BaseScene, NPCBumpkin } from "./BaseScene";
-import { Coordinates } from "features/game/expansion/components/MapPlacement";
+import type { SceneId } from "../mmoMachine";
+import { BaseScene, type NPCBumpkin } from "./BaseScene";
+import type { Coordinates } from "features/game/expansion/components/MapPlacement";
 import { translate } from "lib/i18n/translate";
 import { interactableModalManager } from "../ui/InteractableModals";
 import { getKeys } from "lib/object";
-import { TemperateSeasonName } from "features/game/types/game";
+import type { TemperateSeasonName } from "features/game/types/game";
 import { hasReadLoveIslandNotice } from "../ui/loveRewardShop/LoveIslandNoticeboard";
 
 const BUMPKINS: NPCBumpkin[] = [];
@@ -127,14 +127,8 @@ export class LoveIslandScene extends BaseScene {
       }
     });
 
-    const guardian = this.add.sprite(310, 556, "guardian");
-    guardian.setInteractive({ cursor: "pointer" }).on("pointerdown", () => {
-      if (this.checkDistanceToSprite(guardian, 40)) {
-        interactableModalManager.open("guardian");
-      } else {
-        this.currentPlayer?.speak(translate("base.iam.far.away"));
-      }
-    });
+    // Decorative seasonal guardian sprite (no interaction).
+    this.add.sprite(310, 556, "guardian");
 
     this.setupPopup();
   }
@@ -201,7 +195,7 @@ export class LoveIslandScene extends BaseScene {
     const flower = server.state.giantFlower;
 
     const isSolved =
-      !!flower.puzzleSolvedAt && flower.puzzleSolvedAt > Date.now() - 10 * 1000;
+      !!flower.puzzleSolvedAt && flower.puzzleSolvedAt > Date.now() - 60 * 1000;
 
     this.loveBox?.setVisible(isSolved);
   }

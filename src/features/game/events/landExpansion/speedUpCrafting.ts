@@ -1,10 +1,10 @@
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { produce } from "immer";
 import {
   chargeCoinsForSpeedUp,
   getInstantGems,
   makeGemHistory,
-  SpeedUpPaymentMethod,
+  type SpeedUpPaymentMethod,
 } from "features/game/lib/getInstantGems";
 import Decimal from "decimal.js-light";
 import { recalculateCraftingQueue } from "./cancelQueuedCrafting";
@@ -25,7 +25,6 @@ export function speedUpCrafting({
   state,
   action,
   createdAt = Date.now(),
-  farmId = 0,
 }: Options): GameState {
   return produce(state, (game) => {
     if (action.type !== "crafting.spedUp") {
@@ -74,7 +73,6 @@ export function speedUpCrafting({
       const recalculated = recalculateCraftingQueue({
         queue: inProgressItems,
         game,
-        farmId,
         firstItemReadyAt: createdAt,
       });
 

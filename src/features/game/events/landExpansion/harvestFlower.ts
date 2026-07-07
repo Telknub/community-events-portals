@@ -1,5 +1,5 @@
 import { FLOWERS, FLOWER_SEEDS } from "features/game/types/flowers";
-import { BoostName, CriticalHitName, GameState } from "../../types/game";
+import type { BoostName, CriticalHitName, GameState } from "../../types/game";
 import Decimal from "decimal.js-light";
 import { updateBeehives } from "features/game/lib/updateBeehives";
 import { translate } from "lib/i18n/translate";
@@ -22,7 +22,7 @@ type Options = {
   createdAt?: number;
 };
 
-function getFlowerAmount({
+export function getFlowerAmount({
   game,
   criticalDrop = () => false,
 }: {

@@ -1,7 +1,7 @@
 import React from "react";
 
-import { CollectibleProps } from "./Collectible";
-import { CollectibleName } from "features/game/types/craftables";
+import type { CollectibleProps } from "./Collectible";
+import type { CollectibleName } from "features/game/types/craftables";
 import { getKeys } from "lib/object";
 import { MysteriousHead } from "./components/MysteriousHead";
 import { WarSkulls } from "./components/WarSkulls";
@@ -237,7 +237,7 @@ import { PrismPetal } from "./components/PrismPetal";
 import { CelestialFrostbloom } from "./components/CelestialFrostbloom";
 import { PrimulaEnigma } from "./components/PrimulaEnigma";
 import { PlaceableFlower } from "./components/PlaceableFlower";
-import { FLOWERS, PlaceableFlowerName } from "features/game/types/flowers";
+import { FLOWERS, type PlaceableFlowerName } from "features/game/types/flowers";
 import { Blossombeard } from "./components/Blossombeard";
 import { CrimPeckster } from "./components/CrimPeckster";
 import { FlowerRug } from "./components/FlowerRug";
@@ -254,6 +254,7 @@ import { NightshadeFactionBanner } from "./components/NightshadeFactionBanner";
 import { BumpkinFactionBanner } from "./components/BumpkinFactionBanner";
 import { ClashOfFactionsBanner } from "./components/ClashOfFactionsBanner";
 import { LifetimeFarmerBanner } from "./components/LifetimeFarmerBanner";
+import { CreatorBanner } from "./components/CreatorBanner";
 import { TurboSprout } from "./components/TurboSprout";
 import { Soybliss } from "./components/Soybliss";
 import { GrapeGranny } from "./components/GrapeGranny";
@@ -328,7 +329,7 @@ import { BumpkinRightWallSconce } from "./components/BumpkinRightWallSconce";
 import { TemplateCollectible } from "./TemplateCollectible";
 import {
   DECORATION_TEMPLATES,
-  TemplateDecorationName,
+  type TemplateDecorationName,
 } from "features/game/types/decorations";
 import { PharaohsTreasureBanner } from "./components/PharaohsTreasureBanner";
 import { DesertRose } from "./components/DesertRose";
@@ -381,9 +382,10 @@ import { AnemoneFlower } from "./components/AnemoneFlower";
 import { Poseidon } from "./components/Poseidon";
 import { Project } from "./components/Project";
 import { PetShrine } from "./components/PetShrine";
+import { WeatherProtection } from "./components/WeatherProtection";
 import { ObsidianShrine } from "./components/ObsidianShrine";
 import { Pet } from "../pets/Pet";
-import { PetName, PET_TYPES } from "features/game/types/pets";
+import { type PetName, PET_TYPES } from "features/game/types/pets";
 import { PetNFT } from "./components/petNFT/PetNFT";
 import { Isopod } from "./components/Isopod";
 import { Nautilus } from "./components/Nautilus";
@@ -392,7 +394,7 @@ import { DeepSeaPig } from "./components/DeepSeaPig";
 import { DeepSeaSlug } from "./components/DeepSeaSlug";
 import { CrystalShrimp } from "./components/CrystalShrimp";
 import { BED_FARMHAND_COUNT } from "features/game/types/beds";
-import { BedName } from "features/game/types/game";
+import type { BedName } from "features/game/types/game";
 
 export const COLLECTIBLE_COMPONENTS: Record<
   CollectibleName | "Bud" | "Pet" | "PetNFT",
@@ -600,6 +602,21 @@ export const COLLECTIBLE_COMPONENTS: Record<
   "Maneki Neko": ManekiNeko,
   "Pablo The Bunny": PabloBunny,
 
+  // Weather protection (override the TemplateCollectible default so the
+  // greyed-out "used" state + renew flow renders)
+  "Tornado Pinwheel": (props: CollectibleProps) => (
+    <WeatherProtection {...props} name="Tornado Pinwheel" />
+  ),
+  Mangrove: (props: CollectibleProps) => (
+    <WeatherProtection {...props} name="Mangrove" />
+  ),
+  "Thermal Stone": (props: CollectibleProps) => (
+    <WeatherProtection {...props} name="Thermal Stone" />
+  ),
+  "Protective Pesticide": (props: CollectibleProps) => (
+    <WeatherProtection {...props} name="Protective Pesticide" />
+  ),
+
   // Treasure
   "Abandoned Bear": AbandonedBear,
   "Tiki Totem": TikiTotem,
@@ -686,6 +703,7 @@ export const COLLECTIBLE_COMPONENTS: Record<
   "Spring Blossom Banner": SpringBlossomBanner,
   "Clash of Factions Banner": ClashOfFactionsBanner,
   "Lifetime Farmer Banner": LifetimeFarmerBanner,
+  "Creator Banner": CreatorBanner,
   "Pharaoh's Treasure Banner": PharaohsTreasureBanner,
   "Bull Run Banner": BullRunBanner,
   "Winds of Change Banner": WindsOfChangeBanner,
@@ -814,7 +832,6 @@ export const COLLECTIBLE_COMPONENTS: Record<
   ),
   "Dino Egg Trophy": () => <TemplateCollectible name="Dino Egg Trophy" />,
   "Salt Lamp": () => <TemplateCollectible name="Salt Lamp" />,
-  "Salt Crystal Bed": () => <TemplateCollectible name="Salt Crystal Bed" />,
   "World Map Rug": () => <TemplateCollectible name="World Map Rug" />,
   "Ripped Salt Bag": () => <TemplateCollectible name="Ripped Salt Bag" />,
   "Poseidon's Throne": (props: CollectibleProps) => (

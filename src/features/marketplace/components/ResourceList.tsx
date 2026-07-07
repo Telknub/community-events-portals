@@ -8,9 +8,9 @@ import { Decimal } from "decimal.js-light";
 import {
   TRADE_LIMITS,
   TRADE_MINIMUMS,
-  TradeResource,
+  type TradeResource,
 } from "features/game/actions/tradeLimits";
-import { InventoryItemName } from "features/game/types/game";
+import type { InventoryItemName } from "features/game/types/game";
 import { ITEM_DETAILS } from "features/game/types/images";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { formatNumber, setPrecision } from "lib/utils/formatNumber";
@@ -189,7 +189,7 @@ export const ResourceList: React.FC<Props> = ({
         </div>
 
         <div className="flex">
-          <div className="flex">
+          <div className="flex flex-1 min-w-0">
             <div className="w-1/2 mr-1">
               <div className="flex items-center">
                 <Label

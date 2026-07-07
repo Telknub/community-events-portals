@@ -1,19 +1,19 @@
-import { createMachine, Interpreter, State, assign } from "xstate";
+import { createMachine, type Interpreter, type State, assign } from "xstate";
 import { CONFIG } from "lib/config";
-import { ERRORS, ErrorCode } from "lib/errors";
+import { ERRORS, type ErrorCode } from "lib/errors";
 
 import {
   saveReferrerId,
   getReferrerId as getReferrerIdFromLS,
 } from "../actions/createAccount";
-import { login, Token, decodeToken } from "../actions/login";
+import { login, type Token, decodeToken } from "../actions/login";
 import { randomID } from "lib/utils/random";
 import { onboardingAnalytics } from "lib/onboardingAnalytics";
-import { loadSession } from "features/game/actions/loadSession";
+import type { loadSession } from "features/game/actions/loadSession";
 import { getToken, removeJWT, saveJWT } from "../actions/social";
-import { signUp, UTM } from "../actions/signup";
+import { signUp, type UTM } from "../actions/signup";
 import { claimFarm } from "../actions/claimFarm";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { removeMinigameJWTs } from "features/world/ui/community/actions/portal";
 
 export const ART_MODE = !CONFIG.API_URL;
@@ -28,6 +28,22 @@ const getDiscordCode = () => {
   const code = new URLSearchParams(window.location.search).get("code");
 
   return code;
+};
+
+const getUrlErrorCode = (): ErrorCode | undefined => {
+  const errorParam = new URLSearchParams(window.location.search).get("error");
+  if (!errorParam) return undefined;
+  // hasOwn — `in` also matches inherited props like `toString`, which
+  // would let any URL param masquerade as a valid error code.
+  return Object.prototype.hasOwnProperty.call(ERRORS, errorParam)
+    ? (errorParam as ErrorCode)
+    : undefined;
+};
+
+const clearUrlErrorParam = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("error");
+  window.history.pushState({}, "", url.toString());
 };
 
 const getReferrerID = () => {
@@ -211,6 +227,14 @@ export const authMachine = createMachine(
           storeUTMs();
         },
         always: [
+          {
+            // OAuth callbacks (e.g. googleCallback) redirect here with
+            // ?error=<CODE> when login is refused. Surface that as the
+            // unauthorised state so ErrorMessage renders the right screen.
+            target: "unauthorised",
+            cond: () => !!getUrlErrorCode(),
+            actions: ["assignUrlErrorCode", "clearUrlError"],
+          },
           {
             target: "authorised",
             cond: () => !!getToken(),
@@ -477,6 +501,10 @@ export const authMachine = createMachine(
       assignErrorMessage: assign<Context, any>({
         errorCode: (_context, event) => event.data.message,
       }),
+      assignUrlErrorCode: assign<Context, any>({
+        errorCode: () => getUrlErrorCode(),
+      }),
+      clearUrlError: clearUrlErrorParam,
 
       assignVisitingFarmIdFromUrl: assign({
         visitingFarmId: (_) => getFarmIdFromUrl(),

@@ -2,7 +2,7 @@ import { getKeys } from "lib/object";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { CROP_LIFECYCLE } from "features/island/plots/lib/plant";
 import { translate } from "lib/i18n/translate";
-import { Inventory, IslandType } from "./game";
+import type { Inventory, IslandType } from "./game";
 import { ITEM_DETAILS } from "./images";
 import powerup from "assets/icons/level_up.png";
 import redArrowDown from "assets/icons/decrease_arrow.png";
@@ -91,8 +91,8 @@ import seaBlessed from "assets/icons/skill_icons/sea_blessed.webp";
 import speedyAging from "assets/icons/skill_icons/speedy_aging.webp";
 import wideRakes from "assets/icons/skill_icons/wide_rakes.webp";
 import xpIcon from "assets/icons/xp.png";
-import { NPCName } from "lib/npcs";
-import { BuffLabel } from ".";
+import type { NPCName } from "lib/npcs";
+import type { BuffLabel } from ".";
 
 export type BumpkinSkillName =
   | "Green Thumb"
@@ -1288,13 +1288,7 @@ export const BUMPKIN_REVAMP_SKILL_TREE = {
         shortDescription: translate("skill.moreWithLess.buff"),
         labelType: "success",
         boostTypeIcon: powerup,
-        boostedItemIcon: ITEM_DETAILS.Rod.image,
-      },
-      debuff: {
-        shortDescription: translate("skill.moreWithLess.debuff"),
-        labelType: "danger",
-        boostTypeIcon: redArrowDown,
-        boostedItemIcon: baits,
+        boostedItemIcon: SUNNYSIDE.icons.fish,
       },
     },
     disabled: false,
@@ -3206,12 +3200,6 @@ export const BUMPKIN_REVAMP_SKILL_TREE = {
         labelType: "success",
         boostTypeIcon: powerup,
         boostedItemIcon: baits,
-      },
-      debuff: {
-        shortDescription: translate("skill.compostingOverhaul.debuff"),
-        labelType: "danger",
-        boostTypeIcon: redArrowDown,
-        boostedItemIcon: fertilisers,
       },
     },
     image: compostingOverhaul,

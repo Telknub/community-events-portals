@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 
 import { PIXEL_SCALE } from "features/game/lib/constants";
-import { BuildingProps } from "../Building";
+import type { BuildingProps } from "../Building";
 import { Context } from "features/game/GameProvider";
 import { LetterBox } from "features/farming/mail/LetterBox";
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -10,9 +10,11 @@ import { useNavigate } from "react-router";
 import { useVisiting } from "lib/utils/visitUtils";
 import { getHelpRequired } from "features/game/types/monuments";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { HomeBumpkins } from "../house/HomeBumpkins";
 import { DailyReward } from "features/game/expansion/components/dailyReward/DailyReward";
+import { getHomeRoute } from "features/island/buildings/lib/getHomeRoute";
+import { saveIslandScrollPosition } from "features/game/expansion/lib/islandScroll";
 
 const _game = (state: MachineState) => state.context.state;
 const _farmId = (state: MachineState) => state.context.farmId;
@@ -27,11 +29,8 @@ export const TownCenter: React.FC<BuildingProps> = ({ isBuilt }) => {
 
   const handleClick = () => {
     if (isBuilt) {
-      if (isVisiting) {
-        navigate(`/visit/${farmId}/home`);
-      } else {
-        navigate("/home");
-      }
+      saveIslandScrollPosition();
+      navigate(getHomeRoute({ game, isVisiting, farmId }));
 
       // Add future on click actions here
       return;

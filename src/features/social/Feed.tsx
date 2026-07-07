@@ -9,6 +9,7 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,16 +21,16 @@ import followIcon from "assets/icons/follow.webp";
 import helpIcon from "assets/icons/help.webp";
 import cheer from "assets/icons/cheer.webp";
 
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { Context } from "features/game/GameProvider";
 import { useSelector } from "@xstate/react";
 import { isMobile } from "mobile-device-detect";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { useFeedInteractions } from "./hooks/useFeedInteractions";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import * as AuthProvider from "features/auth/lib/Provider";
 import { FeedSkeleton } from "./components/skeletons/FeedSkeleton";
-import { Interaction } from "./types/types";
+import type { Interaction } from "./types/types";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import silhouette from "assets/npcs/silhouette.webp";
 import { playerModalManager } from "./lib/playerModalManager";
@@ -47,10 +48,13 @@ import { FeedFilters } from "./components/FeedFilters";
 import { getFilter, storeFilter } from "./lib/persistFilter";
 import { HelpInfoPopover } from "./components/HelpInfoPopover";
 import { SearchBar } from "./components/SearchBar";
-import { Detail } from "./actions/getFollowNetworkDetails";
+import type { Detail } from "./actions/getFollowNetworkDetails";
 import { useNow } from "lib/utils/hooks/useNow";
 import Decimal from "decimal.js-light";
 import { getHelpLimit } from "features/game/types/monuments";
+import { Modal } from "components/ui/Modal";
+import { CloseButtonPanel } from "features/game/components/CloseablePanel";
+import { PickServer } from "features/island/hud/components/settings-menu/plaza-settings/PickServer";
 
 type Props = {
   type: "world" | "local";
@@ -87,6 +91,8 @@ const _farmId = (state: MachineState) =>
 const _cheersAvailable = (state: MachineState) =>
   (state.context.visitorState ?? state.context.state).inventory["Cheer"] ??
   new Decimal(0);
+const _cheersGiven = (state: MachineState) =>
+  (state.context.visitorState ?? state.context.state).socialFarming.cheersGiven;
 const _totalHelpedToday = (state: MachineState) =>
   state.context.totalHelpedToday;
 const _game = (state: MachineState) =>
@@ -110,6 +116,26 @@ const mergeUpdates = (
   ];
 };
 
+const getUTCDateKey = (timestamp: number) =>
+  new Date(timestamp).toISOString().split("T")[0];
+
+const getNextUTCDateKeyRefreshAt = (timestamp: number) => {
+  const date = new Date(timestamp);
+
+  return (
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1) +
+    1000
+  );
+};
+
+const shouldShowInteraction = (interaction: Interaction, todayKey: string) => {
+  if (interaction.type !== "cheer") {
+    return true;
+  }
+
+  return getUTCDateKey(interaction.createdAt) === todayKey;
+};
+
 export type FeedFilter = "all" | "help" | "chat" | "cheer" | "follow";
 export type FeedFilterOption = {
   value: FeedFilter;
@@ -130,11 +156,13 @@ export const Feed: React.FC<Props> = ({
   const feedRef = useRef<HTMLDivElement>(null);
   const [selectedFilter, setSelectedFilter] = useState<FeedFilter>(getFilter());
   const [searchResults, setSearchResults] = useState<Detail[]>([]);
+  const [showPickServer, setShowPickServer] = useState(false);
 
   const username = useSelector(gameService, _username);
   const token = useSelector(authService, _token);
   const farmId = useSelector(gameService, _farmId);
   const cheersAvailable = useSelector(gameService, _cheersAvailable);
+  const cheersGiven = useSelector(gameService, _cheersGiven);
   const totalHelpedToday = useSelector(gameService, _totalHelpedToday);
   const game = useSelector(gameService, _game);
   const helpLimit = getHelpLimit({ game });
@@ -245,6 +273,20 @@ export const Feed: React.FC<Props> = ({
     mutate,
   );
 
+  useOnMachineTransition(
+    gameService,
+    "cheeringFarm",
+    "cheeringFarmSuccess",
+    mutate,
+  );
+
+  useOnMachineTransition(
+    gameService,
+    "cheeringFarmVisiting",
+    "cheeringFarmVisitingSuccess",
+    mutate,
+  );
+
   const handleInteractionClick = (interaction: Interaction) => {
     setShowFeed(false);
     playerModalManager.open({
@@ -275,6 +317,10 @@ export const Feed: React.FC<Props> = ({
     setShowFeed(false);
   };
 
+  const handleServerLabelClick = () => {
+    setShowPickServer(true);
+  };
+
   const showMobileFeed = showFeed && isMobile;
   const showDesktopFeed = showFeed && !isMobile;
   const hideMobileFeed = !showFeed && isMobile;
@@ -293,6 +339,14 @@ export const Feed: React.FC<Props> = ({
       )}
       divRef={feedRef}
     >
+      <Modal show={showPickServer} onHide={() => setShowPickServer(false)}>
+        <CloseButtonPanel
+          title={t("gameOptions.plazaSettings.pickServer")}
+          onClose={() => setShowPickServer(false)}
+        >
+          <PickServer onClose={() => setShowPickServer(false)} />
+        </CloseButtonPanel>
+      </Modal>
       <div className="flex flex-col gap-2 h-full w-full">
         <div className="sticky top-0 flex flex-col z-10 bg-[#e4a672]">
           <div className="flex items-center gap-2 pb-1">
@@ -313,12 +367,14 @@ export const Feed: React.FC<Props> = ({
                 {cheersAvailable.toNumber()}
               </Label>
               {serverLabel && (
-                <span
-                  className="min-w-0 max-w-[56px] shrink truncate text-xxs"
+                <button
+                  type="button"
+                  className="min-w-0 max-w-[56px] shrink cursor-pointer truncate bg-transparent p-0 text-left text-xxs hover:underline"
                   title={serverLabel}
+                  onClick={handleServerLabelClick}
                 >
                   {serverLabel}
-                </span>
+                </button>
               )}
             </div>
             <img
@@ -440,6 +496,7 @@ export const Feed: React.FC<Props> = ({
             loadMore={loadMore}
             onInteractionClick={handleInteractionClick}
             filter={selectedFilter}
+            cheersGiven={cheersGiven}
           />
         )}
       </div>
@@ -490,6 +547,24 @@ const HelpIconWithPopover: React.FC<{
   );
 };
 
+const CheerGivenIcon: React.FC = () => {
+  return (
+    <div
+      className="flex h-8 w-10 items-center justify-center cursor-default"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClickCapture={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <img src={cheer} className="w-5 h-5" alt="" />
+    </div>
+  );
+};
+
 type FeedContentProps = {
   feed: Interaction[];
   following: number[];
@@ -501,6 +576,10 @@ type FeedContentProps = {
   onInteractionClick: (interaction: Interaction) => void;
   onFollowClick: (id: number) => void;
   loadMore: () => void;
+  cheersGiven: {
+    date: string;
+    farms: number[];
+  };
 };
 
 const FeedContent: React.FC<FeedContentProps> = ({
@@ -514,11 +593,22 @@ const FeedContent: React.FC<FeedContentProps> = ({
   hasMore,
   loadMore,
   filter,
+  cheersGiven,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const { t } = useAppTranslation();
   const [canPaginate, setCanPaginate] = useState(false);
+  const [hasMeasuredScroll, setHasMeasuredScroll] = useState(false);
+  const [todayKey, setTodayKey] = useState(() => getUTCDateKey(Date.now()));
+  const refreshTimeoutRef = useRef<number | null>(null);
+  const visibleFeed = useMemo(
+    () =>
+      feed.filter((interaction) =>
+        shouldShowInteraction(interaction, todayKey),
+      ),
+    [feed, todayKey],
+  );
 
   // Intersection observer to load more interactions when the loader is in view
   const { ref: intersectionRef, inView } = useInView({
@@ -532,7 +622,28 @@ const FeedContent: React.FC<FeedContentProps> = ({
     if (!el) return;
     // tiny buffer so off-by-1 doesn’t trigger
     setCanPaginate(el.scrollHeight > el.clientHeight + 2);
-  }, [feed.length, filter]);
+    setHasMeasuredScroll(true);
+  }, [visibleFeed.length, filter]);
+
+  useEffect(() => {
+    const refreshTodayKey = () => {
+      const now = Date.now();
+      const refreshIn = getNextUTCDateKeyRefreshAt(now) - now;
+
+      refreshTimeoutRef.current = window.setTimeout(() => {
+        setTodayKey(getUTCDateKey(Date.now()));
+        refreshTodayKey();
+      }, refreshIn);
+    };
+
+    refreshTodayKey();
+
+    return () => {
+      if (refreshTimeoutRef.current) {
+        window.clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -543,10 +654,25 @@ const FeedContent: React.FC<FeedContentProps> = ({
   }, [filter]);
 
   useEffect(() => {
-    if (inView && hasMore && !isLoadingMore && canPaginate) {
+    const shouldLoadMore =
+      hasMore &&
+      !isLoadingMore &&
+      (inView ||
+        visibleFeed.length === 0 ||
+        (hasMeasuredScroll && !canPaginate));
+
+    if (shouldLoadMore) {
       loadMore();
     }
-  }, [inView, hasMore, isLoadingMore, loadMore, scrollContainerRef]);
+  }, [
+    canPaginate,
+    hasMeasuredScroll,
+    hasMore,
+    inView,
+    isLoadingMore,
+    loadMore,
+    visibleFeed.length,
+  ]);
 
   const setRefs = useCallback(
     (node: HTMLDivElement | null) => {
@@ -566,15 +692,18 @@ const FeedContent: React.FC<FeedContentProps> = ({
     e.stopPropagation();
     onFollowClick(id);
   };
-
   if (isLoadingInitialData) {
     return <FeedSkeleton />;
   }
 
-  if (feed.length === 0) {
+  if (visibleFeed.length === 0) {
     return (
       <div className="flex justify-center items-center h-full">
-        <Label type="default">{t("noActivity")}</Label>
+        {hasMore ? (
+          <Loading dotsOnly />
+        ) : (
+          <Label type="default">{t("noActivity")}</Label>
+        )}
       </div>
     );
   }
@@ -585,7 +714,7 @@ const FeedContent: React.FC<FeedContentProps> = ({
       className="scrollable overflow-hidden overflow-y-auto"
     >
       <div className="flex flex-col gap-1 pr-1">
-        {feed.map((interaction, index) => {
+        {visibleFeed.map((interaction, index) => {
           const direction =
             interaction?.sender.username === username ? "right" : "left";
           const sender =
@@ -598,6 +727,10 @@ const FeedContent: React.FC<FeedContentProps> = ({
               : () => onInteractionClick(interaction);
           const isFollowing = following.includes(interaction.sender.id);
           const isAtMaxFollowing = !isFollowing && following.length >= 5000;
+          const hasCheeredThemToday =
+            interaction.type === "cheer" &&
+            cheersGiven.date === todayKey &&
+            cheersGiven.farms.includes(interaction.sender.id);
 
           return (
             <div
@@ -651,6 +784,7 @@ const FeedContent: React.FC<FeedContentProps> = ({
                           helpedThemToday={interaction.helpedThemToday}
                         />
                       )}
+                      {hasCheeredThemToday && <CheerGivenIcon />}
                     </div>
                   </div>
                   {!isAtMaxFollowing && (

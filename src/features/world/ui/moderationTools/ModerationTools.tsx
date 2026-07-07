@@ -6,14 +6,17 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { Modal } from "components/ui/Modal";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
-import { SceneId } from "features/world/mmoMachine";
-import { BumpkinParts } from "lib/utils/tokenUriBuilder";
+import type { SceneId } from "features/world/mmoMachine";
+import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 
 import { PlayerList } from "./tabs/PlayerList";
 import { ChatHistory } from "./tabs/ChatHistory";
 import { Actions } from "./tabs/Actions";
 
-import { MachineInterpreter, Moderation } from "features/game/lib/gameMachine";
+import type {
+  MachineInterpreter,
+  Moderation,
+} from "features/game/lib/gameMachine";
 import { RoundButton } from "components/ui/RoundButton";
 
 export type Message = {
@@ -34,6 +37,9 @@ export type Player = {
   clothing: BumpkinParts;
   moderation?: Moderation;
   experience: number;
+  // Ascension band — needed to read `experience` as a level. Optional until the MMO
+  // server syncs it; consumers default to 0 (legacy pre-ascension reading) meanwhile.
+  ascensionLevel?: number;
   sceneId: SceneId;
 };
 

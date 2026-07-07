@@ -5,7 +5,11 @@ import {
 } from "features/game/lib/collectibleBuilt";
 import { isWearableActive } from "features/game/lib/wearables";
 import { trackFarmActivity } from "features/game/types/farmActivity";
-import { BoostName, GameState, OilReserve } from "features/game/types/game";
+import type {
+  BoostName,
+  GameState,
+  OilReserve,
+} from "features/game/types/game";
 import { produce } from "immer";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 
@@ -28,7 +32,7 @@ export function getOilDropAmount(game: GameState, reserve: OilReserve) {
   let amount = new Decimal(BASE_OIL_DROP_AMOUNT);
   const boostsUsed: { name: BoostName; value: string }[] = [];
 
-  if ((reserve.drilled + 1) % 3 === 0) {
+  if (isNextDrillHasBonus(reserve)) {
     amount = amount.add(OIL_BONUS_DROP_AMOUNT);
 
     if (isTemporaryCollectibleActive({ name: "Stag Shrine", game })) {
@@ -68,6 +72,10 @@ export function getOilDropAmount(game: GameState, reserve: OilReserve) {
   }
 
   return { amount: amount.toDecimalPlaces(4).toNumber(), boostsUsed };
+}
+
+export function isNextDrillHasBonus(reserve: OilReserve): boolean {
+  return (reserve.drilled + 1) % 3 === 0;
 }
 
 export function canDrillOilReserve(

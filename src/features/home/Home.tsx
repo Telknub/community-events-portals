@@ -10,7 +10,7 @@ import { GRID_WIDTH_PX, PIXEL_SCALE } from "features/game/lib/constants";
 import { Hud } from "features/island/hud/Hud";
 import { Context } from "features/game/GameProvider";
 import { useSelector } from "@xstate/react";
-import { MachineState } from "features/game/lib/gameMachine";
+import type { MachineState } from "features/game/lib/gameMachine";
 import { COLLECTIBLES_DIMENSIONS } from "features/game/types/craftables";
 import { getKeys } from "lib/object";
 import { MapPlacement } from "features/game/expansion/components/MapPlacement";
@@ -25,7 +25,7 @@ import { Button } from "components/ui/Button";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Modal } from "components/ui/Modal";
 import { BumpkinPainting } from "./components/BumpkinPainting";
-import { Bumpkin, IslandType } from "features/game/types/game";
+import type { Bumpkin, IslandType } from "features/game/types/game";
 import {
   HOME_BOUNDS,
   NON_COLLIDING_OBJECTS,
@@ -34,6 +34,7 @@ import {
 import { Bud } from "features/island/buds/Bud";
 import { InteriorBumpkins } from "./components/InteriorBumpkins";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
+import { useLandscapingGridBackgroundImage } from "features/island/landscaping/LandscapingGrid";
 import { SpeakingModal } from "features/game/components/SpeakingModal";
 import { NPC_WEARABLES } from "lib/npcs";
 import { EXTERIOR_ISLAND_BG } from "features/barn/BarnInside";
@@ -43,7 +44,7 @@ import { VisitingHud } from "features/island/hud/VisitingHud";
 import { getObjectEntries } from "lib/object";
 import { PlayerModal } from "features/social/PlayerModal";
 import { hasFeatureAccess } from "lib/flags";
-import { AuthMachineState } from "features/auth/lib/authMachine";
+import type { AuthMachineState } from "features/auth/lib/authMachine";
 import { Context as AuthContext } from "features/auth/lib/Provider";
 import { PetNFT } from "features/island/pets/PetNFT";
 import { FarmHand } from "features/island/farmhand/FarmHand";
@@ -54,6 +55,12 @@ const BACKGROUND_IMAGE: Record<IslandType, string> = {
   spring: SUNNYSIDE.land.house_inside,
   desert: SUNNYSIDE.land.manor_inside,
   volcano: SUNNYSIDE.land.mansion_inside,
+  swamp: SUNNYSIDE.land.mansion_inside,
+  // Ascension islands (spooky onward) reuse the swamp value for now.
+  spooky: SUNNYSIDE.land.mansion_inside,
+  crystal: SUNNYSIDE.land.mansion_inside,
+  moon: SUNNYSIDE.land.mansion_inside,
+  marble: SUNNYSIDE.land.mansion_inside,
 };
 
 function hasReadIntro() {
@@ -121,6 +128,7 @@ export const Home: React.FC = () => {
   const buds = useSelector(gameService, _buds);
   const petNFTs = useSelector(gameService, _petNFTs);
   const island = useSelector(gameService, _island);
+  const gridBackgroundImage = useLandscapingGridBackgroundImage();
   const homeFarmHands = useSelector(gameService, _homeFarmHands);
   const { collectibles, positions: homeCollectiblePositions } = useSelector(
     gameService,
@@ -343,9 +351,7 @@ export const Home: React.FC = () => {
                   width: `${bounds.height * GRID_WIDTH_PX}px`,
 
                   backgroundSize: `${GRID_WIDTH_PX}px ${GRID_WIDTH_PX}px`,
-                  backgroundImage: `
-            linear-gradient(to right, rgb(255 255 255 / 17%) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(255 255 255 / 17%) 1px, transparent 1px)`,
+                  backgroundImage: gridBackgroundImage,
                 }}
               />
 

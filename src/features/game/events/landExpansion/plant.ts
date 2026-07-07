@@ -1,13 +1,13 @@
 import Decimal from "decimal.js-light";
 
 import {
-  CropName,
+  type CropName,
   CROPS,
-  GreenHouseCropName,
+  type GreenHouseCropName,
   isAdvancedCrop,
   isBasicCrop,
 } from "../../types/crops";
-import {
+import type {
   AOE,
   BoostName,
   Buildings,
@@ -24,17 +24,21 @@ import {
   isTemporaryCollectibleActive,
   isCollectibleBuilt,
 } from "features/game/lib/collectibleBuilt";
-import { SEASONAL_SEEDS, SeedName, SEEDS } from "features/game/types/seeds";
+import {
+  SEASONAL_SEEDS,
+  type SeedName,
+  SEEDS,
+} from "features/game/types/seeds";
 import {
   isWithinAOE,
-  Position,
+  type Position,
 } from "features/game/expansion/placeable/lib/collisionDetection";
 import { getBudSpeedBoosts } from "features/game/lib/getBudSpeedBoosts";
 
 import { isWearableActive } from "features/game/lib/wearables";
 import { produce } from "immer";
 import {
-  CalendarEventName,
+  type CalendarEventName,
   getActiveCalendarEvent,
   getActiveGuardian,
 } from "features/game/types/calendar";
@@ -48,7 +52,7 @@ import cloneDeep from "lodash.clonedeep";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 import { getObjectEntries } from "lib/object";
 import {
-  FarmActivityName,
+  type FarmActivityName,
   trackFarmActivity,
 } from "features/game/types/farmActivity";
 import { isBuffActive } from "features/game/types/buffs";
@@ -79,7 +83,7 @@ type IsPlotFertile = {
 };
 
 // First 15 plots do not need water
-const INITIAL_SUPPORTED_PLOTS = (island: IslandType) =>
+export const INITIAL_SUPPORTED_PLOTS = (island: IslandType) =>
   island !== "basic" ? 18 : 17;
 
 // Each well can support an additional 8 plots

@@ -1,6 +1,6 @@
-import { InventoryItemName } from "../types/game";
+import type { InventoryItemName } from "../types/game";
 import { CHAPTERS } from "./chapters";
-import { BumpkinItem } from "./bumpkin";
+import type { BumpkinItem } from "./bumpkin";
 import { getPetNFTRevealConfig } from "./petRevealConfig";
 
 type Releases = {
@@ -1596,6 +1596,14 @@ export const INVENTORY_RELEASES: InventoryReleases = {
     tradeAt: CHAPTERS["Crabs and Traps"].endDate,
     withdrawAt: new Date("2026-06-04T00:00:00Z"),
   },
+  "Giant Isopod": {
+    tradeAt: CHAPTERS["Crabs and Traps"].endDate,
+    withdrawAt: new Date("2026-06-04T00:00:00Z"),
+  },
+  Nautilus: {
+    tradeAt: CHAPTERS["Crabs and Traps"].endDate,
+    withdrawAt: new Date("2026-06-04T00:00:00Z"),
+  },
 
   // Salt Awakening Collectibles
   "Dino Egg Trophy": {
@@ -1619,10 +1627,6 @@ export const INVENTORY_RELEASES: InventoryReleases = {
     withdrawAt: new Date("2026-08-31T00:00:00Z"),
   },
   "Salt Crystal Flower": {
-    tradeAt: CHAPTERS["Salt Awakening"].endDate,
-    withdrawAt: new Date("2026-08-31T00:00:00Z"),
-  },
-  "Deep Sea Pig": {
     tradeAt: CHAPTERS["Salt Awakening"].endDate,
     withdrawAt: new Date("2026-08-31T00:00:00Z"),
   },

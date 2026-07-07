@@ -1,10 +1,10 @@
 import { KNOWN_IDS } from "features/game/types";
 import {
-  ComposterName,
-  Worm,
+  type ComposterName,
+  type Worm,
   composterDetails,
 } from "features/game/types/composters";
-import { BoostName, GameState } from "features/game/types/game";
+import type { BoostName, GameState } from "features/game/types/game";
 import { isCollectibleBuilt } from "features/game/lib/collectibleBuilt";
 import { isWearableActive } from "features/game/lib/wearables";
 import { prng } from "lib/prng";
@@ -40,14 +40,9 @@ function getWormAdjustment(state: GameState): WormBoost {
     boostsUsed.push({ name: "Composting Overhaul", value: "+2" });
   }
 
-  if (skills["More With Less"]) {
-    delta -= 1;
-    boostsUsed.push({ name: "More With Less", value: "-1" });
-  }
-
   if (skills["Composting Revamp"]) {
-    delta -= 3;
-    boostsUsed.push({ name: "Composting Revamp", value: "-3" });
+    delta -= 2;
+    boostsUsed.push({ name: "Composting Revamp", value: "-2" });
   }
 
   if (isWearableActive({ name: "Saw Fish", game: state })) {

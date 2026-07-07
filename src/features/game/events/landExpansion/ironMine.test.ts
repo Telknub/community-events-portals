@@ -2,9 +2,13 @@ import Decimal from "decimal.js-light";
 import { TEST_BUMPKIN } from "features/game/lib/bumpkinData";
 import { INITIAL_FARM, IRON_RECOVERY_TIME } from "features/game/lib/constants";
 import { KNOWN_IDS } from "features/game/types";
-import { GameState } from "features/game/types/game";
+import type { GameState } from "features/game/types/game";
 import { prngChance } from "lib/prng";
-import { getMinedAt, LandExpansionIronMineAction, mineIron } from "./ironMine";
+import {
+  getMinedAt,
+  type LandExpansionIronMineAction,
+  mineIron,
+} from "./ironMine";
 
 const now = Date.now();
 const farmId = 1;
@@ -1251,6 +1255,30 @@ describe("mineIron", () => {
         ...GAME_STATE,
         island: {
           type: "volcano",
+        },
+        inventory: {
+          "Stone Pickaxe": new Decimal(1),
+        },
+        farmActivity: { "Iron Rock Mined": counter },
+      },
+      action: {
+        type: "ironRock.mined",
+        index: "0",
+      } as LandExpansionIronMineAction,
+      createdAt: now,
+      farmId,
+    });
+
+    expect(state.inventory.Iron).toEqual(new Decimal(1.1));
+  });
+
+  it("applies the +0.1 volcano boost on ascension islands (e.g. spooky)", () => {
+    const counter = findNonCriticalCounter();
+    const state = mineIron({
+      state: {
+        ...GAME_STATE,
+        island: {
+          type: "spooky",
         },
         inventory: {
           "Stone Pickaxe": new Decimal(1),

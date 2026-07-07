@@ -1,6 +1,6 @@
 import Decimal from "decimal.js-light";
 
-import { GameState, InventoryItemName } from "../types/game";
+import type { GameState, InventoryItemName } from "../types/game";
 
 /**
  * Converts API response into a game state
@@ -95,6 +95,7 @@ export function makeGame(farm: any): GameState {
     crimstones: farm.crimstones ?? {},
     oilReserves: farm.oilReserves ?? {},
     sunstones: farm.sunstones ?? {},
+    ascensionCrystals: farm.ascensionCrystals ?? {},
     crops: farm.crops ?? {},
     fruitPatches: farm.fruitPatches ?? {},
     flowers: farm.flowers ?? {},
@@ -142,7 +143,6 @@ export function makeGame(farm: any): GameState {
     ban: farm.ban,
     rewardBoxes: farm.rewardBoxes,
     withdrawals: farm.withdrawals,
-    blessing: farm.blessing,
     aoe: farm.aoe,
     boostsUsedAt: farm.boostsUsedAt,
     socialFarming: farm.socialFarming,
@@ -150,5 +150,6 @@ export function makeGame(farm: any): GameState {
     prototypes: farm.prototypes,
     saltFarm: farm.saltFarm ?? { level: 0, nodes: {} },
     sculptures: farm.sculptures,
+    layouts: farm.layouts,
   };
 }

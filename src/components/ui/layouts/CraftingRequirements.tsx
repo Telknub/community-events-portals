@@ -1,8 +1,11 @@
 import Decimal from "decimal.js-light";
 import { INVENTORY_LIMIT } from "features/game/lib/constants";
-import { getBumpkinLevel } from "features/game/lib/level";
-import { getKeys } from "lib/object";
 import {
+  getAscensionLevel,
+  type LevelRequirement,
+} from "features/game/lib/level";
+import { getKeys } from "lib/object";
+import type {
   BoostName,
   GameState,
   InventoryItemName,
@@ -10,7 +13,13 @@ import {
   Tree,
 } from "features/game/types/game";
 import { ITEM_DETAILS } from "features/game/types/images";
-import React, { Dispatch, SetStateAction, useState, type JSX } from "react";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useRef,
+  useState,
+  type JSX,
+} from "react";
 import { BoostsDisplay } from "./BoostsDisplay";
 import { Label } from "../Label";
 import { RequirementLabel } from "../RequirementsLabel";
@@ -19,7 +28,7 @@ import { formatDateRange, secondsToString } from "lib/utils/time";
 import { SUNNYSIDE } from "assets/sunnyside";
 import {
   BUMPKIN_ITEM_PART,
-  BumpkinItem,
+  type BumpkinItem,
   ITEM_IDS,
 } from "features/game/types/bumpkin";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
@@ -27,22 +36,23 @@ import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { getImageUrl } from "lib/utils/getImageURLS";
 import { ITEM_ICONS } from "features/island/hud/components/inventory/Chest";
 import { IngredientsPopover } from "../IngredientsPopover";
-import { BuffLabel } from "features/game/types";
+import type { BuffLabel } from "features/game/types";
 import { isSeed } from "features/game/types/seeds";
 import { getCurrentBiome } from "features/island/biomes/biomes";
 import {
   EXPIRY_COOLDOWNS,
-  TemporaryCollectibleName,
+  type TemporaryCollectibleName,
 } from "features/game/lib/collectibleBuilt";
 import {
   RESOURCES_UPGRADES_TO,
   ADVANCED_RESOURCES,
-  UpgradedResourceName,
+  type UpgradedResourceName,
   RESOURCE_STATE_ACCESSORS,
 } from "features/game/types/resources";
 import { SEASON_ICONS } from "features/island/buildings/components/building/market/SeasonalSeeds";
 import { capitalize } from "lib/utils/capitalize";
 import classNames from "classnames";
+import { getItemDescription } from "features/game/lib/getItemDescription";
 
 function getResourceTier(name: UpgradedResourceName): number | undefined {
   if (name in ADVANCED_RESOURCES) {
@@ -113,7 +123,7 @@ interface RequirementsProps {
   timeSeconds?: number;
   baseTimeSeconds?: number;
   timeBoostsUsed?: { name: BoostName; value: string }[];
-  level?: number;
+  level?: LevelRequirement;
 }
 
 /**
@@ -161,11 +171,8 @@ function getDetails(
       ? INVENTORY_LIMIT(game)[details.item]
       : undefined;
 
-    const {
-      description,
-      image: defaultImage,
-      translatedName,
-    } = ITEM_DETAILS[details.item];
+    const { image: defaultImage, translatedName } = ITEM_DETAILS[details.item];
+    const description = getItemDescription({ item: details.item, game });
 
     const image =
       ITEM_ICONS(game.season.season, getCurrentBiome(game.island))[
@@ -210,6 +217,7 @@ export const CraftingRequirements: React.FC<Props> = ({
 }: Props) => {
   const { t } = useAppTranslation();
   const [showIngredients, setShowIngredients] = useState(false);
+  const timeBoostsRef = useRef<HTMLDivElement>(null);
   const getStock = () => {
     if (!stock) return <></>;
 
@@ -507,6 +515,7 @@ export const CraftingRequirements: React.FC<Props> = ({
               ) {
                 return (
                   <div
+                    ref={timeBoostsRef}
                     className="flex flex-row sm:flex-col items-center cursor-pointer"
                     onClick={() => setShowTimeBoosts(!showTimeBoosts)}
                   >
@@ -526,6 +535,9 @@ export const CraftingRequirements: React.FC<Props> = ({
                         show={showTimeBoosts}
                         state={gameState}
                         onClick={() => setShowTimeBoosts((prev) => !prev)}
+                        anchorRef={timeBoostsRef}
+                        portalAlign="center"
+                        portalPlacement="above"
                       />
                     )}
                   </div>
@@ -544,7 +556,10 @@ export const CraftingRequirements: React.FC<Props> = ({
           {!!requirements.level && (
             <RequirementLabel
               type="level"
-              currentLevel={getBumpkinLevel(gameState.bumpkin?.experience ?? 0)}
+              currentLevel={getAscensionLevel({
+                experience: gameState.bumpkin.experience ?? 0,
+                ascensionLevel: gameState.island.ascensionLevel ?? 0,
+              })}
               requirement={requirements.level}
             />
           )}

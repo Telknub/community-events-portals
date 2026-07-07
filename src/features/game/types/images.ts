@@ -292,6 +292,7 @@ import catchTheKrakenBanner from "assets/decorations/banners/catch_the_kraken_ba
 import springBlossomBanner from "assets/decorations/banners/spring_banner.gif";
 import clashOfFactionsBanner from "assets/decorations/banners/clash_of_factions_banner.webp";
 import lifetimeFarmerBanner from "assets/decorations/banners/lifetime_farmer_banner.png";
+import creatorBanner from "assets/decorations/banners/creator_banner.png";
 import pharaohsTreasureBanner from "assets/decorations/banners/pharaohs_treasure_banner.webp";
 import budTicket from "assets/icons/bud_ticket.png";
 import prizeTicket from "assets/icons/prize_ticket.png";
@@ -887,6 +888,8 @@ import bronzeFriendsTrophy from "assets/sfts/friends_third_place_trophy.webp";
 import silverFriendsTrophy from "assets/sfts/friends_second_place_trophy.webp";
 import goldFriendsTrophy from "assets/sfts/friends_first_place_trophy.webp";
 
+import designTrophy from "assets/sfts/design_trophy.webp";
+
 import desertRose from "assets/sfts/desert_rose.webp";
 import sarcophagus from "assets/sfts/sarcophagus.webp";
 import anubisJackal from "assets/sfts/anubis_jackal.webp";
@@ -1149,6 +1152,8 @@ import frostyDoll from "assets/sfts/dolls/frosty_doll.webp";
 import cosmoDoll from "assets/sfts/dolls/cosmo_doll.webp";
 import bigfinDoll from "assets/sfts/dolls/bigfin_doll.webp";
 import solarDoll from "assets/sfts/dolls/solar_doll.webp";
+import saltDoll from "assets/sfts/dolls/salt_doll.webp";
+import spaBear from "assets/sfts/bears/spa_bear.webp";
 import anglerDoll from "assets/sfts/dolls/angler_doll.webp";
 import harvestDoll from "assets/sfts/dolls/harvest_doll.webp";
 import sizzleDoll from "assets/sfts/dolls/sizzler_doll.webp";
@@ -1273,10 +1278,15 @@ import saltCrystalBed from "assets/sfts/salt_crystal_bed.webp";
 import worldMapRug from "assets/sfts/world_map_rug.webp";
 import rippedSaltBag from "assets/sfts/ripped_salt_bag.webp";
 
-import { COUPONS, EASTER_EGG, FERTILISERS, InventoryItemName } from "./game";
+import {
+  COUPONS,
+  EASTER_EGG,
+  FERTILISERS,
+  type InventoryItemName,
+} from "./game";
 
 import { CROPS, CROP_SEEDS, GREENHOUSE_CROPS, GREENHOUSE_SEEDS } from "./crops";
-import { AchievementName, ACHIEVEMENTS } from "./achievements";
+import { type AchievementName, ACHIEVEMENTS } from "./achievements";
 
 import { SUNNYSIDE } from "assets/sunnyside";
 import { CROP_LIFECYCLE } from "features/island/plots/lib/plant";
@@ -1308,7 +1318,6 @@ import { LOVE_ANIMAL_TOOLS, TREASURE_TOOLS, WORKBENCH_TOOLS } from "./tools";
 import { translate } from "lib/i18n/translate";
 import { LANDSCAPING_DECORATIONS } from "./decorations";
 import { SELLABLE_TREASURES } from "./treasure";
-import { TREASURE_COLLECTIBLE_ITEM } from "./collectibles";
 import { ANIMAL_FOODS } from "./animals";
 import { PROCESSED_RESOURCES } from "./processedFood";
 
@@ -1323,6 +1332,13 @@ export interface ItemDetails {
   isPermanent?: boolean;
   translatedName?: string;
 }
+
+export const getTranslatedItemName = (
+  itemName: InventoryItemName | AchievementName,
+): string => {
+  const itemDetails = ITEM_DETAILS[itemName];
+  return itemDetails?.translatedName || itemName;
+};
 
 type Items = Record<InventoryItemName | AchievementName, ItemDetails>;
 
@@ -1868,6 +1884,10 @@ export const ITEM_DETAILS: Items = {
     image: sunstone,
     description: COMMODITIES.Sunstone.description,
     translatedName: translate("resource.sunstone"),
+  },
+  "Ascension Shard": {
+    image: sunstone,
+    description: COMMODITIES["Ascension Shard"].description,
   },
   Oil: {
     image: oil,
@@ -2991,7 +3011,7 @@ export const ITEM_DETAILS: Items = {
   },
   "Basic Bear": {
     image: basicBear,
-    description: LANDSCAPING_DECORATIONS["Basic Bear"].description,
+    description: translate("description.basic.bear"),
   },
   "Chef Bear": {
     image: chefBear,
@@ -3508,6 +3528,11 @@ export const ITEM_DETAILS: Items = {
     description: translate("description.lava.pit"),
     translatedName: translate("node.lavaPit"),
   },
+  // TODO: replace placeholder art once the Ascension Crystal asset lands.
+  "Ascension Crystal": {
+    image: sunstoneRock,
+    description: translate("description.ascensionCrystal"),
+  },
   Tree: {
     image: SUNNYSIDE.resource.tree,
     description: translate("description.tree"),
@@ -3590,6 +3615,10 @@ export const ITEM_DETAILS: Items = {
   "Lifetime Farmer Banner": {
     image: lifetimeFarmerBanner,
     description: translate("description.lifetime.farmer.banner"),
+  },
+  "Creator Banner": {
+    image: creatorBanner,
+    description: translate("description.creator.banner"),
   },
   "Pharaoh's Treasure Banner": {
     image: pharaohsTreasureBanner,
@@ -4852,6 +4881,12 @@ export const ITEM_DETAILS: Items = {
     translatedName: translate("fertiliser.sproutrootSurprise"),
   },
   "Turbofruit Mix": {
+    boostedDescriptions: [
+      {
+        name: "Fruitful Bounty",
+        description: translate("compost.turbofruitMixBoosted"),
+      },
+    ],
     image: turbofruitMix,
     description: translate("compost.turbofruitMix"),
     translatedName: translate("fertiliser.turbofruitMix"),
@@ -5833,15 +5868,15 @@ export const ITEM_DETAILS: Items = {
   },
   "Adrift Ark": {
     image: adriftArk,
-    description: TREASURE_COLLECTIBLE_ITEM["Adrift Ark"].description,
+    description: translate("description.adrift.ark"),
   },
   Castellan: {
     image: castellan,
-    description: TREASURE_COLLECTIBLE_ITEM.Castellan.description,
+    description: translate("description.castellan"),
   },
   "Sunlit Citadel": {
     image: sunlitCitadel,
-    description: TREASURE_COLLECTIBLE_ITEM["Sunlit Citadel"].description,
+    description: translate("description.sunlit.citadel"),
   },
   "Pharaoh Gnome": {
     image: pharaohGnome,
@@ -5869,11 +5904,11 @@ export const ITEM_DETAILS: Items = {
   },
   "Baobab Tree": {
     image: baobabTree,
-    description: TREASURE_COLLECTIBLE_ITEM["Baobab Tree"].description,
+    description: translate("description.baobab.tree"),
   },
   Camel: {
     image: camel,
-    description: TREASURE_COLLECTIBLE_ITEM.Camel.description,
+    description: translate("description.camel"),
   },
   "Tomato Bombard": {
     image: tomatoBombard,
@@ -6783,6 +6818,27 @@ export const ITEM_DETAILS: Items = {
     description:
       "A volcano biome that provides a volcano income and a volcano life.",
   },
+  "Swamp Biome": {
+    image: volcanoBiome,
+    description: "A swamp biome that provides a swamp income and a swamp life.",
+  },
+  // Ascension biomes (spooky onward)
+  "Spooky Biome": {
+    image: volcanoBiome,
+    description: "A swamp biome that provides a swamp income and a swamp life.",
+  },
+  "Crystal Biome": {
+    image: volcanoBiome,
+    description: "A swamp biome that provides a swamp income and a swamp life.",
+  },
+  "Moon Biome": {
+    image: volcanoBiome,
+    description: "A swamp biome that provides a swamp income and a swamp life.",
+  },
+  "Marble Age Biome": {
+    image: volcanoBiome,
+    description: "A swamp biome that provides a swamp income and a swamp life.",
+  },
   Bracelet: {
     image: bracelet,
     description: "",
@@ -6947,6 +7003,10 @@ export const ITEM_DETAILS: Items = {
     image: goldFriendsTrophy,
     description: translate("description.goldFriendsTrophy"),
   },
+  "Design Trophy": {
+    image: designTrophy,
+    description: translate("description.designTrophy"),
+  },
   Doll: {
     image: doll,
     description: translate("description.doll"),
@@ -7042,6 +7102,14 @@ export const ITEM_DETAILS: Items = {
   "Solar Doll": {
     image: solarDoll,
     description: translate("description.solarDoll"),
+  },
+  "Salt Doll": {
+    image: saltDoll,
+    description: translate("description.saltDoll"),
+  },
+  "Jacuzzi Bear": {
+    image: spaBear,
+    description: translate("description.jacuzziBear"),
   },
   Trash: {
     image: trash,

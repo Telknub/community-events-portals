@@ -1,7 +1,7 @@
 import Decimal from "decimal.js-light";
 
-import { GameState } from "features/game/types/game";
-import { sellBounty, SellBountyAction } from "./sellBounty";
+import type { GameState } from "features/game/types/game";
+import { sellBounty, type SellBountyAction } from "./sellBounty";
 import { INITIAL_BUMPKIN, TEST_FARM } from "features/game/lib/constants";
 import { getChapterTicket } from "features/game/types/chapters";
 
@@ -85,7 +85,7 @@ describe("sellBounty", () => {
         },
         action,
       }),
-    ).toThrow("You do not have the ingredients to sell this bounty");
+    ).toThrow("Cannot sell bounty");
   });
 
   it("ensures player has item not placed", () => {
@@ -112,7 +112,7 @@ describe("sellBounty", () => {
         },
         action,
       }),
-    ).toThrow("You do not have the ingredients to sell this bounty");
+    ).toThrow("Cannot sell bounty");
   });
 
   it("ensures bounty exists", () => {
@@ -122,7 +122,7 @@ describe("sellBounty", () => {
     };
 
     expect(() => sellBounty({ state: GAME_STATE, action })).toThrow(
-      "Bounty does not exist",
+      "Cannot sell bounty",
     );
   });
 
@@ -140,9 +140,7 @@ describe("sellBounty", () => {
       },
     };
 
-    expect(() => sellBounty({ state, action })).toThrow(
-      "Bounty already completed",
-    );
+    expect(() => sellBounty({ state, action })).toThrow("Cannot sell bounty");
   });
 
   it("rewards coins", () => {

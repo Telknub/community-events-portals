@@ -1,8 +1,9 @@
 import Decimal from "decimal.js-light";
-import { Inventory, Keys } from "./game";
+import type { Inventory, Keys } from "./game";
+import type { LevelRequirement } from "features/game/lib/level";
 import { translate } from "lib/i18n/translate";
 import { CHAPTERS } from "./chapters";
-import { ExoticCropName } from "./beans";
+import type { ExoticCropName } from "./beans";
 
 export const PLACEABLE_LOCATIONS = [
   "farm",
@@ -151,7 +152,6 @@ export type SoldOutCollectibleName =
   | "Crystal Altar"
   | "Dino Egg Trophy"
   | "Salt Lamp"
-  | "Salt Crystal Bed"
   | "World Map Rug"
   | "Ripped Salt Bag";
 
@@ -225,7 +225,7 @@ export type CraftableCollectible = {
   coins?: number;
   from?: Date;
   to?: Date;
-  level?: number;
+  level?: LevelRequirement;
   limit?: number;
   inventoryLimit?: number;
   disabled?: boolean;

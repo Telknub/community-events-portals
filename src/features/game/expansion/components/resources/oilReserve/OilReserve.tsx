@@ -1,14 +1,15 @@
 import React, { useContext, useState } from "react";
 import { RecoveredOilReserve } from "./components/RecoveredOilReserve";
 import { Context } from "features/game/GameProvider";
-import { MachineState } from "features/game/lib/gameMachine";
-import { OilReserve as IOilReserve } from "features/game/types/game";
+import type { MachineState } from "features/game/lib/gameMachine";
+import type { OilReserve as IOilReserve } from "features/game/types/game";
 import { useSelector } from "@xstate/react";
 import Decimal from "decimal.js-light";
 import {
   OIL_RESERVE_RECOVERY_TIME,
   getOilDropAmount,
   getRequiredOilDrillAmount,
+  isNextDrillHasBonus,
 } from "features/game/events/landExpansion/drillOilReserve";
 import { RecoveringOilReserve } from "./components/RecoveringOilReserve";
 import { DepletedOilReserve } from "./components/DepletedOilReserve";
@@ -46,22 +47,24 @@ export const OilReserve: React.FC<Props> = ({ id }) => {
     if (!ready || drills.lessThan(requiredDrillAmount)) return;
     const { amount: oilDropAmount } = getOilDropAmount(state, reserve);
 
-    const newState = gameService.send({ type: "oilReserve.drilled", id });
+    gameService.send({ type: "oilReserve.drilled", id });
 
-    if (!newState.matches("hoarding")) {
-      setDrilling(true);
-      setOilHarvested((oilHarvested) => oilHarvested + oilDropAmount);
+    setDrilling(true);
+    setOilHarvested((oilHarvested) => oilHarvested + oilDropAmount);
 
-      await new Promise((res) => setTimeout(res, 2000));
-      setDrilling(false);
-    }
+    await new Promise((res) => setTimeout(res, 2000));
+    setDrilling(false);
   };
   const hasDrill = drills.gte(getRequiredOilDrillAmount(state).amount);
 
   return (
     <div className="relative w-full h-full flex justify-center items-center">
       {ready && (
-        <RecoveredOilReserve hasDrill={hasDrill} onDrill={handleDrill} />
+        <RecoveredOilReserve
+          bonusDrill={isNextDrillHasBonus(reserve)}
+          hasDrill={hasDrill}
+          onDrill={handleDrill}
+        />
       )}
       {halfReady && <RecoveringOilReserve timeLeft={timeLeft} />}
       {!ready && !halfReady && (
