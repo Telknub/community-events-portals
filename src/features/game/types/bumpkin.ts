@@ -225,6 +225,7 @@ export type BumpkinTool =
   | "Handheld Bunny"
   | "Frost Sword"
   | "Paint Spray Can"
+  | "Yellow Slime Puppet"
   | "Chemist Potion"
   | "Architect Ruler"
   | "Onion Leek"
@@ -571,10 +572,7 @@ export type BumpkinWings =
   | "Rainbow Wings";
 
 export type BumpkinBeard =
-  | "Wise Beard"
-  | "Hoary Chin"
-  | "Santa Beard"
-  | "Moustache";
+  "Wise Beard" | "Hoary Chin" | "Santa Beard" | "Moustache";
 
 export type BumpkinAura =
   | "Coin Aura"
@@ -1790,6 +1788,18 @@ export const BUMPKIN_ITEM_PART: Record<BumpkinItem, keyof Wallet> = {
   "Slime Hat": "hat",
   "Slime Wings": "wings",
   "Slime Aura": "aura",
+  "Green Slime Hair": "hair",
+  "Blue Slime Shirt": "shirt",
+  "Slime Splattered Shirt": "shirt",
+  "Sad Slime Pants": "pants",
+  "Red Jelly Pants": "pants",
+  "Yellow Slime Puppet": "tool",
+  "Blue Jelly Shoes": "shoes",
+  "Sad Slime Slippers": "shoes",
+  "Sad Slime Hat": "hat",
+  "Slime Wall Background": "background",
+  "Rainbow Wings": "wings",
+  "Butterfly Aura": "aura",
   "Brush Back Hair": "hair",
   Moustache: "beard",
   "Chemist Potion": "tool",
