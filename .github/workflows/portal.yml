@@ -41,9 +41,9 @@ jobs:
           VITE_CLIENT_VERSION: ${{ steps.date.outputs.date }}
           VITE_RELEASE_VERSION: ${{ steps.get_version.outputs.VERSION }}
           VITE_PRIVATE_IMAGE_URL: "https://sunflower-land.com/game-assets"
-          VITE_API_URL: "https://api-dev.sunflower-land.com"
+          VITE_API_URL: "https://api.sunflower-land.com"
           VITE_PORTAL_GAME_URL: "https://sunflower-land.com/testnet/"
-          VITE_ANIMATION_URL: "https://animations-dev.sunflower-land.com"
+          VITE_ANIMATION_URL: "https://animations.sunflower-land.com"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

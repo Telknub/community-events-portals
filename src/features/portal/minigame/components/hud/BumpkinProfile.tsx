@@ -480,7 +480,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   return (
     <>
       {showAvatar && (
-        <div className="relative">
+        <div className="relative -left-5">
           <BumpkinAvatar
             bumpkinParts={bumpkinParts}
             level={playerLevel}

@@ -508,11 +508,11 @@ export const INITIAL_FARM: GameState = {
         },
         highscore: 14,
         purchases: [
-          // {
-          //   "purchasedAt": 1751266607794,
-          //   "sfl": 100,
-          //   "items": {}
-          // }
+          {
+            purchasedAt: new Date("2026-07-07T00:00:00").getTime(),
+            sfl: 7,
+            items: {},
+          },
         ],
       },
     },

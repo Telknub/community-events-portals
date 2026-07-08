@@ -8,6 +8,7 @@ import { Guide } from "./Guide";
 import misionIcon from "public/world/page.png";
 import guideIcon from "public/world/page.png";
 import leaderboardIcon from "assets/icons/trophy.png";
+import { Leaderboard } from "./Leaderboard";
 
 interface Props {
   mode: "introduction" | "success" | "failed";
@@ -69,7 +70,7 @@ export const RulesPanel: React.FC<Props> = ({
           />
         )}
         {tab === "guide" && <Guide />}
-        {/* {tab === "leaderboard" && <Leaderboard />} */}
+        {tab === "leaderboard" && <Leaderboard />}
       </>
     </CloseButtonPanel>
   );

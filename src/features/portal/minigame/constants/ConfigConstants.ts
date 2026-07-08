@@ -1,6 +1,5 @@
 import type { BumpkinWings, Equipped } from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
-import { NPC_WEARABLES } from "lib/npcs";
 import {
   MOB_CONFIGS,
   BOSS_CONFIGS,
@@ -63,8 +62,9 @@ export const WALKING_SPEED = getPlayerStatValue(
 );
 
 // Attempts
-export const INITIAL_DATE = "2025-10-28"; // YYYY-MM-DD
-export const INITIAL_DATE_LEADERBOARD = "2025-10-29"; // YYYY-MM-DD
+export const INITIAL_DATE = "2026-07-07"; // YYYY-MM-DD
+export const INITIAL_DATE_LEADERBOARD = "2026-07-07"; // YYYY-MM-DD
+export const FINAL_DATE_LEADERBOARD = "2026-07-14"; // YYYY-MM-DD
 export const ATTEMPTS_BETA_TESTERS = 100;
 export const UNLIMITED_ATTEMPTS_SFL = 200; // If this value is less than 0, the option disappears
 export const FREE_DAILY_ATTEMPTS = 1;
@@ -81,6 +81,14 @@ export const RESTOCK_ATTEMPTS = [
 //   9239, 36214, 55626, 3249, 128122,
 // ];
 export const BETA_TESTERS: number[] = [];
+
+export const ATTEMPTS_PURCHASED_BY_MISTAKE: {
+  id: number;
+  attempts: number | "unlimited";
+}[] = [
+  // { id: {FarmId}, attempts: 1 },
+  // { id: {FarmId}, attempts: "unlimited" },
+];
 
 export const PASSIVE_ABILITY_ITEM: BumpkinWings = "Underworld Stimpack";
 
@@ -360,7 +368,17 @@ export const DROP_ITEMS_XP_TABLE: {
 ];
 
 // Panel
-export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
+export const PANEL_NPC_WEARABLES: Equipped = {
+  body: "Beige Farmer Potion",
+  background: "Slime Wall Background",
+  hair: "Green Slime Hair",
+  shirt: "Blue Slime Shirt",
+  pants: "Sad Slime Pants",
+  shoes: "Blue Jelly Shoes",
+  tool: "Yellow Slime Puppet",
+  wings: "Rainbow Wings",
+  hat: "Sad Slime Hat",
+};
 
 // SFX
 export const WEAPON_SFX_VOL = 0.1;

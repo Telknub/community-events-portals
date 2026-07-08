@@ -11,6 +11,7 @@ import item from "public/world/portal/images/ExpOrb_combined.webp";
 const _target = (state: PortalMachineState) =>
   state.context.state?.minigames.prizes[PORTAL_NAME]?.score ?? 0;
 const _score = (state: PortalMachineState) => state.context.collected;
+const _isTraining = (state: PortalMachineState) => state.context.isTraining;
 
 export const Target: React.FC = () => {
   const { portalService } = useContext(PortalContext);
@@ -18,10 +19,10 @@ export const Target: React.FC = () => {
 
   const target = useSelector(portalService, _target);
   const score = useSelector(portalService, _score);
-
+  const isTraining = useSelector(portalService, _isTraining);
   const isTargetReached = score >= target;
 
-  return (
+  return !isTraining ? (
     <Label
       icon={item}
       secondaryIcon={isTargetReached ? SUNNYSIDE.icons.confirm : undefined}
@@ -32,5 +33,7 @@ export const Target: React.FC = () => {
         target: target,
       })}
     </Label>
+  ) : (
+    ""
   );
 };

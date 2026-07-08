@@ -19,6 +19,7 @@ import key from "public/world/minigame/base/key.png";
 import { OuterPanel } from "components/ui/Panel";
 import { Controls } from "./Controls";
 import { AbilityWearables } from "./AbilityWearables";
+import { Prize } from "./Prize";
 
 interface Props {
   mode: "introduction" | "success" | "failed";
@@ -79,7 +80,7 @@ export const Mission: React.FC<Props> = ({
   return (
     <>
       {page === "main" && (
-        <div className="px-2">
+        <div className="px-2  overflow-y-auto scrollable">
           <div>
             <div className="w-full relative flex justify-between gap-1 items-center pt-1">
               <Attempts attemptsLeft={attemptsLeft} />
@@ -102,25 +103,33 @@ export const Mission: React.FC<Props> = ({
             </div>
 
             <div className="w-full flex flex-col gap-1 mb-3">
-              <OuterPanel className="w-full flex flex-col items-center">
-                <Label type="info">{t("leaderboard.score")}</Label>
-                <div>{formattedLastScore()}</div>
-              </OuterPanel>
-              <div className="flex gap-1">
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">{t(`${PORTAL_NAME}.bestToday`)}</Label>
-                  <div>{formattedBestToday()}</div>
-                </OuterPanel>
-                <OuterPanel className="w-full flex flex-col items-center">
-                  <Label type="default">
-                    {t(`${PORTAL_NAME}.bestAllTime`)}
-                  </Label>
-                  <div>{formattedBestAllTime()}</div>
-                </OuterPanel>
-              </div>
-              {/* <div className="w-full">
-                <Prize />
-              </div> */}
+              {showScore && (
+                <>
+                  <OuterPanel className="w-full flex flex-col items-center">
+                    <Label type="info">{t("leaderboard.score")}</Label>
+                    <div>{formattedLastScore()}</div>
+                  </OuterPanel>
+                  <div className="flex gap-1">
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">
+                        {t(`${PORTAL_NAME}.bestToday`)}
+                      </Label>
+                      <div>{formattedBestToday()}</div>
+                    </OuterPanel>
+                    <OuterPanel className="w-full flex flex-col items-center">
+                      <Label type="default">
+                        {t(`${PORTAL_NAME}.bestAllTime`)}
+                      </Label>
+                      <div>{formattedBestAllTime()}</div>
+                    </OuterPanel>
+                  </div>
+                </>
+              )}
+              {!showScore && (
+                <div className="w-full">
+                  <Prize />
+                </div>
+              )}
               <AbilityWearables bumpkinParts={bumpkinParts!} />
             </div>
           </div>

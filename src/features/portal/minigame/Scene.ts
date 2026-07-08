@@ -614,6 +614,19 @@ export class Scene extends BaseScene {
 
   private initialiseProperties() {
     this.velocity = 0;
+    this.obstacles = [];
+    this.swarmEnemies = [];
+    this.bossEnemies = [];
+    this.seaBeastDefeated = false;
+    this.waveState.clear();
+
+    if (this.physics.world.isPaused) {
+      this.physics.world.resume();
+    }
+
+    if (this.time.paused) {
+      this.time.paused = false;
+    }
   }
 
   private getPlayerMovementSpeed() {
@@ -709,13 +722,15 @@ export class Scene extends BaseScene {
   }
 
   private initialiseEvents() {
+    const portalService = this.portalService;
+
     // reload scene when player hit retry
     const onRetry = (event: EventObject) => {
       if (event.type === "RETRY") {
         this.scene.restart();
       }
     };
-    this.portalService?.onEvent(onRetry);
+    portalService.onEvent(onRetry);
 
     // Restart scene when player hit start
     const onContinue = (event: EventObject) => {
@@ -723,7 +738,7 @@ export class Scene extends BaseScene {
         this.scene.restart();
       }
     };
-    this.portalService?.onEvent(onContinue);
+    portalService.onEvent(onContinue);
 
     // Restart scene when player hit start training
     const onContinueTraining = (event: EventObject) => {
@@ -731,7 +746,7 @@ export class Scene extends BaseScene {
         this.scene.restart();
       }
     };
-    this.portalService?.onEvent(onContinueTraining);
+    portalService.onEvent(onContinueTraining);
 
     // Ensure the scene is fresh when the game starts
     const onStart = (event: EventObject) => {
@@ -739,7 +754,14 @@ export class Scene extends BaseScene {
         this.scene.restart();
       }
     };
-    this.portalService?.onEvent(onStart);
+    portalService.onEvent(onStart);
+
+    this.events.once("shutdown", () => {
+      portalService.off(onRetry);
+      portalService.off(onContinue);
+      portalService.off(onContinueTraining);
+      portalService.off(onStart);
+    });
   }
 
   private initialiseFontFamily() {

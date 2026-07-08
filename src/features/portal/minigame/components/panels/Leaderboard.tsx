@@ -4,10 +4,16 @@ import type { PortalMachineState } from "../../lib/Machine";
 import { PortalContext } from "../../lib/PortalProvider";
 import { decodeToken } from "features/auth/actions/login";
 import { useSelector } from "@xstate/react";
-import { PORTAL_NAME } from "../../constants";
+import {
+  FINAL_DATE_LEADERBOARD,
+  INITIAL_DATE_LEADERBOARD,
+  PORTAL_NAME,
+} from "../../constants";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 const _jwt = (state: PortalMachineState) => state.context.jwt;
+
+const leaderboardDate = (date: string) => new Date(`${date}T00:00:00.000Z`);
 
 export const Leaderboard: React.FC = () => {
   const { t } = useAppTranslation();
@@ -15,7 +21,7 @@ export const Leaderboard: React.FC = () => {
 
   const jwt = useSelector(portalService, _jwt);
 
-  const farmId = decodeToken(jwt as string).farmId;
+  const farmId = jwt ? decodeToken(jwt as string)?.farmId : 0;
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto scrollable max-h-[75vh]">
@@ -26,8 +32,8 @@ export const Leaderboard: React.FC = () => {
       <PortalLeaderboard
         isAccumulator
         name={PORTAL_NAME}
-        startDate={new Date(Date.UTC(2025, 9, 29))}
-        endDate={new Date(Date.UTC(2025, 10, 4))}
+        startDate={leaderboardDate(INITIAL_DATE_LEADERBOARD)}
+        endDate={leaderboardDate(FINAL_DATE_LEADERBOARD)}
         farmId={Number(farmId)}
         // formatPoints={(points) => {}}
         jwt={jwt as string}
