@@ -47,7 +47,6 @@ import type {
   PassiveAbilityType,
 } from "../Types";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { getWearableImage } from "features/game/lib/getWearableImage";
 
 export { PORTAL_NAME } from "./PortalConstants";
 
@@ -122,10 +121,10 @@ export const INSTRUCTIONS: {
     image: watering_can_icon,
     description: t(`${PORTAL_NAME}.instructions3`),
   },
-  {
-    image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
-    description: t(`${PORTAL_NAME}.instructions8`),
-  },
+  // {
+  //   image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
+  //   description: t(`${PORTAL_NAME}.instructions8`),
+  // },
   {
     image: SUNNYSIDE.icons.xpIcon,
     description: t(`${PORTAL_NAME}.instructions7`),
@@ -153,10 +152,10 @@ export const RESOURCES_TABLE: {
     image: swordIcon,
     description: t(`${PORTAL_NAME}.resource3`),
   },
-  {
-    image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
-    description: t(`${PORTAL_NAME}.AbilityDescription`),
-  },
+  // {
+  //   image: getWearableImage(`${PASSIVE_ABILITY_ITEM}`),
+  //   description: t(`${PORTAL_NAME}.AbilityDescription`),
+  // },
 ];
 
 const mob_config = MOB_CONFIGS;
