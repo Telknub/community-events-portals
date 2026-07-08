@@ -500,19 +500,19 @@ export const INITIAL_FARM: GameState = {
           //   "highscore": 9,
           //   "prizeClaimedAt": 1774809958435
           // },
-          // "2026-03-31": {
-          //   "attempts": 1,
-          //   "highscore": 14,
-          //   "prizeClaimedAt": 1775000603121
-          // }
+          // "2026-07-08": {
+          //   attempts: 1,
+          //   highscore: 14,
+          //   prizeClaimedAt: new Date("2026-07-07T02:00:00").getTime(),
+          // },
         },
         highscore: 14,
         purchases: [
-          {
-            purchasedAt: new Date("2026-07-07T00:00:00").getTime(),
-            sfl: 7,
-            items: {},
-          },
+          // {
+          //   purchasedAt: new Date("2026-07-07T00:00:00").getTime(),
+          //   sfl: 7,
+          //   items: {},
+          // },
         ],
       },
     },

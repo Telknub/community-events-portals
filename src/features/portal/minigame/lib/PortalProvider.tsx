@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useInterpret } from "@xstate/react";
 import { portalMachine, type MachineInterpreter } from "./Machine";
-import { RESTOCK_ATTEMPTS, UNLIMITED_ATTEMPTS_SFL } from "../constants";
+import { RESTOCK_ATTEMPTS } from "../constants";
+import { isUnlimitedAttemptsSfl } from "./Utils";
 
 interface PortalContext {
   portalService: MachineInterpreter;
@@ -30,9 +31,9 @@ export const PortalProvider: React.FC<React.PropsWithChildren> = ({
         portalService.send("PURCHASED_RESTOCK", { sfl: option.sfl });
       } else if (
         event.data.event === "purchased" &&
-        event.data.sfl === UNLIMITED_ATTEMPTS_SFL
+        isUnlimitedAttemptsSfl(event.data.sfl)
       ) {
-        portalService.send("PURCHASED_UNLIMITED");
+        portalService.send("PURCHASED_UNLIMITED", { sfl: event.data.sfl });
       }
     };
 

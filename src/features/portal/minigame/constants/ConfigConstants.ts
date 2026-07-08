@@ -1,4 +1,8 @@
-import type { BumpkinWings, Equipped } from "features/game/types/bumpkin";
+import type {
+  BumpkinAura,
+  BumpkinWings,
+  Equipped,
+} from "features/game/types/bumpkin";
 import { translate as t } from "lib/i18n/translate";
 import {
   MOB_CONFIGS,
@@ -61,11 +65,12 @@ export const WALKING_SPEED = getPlayerStatValue(
 );
 
 // Attempts
-export const INITIAL_DATE = "2026-07-07"; // YYYY-MM-DD
-export const INITIAL_DATE_LEADERBOARD = "2026-07-07"; // YYYY-MM-DD
-export const FINAL_DATE_LEADERBOARD = "2026-07-14"; // YYYY-MM-DD
+export const INITIAL_DATE = "2026-07-13"; // YYYY-MM-DD
+export const INITIAL_DATE_LEADERBOARD = "2026-07-13"; // YYYY-MM-DD
+export const FINAL_DATE_LEADERBOARD = "2026-07-20"; // YYYY-MM-DD
 export const ATTEMPTS_BETA_TESTERS = 100;
 export const UNLIMITED_ATTEMPTS_SFL = 200; // If this value is less than 0, the option disappears
+export const UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL = 150;
 export const FREE_DAILY_ATTEMPTS = 1;
 export const RESTOCK_ATTEMPTS = [
   { attempts: 1, sfl: 3 },
@@ -74,12 +79,20 @@ export const RESTOCK_ATTEMPTS = [
   { attempts: 20, sfl: 30 },
 ];
 
+export const UNLIMITED_ATTEMPTS_DISCOUNT_AURAS: BumpkinAura[] = [
+  "Slime Aura",
+  "Butterfly Aura",
+  "Wisp Aura",
+  "Diamond Snow Aura",
+  "Glitch Aura",
+];
+
 // Beta testers
 // export const BETA_TESTERS: number[] = [
 //   29, 9609, 49035, 155026, 1181, 151471, 49035, 86, 79871, 2299, 21303, 206876,
 //   9239, 36214, 55626, 3249, 128122,
 // ];
-export const BETA_TESTERS: number[] = [];
+export const BETA_TESTERS: number[] = [3456169667100986];
 
 export const ATTEMPTS_PURCHASED_BY_MISTAKE: {
   id: number;

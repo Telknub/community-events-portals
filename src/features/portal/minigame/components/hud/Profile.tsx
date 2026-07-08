@@ -14,7 +14,7 @@ import {
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import type { Wardrobe } from "features/game/types/game";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
-import { PORTAL_NAME } from "../../constants";
+import { BETA_TESTERS, INITIAL_DATE, PORTAL_NAME } from "../../constants";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import { InnerPanel } from "components/ui/Panel";
 import { StatCard } from "./StatCard";
@@ -90,6 +90,12 @@ const _playerStatsState = (state: PortalMachineState) => ({
   playerStatLevels: state.context.playerStatLevels,
   activeWearables: state.context.activeWearables,
 });
+
+const isStartDateReached = () =>
+  new Date().toISOString().slice(0, 10) >= INITIAL_DATE;
+
+const canFarmStart = (farmId: number) =>
+  isStartDateReached() || BETA_TESTERS.includes(farmId);
 
 const getDefaultLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
   I: { ...equipment },
@@ -290,6 +296,7 @@ export const Profile: React.FC<{
   onSelectBumpkinPart: (part: BumpkinPart) => void;
   lives: number;
   maxLives: number;
+  farmId: number;
   onStart?: () => void;
   onStartTraining?: () => void;
   onBack?: () => void;
@@ -303,6 +310,7 @@ export const Profile: React.FC<{
   onSelectBumpkinPart,
   lives,
   maxLives,
+  farmId,
   onStart,
   onStartTraining,
   onBack,
@@ -311,6 +319,7 @@ export const Profile: React.FC<{
   const { portalService } = useContext(PortalContext);
   const { xpPoints, selectedStat, playerStatLevels, activeWearables } =
     useSelector(portalService, _playerStatsState);
+  const canStart = canFarmStart(farmId);
 
   const statIcons: Record<PlayerStatId, { src: string; width?: number }> = {
     health: { src: SUNNYSIDE.icons.heart },
@@ -384,7 +393,11 @@ export const Profile: React.FC<{
             >
               {t(`${PORTAL_NAME}.start.training`)}
             </Button>
-            <Button className="whitespace-nowrap capitalize" onClick={onStart}>
+            <Button
+              className="whitespace-nowrap capitalize"
+              disabled={!canStart}
+              onClick={onStart}
+            >
               {t("start")}
             </Button>
           </div>

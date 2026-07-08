@@ -1,6 +1,9 @@
-import type { Minigame } from "features/game/types/game";
+import type { BumpkinAura } from "features/game/types/bumpkin";
+import type { Minigame, Wardrobe } from "features/game/types/game";
 import {
   UNLIMITED_ATTEMPTS_SFL,
+  UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL,
+  UNLIMITED_ATTEMPTS_DISCOUNT_AURAS,
   FREE_DAILY_ATTEMPTS,
   RESTOCK_ATTEMPTS,
   BETA_TESTERS,
@@ -8,6 +11,19 @@ import {
   ATTEMPTS_BETA_TESTERS,
   ATTEMPTS_PURCHASED_BY_MISTAKE,
 } from "../constants";
+
+export const hasUnlimitedAttemptsDiscountAura = (wardrobe?: Wardrobe) =>
+  UNLIMITED_ATTEMPTS_DISCOUNT_AURAS.some(
+    (aura: BumpkinAura) => (wardrobe?.[aura] ?? 0) > 0,
+  );
+
+export const getUnlimitedAttemptsSfl = (wardrobe?: Wardrobe) =>
+  hasUnlimitedAttemptsDiscountAura(wardrobe)
+    ? UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL
+    : UNLIMITED_ATTEMPTS_SFL;
+
+export const isUnlimitedAttemptsSfl = (sfl: number) =>
+  [UNLIMITED_ATTEMPTS_SFL, UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL].includes(sfl);
 
 /**
  * Gets the number of attempts left for the minigame.
@@ -71,7 +87,7 @@ const hasRecentUnlimitedAttempts = (
 ): boolean => {
   return purchases.some((purchase) => {
     const isPurchaseWithinRange = isWithinRange(purchase.purchasedAt);
-    return isPurchaseWithinRange && purchase.sfl === UNLIMITED_ATTEMPTS_SFL;
+    return isPurchaseWithinRange && isUnlimitedAttemptsSfl(purchase.sfl);
   });
 };
 

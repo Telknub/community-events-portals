@@ -3,7 +3,6 @@ import { assign, createMachine, type Interpreter, type State } from "xstate";
 import { CONFIG } from "lib/config";
 import { decodeToken } from "features/auth/actions/login";
 import {
-  UNLIMITED_ATTEMPTS_SFL,
   FREE_DAILY_ATTEMPTS,
   GAME_SECONDS,
   GAME_LIVES,
@@ -29,7 +28,7 @@ import { startMinigameAttempt } from "features/game/events/minigames/startMiniga
 import { submitMinigameScore } from "features/game/events/minigames/submitMinigameScore";
 import { submitScore, startAttempt } from "features/portal/lib/portalUtil";
 import { getUrl, loadPortal } from "features/portal/actions/loadPortal";
-import { getAttemptsLeft } from "./Utils";
+import { getAttemptsLeft, getUnlimitedAttemptsSfl } from "./Utils";
 import type {
   DropItemType,
   EnemyType,
@@ -222,6 +221,11 @@ type PurchaseRestockEvent = {
   sfl: number;
 };
 
+type PurchaseUnlimitedEvent = {
+  type: "PURCHASED_UNLIMITED";
+  sfl: number;
+};
+
 type GainPointsEvent = {
   type: "GAIN_POINTS";
   points: number;
@@ -278,7 +282,7 @@ export type PortalEvent =
   | { type: "CLAIM" }
   | { type: "CANCEL_PURCHASE" }
   | PurchaseRestockEvent
-  | { type: "PURCHASED_UNLIMITED" }
+  | PurchaseUnlimitedEvent
   | { type: "RETRY" }
   | { type: "CONTINUE" }
   | { type: "CONTINUE_TRAINING" }
@@ -541,13 +545,15 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
         },
         PURCHASED_UNLIMITED: {
           target: "introduction",
+          cond: (context: Context, event: PurchaseUnlimitedEvent) =>
+            event.sfl === getUnlimitedAttemptsSfl(context.state?.wardrobe),
           actions: assign({
-            state: (context: Context) =>
+            state: (context: Context, event: PurchaseUnlimitedEvent) =>
               purchaseMinigameItem({
                 state: context.state as GameState,
                 action: {
                   id: PORTAL_NAME,
-                  sfl: UNLIMITED_ATTEMPTS_SFL,
+                  sfl: event.sfl,
                   type: "minigame.itemPurchased",
                   items: {},
                 },

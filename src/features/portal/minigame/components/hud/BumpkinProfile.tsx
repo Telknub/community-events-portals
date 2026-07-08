@@ -206,55 +206,6 @@ const BumpkinAvatar: React.FC<{
         </Label>
       </div>
     </div>
-    // <div
-    //   className="grid absolute z-40 top-0 cursor-pointer hover:img-highlight"
-    //   onClick={onClick}
-    // >
-    //   {/* <img
-    //     src={SUNNYSIDE.ui.whiteBg}
-    //     className="col-start-1 row-start-1 opacity-40"
-    //     style={{
-    //       width: `${DIMENSIONS.scaled + 500}px`,
-    //       height: `${DIMENSIONS.scaled}px`,
-    //     }}
-    //   /> */}
-    //   {/* <div
-    //     className="col-start-1 row-start-1 overflow-hidden z-0"
-    //     style={{
-    //       width: `${DIMENSIONS.bumpkinContainer.width}px`,
-    //       height: `${DIMENSIONS.bumpkinContainer.height}px`,
-    //       borderBottomLeftRadius: `${DIMENSIONS.bumpkinContainer.radiusBottomLeft}px`,
-    //       borderBottomRightRadius: `${DIMENSIONS.bumpkinContainer.radiusBottomRight}px`,
-    //     }}
-    //   >
-    //     <div
-    //       style={{
-    //         width: `${DIMENSIONS.bumpkin.width}px`,
-    //         marginLeft: `${DIMENSIONS.bumpkin.marginLeft}px`,
-    //       }}
-    //     >
-    //       <DynamicNFT
-    //         key={JSON.stringify(bumpkinParts)}
-    //         bumpkinParts={bumpkinParts}
-    //         showTools={false}
-    //       />
-    //     </div>
-    //   </div> */}
-    //   {/* <div
-    //     id="level"
-    //     className="col-start-1 row-start-1 z-30"
-    //     style={{
-    //       width: `${DIMENSIONS.level.width}px`,
-    //       height: `${DIMENSIONS.level.height}px`,
-    //       marginLeft: `${DIMENSIONS.level.marginLeft}px`,
-    //       marginTop: `${DIMENSIONS.level.marginTop}px`,
-    //     }}
-    //   >
-    //     <Label className="absolute z-30 justify-center text-xs min-w-6">
-    //       {level}
-    //     </Label>
-    //   </div> */}
-    // </div>
   );
 };
 
@@ -544,6 +495,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
               }}
               lives={lives}
               maxLives={maxLives}
+              farmId={farmId}
               onStart={mode === "preGame" ? onStart : undefined}
               onStartTraining={mode === "preGame" ? onStartTraining : undefined}
               onBack={mode === "preGame" ? (onBack ?? closeModal) : undefined}
