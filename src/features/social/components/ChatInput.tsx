@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { pixelChatInputBorderStyle } from "features/game/lib/style";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Button } from "components/ui/Button";
@@ -99,7 +99,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, onEnter }) => {
         onClick={() => {
           ref.current?.focus();
         }}
-        onInput={(e: ChangeEvent<HTMLTextAreaElement>) => {
+        onChange={(e) => {
           setText(e.target.value);
           checkValidText();
           e.preventDefault();

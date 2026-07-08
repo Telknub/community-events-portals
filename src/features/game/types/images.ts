@@ -7677,10 +7677,6 @@ export const ITEM_DETAILS: Items = {
     image: aprilFoolsToken2026,
     description: translate("description.aprilFoolsToken2026"),
   },
-  "Colors Token 2026": {
-    image: colorToken2025,
-    description: translate("description.colorToken2025"),
-  },
   "April Fools Ticket 2026": {
     image: aprilFoolsTicket2026,
     description: translate("description.aprilFoolsTicket2026"),

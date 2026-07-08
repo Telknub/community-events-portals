@@ -108,7 +108,7 @@ export class Scene extends BaseScene {
   }
 
   public get portalService() {
-    return this.registry.get("portalService") as MachineInterpreter | undefined;
+    return this.registry.get("portalService") as MachineInterpreter;
   }
 
   preload() {

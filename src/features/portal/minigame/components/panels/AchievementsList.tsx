@@ -114,7 +114,11 @@ export const AchievementsList: React.FC<Props> = ({ onBack }) => {
             <div className="flex flex-col gap-1">
               {completedAchievementNames.map((achievementName, index) => {
                 const achievement = AVAILABLE_ACHIEVEMENTS[achievementName];
-                const unlockedAt = achievements[achievementName].unlockedAt;
+                const completedAchievement = achievements[achievementName];
+
+                if (!completedAchievement) return null;
+
+                const unlockedAt = completedAchievement.unlockedAt;
 
                 return (
                   <InnerPanel key={index}>

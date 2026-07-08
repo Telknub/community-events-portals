@@ -61,7 +61,7 @@ export const Settings: React.FC = () => {
   const settingButton = (
     index: number,
     onClick: () => void,
-    children: JSX.Element,
+    children: React.ReactElement,
   ) => {
     const rightMargin = 8;
 

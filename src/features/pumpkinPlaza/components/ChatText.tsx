@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Label } from "components/ui/Label";
 import Filter from "bad-words";
 import classNames from "classnames";
@@ -156,7 +156,7 @@ export const ChatText: React.FC<Props> = ({
           onClick={() => {
             ref.current?.focus();
           }}
-          onInput={(e: ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             setText(e.target.value);
             isValid();
             e.preventDefault();
