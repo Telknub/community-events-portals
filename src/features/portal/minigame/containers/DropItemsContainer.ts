@@ -18,6 +18,7 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   private magnetRangeWithWings = 50;
   private defaultMagnetRange = 40;
   private readonly destroyOrb = 10000;
+  private targetRangeSq = 0;
 
   constructor({ scene, x, y, player, itemKey }: Props) {
     super(scene, x, y, itemKey);
@@ -31,8 +32,12 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
     (this.body as Phaser.Physics.Arcade.Body).setImmovable(true);
     this.postFX.addGlow(0xffd966, 1.5, 0, false, 0.03, 24);
 
+    const range = this.hasPassiveAbility()
+      ? this.magnetRangeWithWings
+      : this.defaultMagnetRange;
+    this.targetRangeSq = range * range;
+
     this.handleCollision();
-    // this.hasPassiveAbility();
 
     scene.time.delayedCall(this.destroyOrb, () => {
       if (this.active) {
@@ -42,6 +47,8 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   }
 
   preUpdate(time: number, delta: number) {
+    if (!this.active || !this.body) return;
+
     super.preUpdate(time, delta);
 
     if (this.scene.portalService?.state.context.isGameplayPaused) {
@@ -53,41 +60,45 @@ export class DropItem extends Phaser.Physics.Arcade.Sprite {
   }
 
   public updateMagnet() {
-    if (!this.player || !this.active) return;
+    if (!this.player || !this.active || !this.body) return;
 
-    const magnetRange = this.hasPassiveAbility()
-      ? this.magnetRangeWithWings
-      : this.defaultMagnetRange;
+    const dx = this.x - this.player.x;
+    const dy = this.y - this.player.y;
+    const distanceSq = dx * dx + dy * dy;
 
-    const distance = Phaser.Math.Distance.Between(
-      this.x,
-      this.y,
-      this.player.x,
-      this.player.y,
-    );
-
-    if (distance <= magnetRange) {
+    if (distanceSq <= this.targetRangeSq) {
+      const distance = Math.sqrt(distanceSq);
       const speed = Phaser.Math.Clamp(800 / Math.max(distance, 20), 100, 500);
 
       this.scene.physics.moveToObject(this, this.player, speed);
     } else {
-      this.setVelocity(0, 0);
+      if (this.body.velocity.x !== 0 || this.body.velocity.y !== 0) {
+        this.setVelocity(0, 0);
+      }
     }
   }
 
   handleCollision() {
     if (!this.player) return;
 
-    const scene = this.scene;
     this.scene.physics.add.overlap(
       this,
       this.player,
       () => {
-        if (this.scene.portalService?.state.context.isGameplayPaused) return;
+        if (
+          !this.active ||
+          !this.scene ||
+          this.scene.portalService?.state.context.isGameplayPaused
+        )
+          return;
 
         this.scene.sound.play("collect_xp", { volume: 0.2 });
+
+        this.scene.portalService?.send("COLLECT_ITEM", {
+          itemKey: this.dropItem!,
+        });
+
         this.destroy();
-        scene.portalService?.send("COLLECT_ITEM", { itemKey: this.dropItem! });
       },
       undefined,
       this,
