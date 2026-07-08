@@ -73,10 +73,10 @@ export const UNLIMITED_ATTEMPTS_SFL = 200; // If this value is less than 0, the 
 export const UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL = 150;
 export const FREE_DAILY_ATTEMPTS = 1;
 export const RESTOCK_ATTEMPTS = [
-  { attempts: 1, sfl: 3 },
-  { attempts: 3, sfl: 7 },
-  { attempts: 7, sfl: 14 },
-  { attempts: 20, sfl: 30 },
+  { attempts: 1, sfl: 5 },
+  { attempts: 3, sfl: 15 },
+  { attempts: 7, sfl: 30 },
+  { attempts: 20, sfl: 75 },
 ];
 
 export const UNLIMITED_ATTEMPTS_DISCOUNT_AURAS: BumpkinAura[] = [
