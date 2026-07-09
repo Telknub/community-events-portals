@@ -10,6 +10,9 @@ import { isTouchDevice } from "features/world/lib/device";
 import moveControls1 from "public/world/minigame/base/move_controls_1.png";
 import moveControls2 from "public/world/minigame/base/move_controls_2.png";
 import joystick from "public/world/minigame/base/joystick.png";
+import spaceKey from "public/world/minigame/base/space_key.png";
+import vKey from "public/world/minigame/base/v_key.png";
+import bumpkinAvatar from "public/world/portal/images/bumpkin_avatar.png";
 import { PORTAL_NAME } from "../../constants";
 import { Label } from "components/ui/Label";
 // import useToolButton from "public/world/use_tool_button.webp";
@@ -23,6 +26,7 @@ type Props = {
 
 export const Controls: React.FC<Props> = ({ onBack }) => {
   const { t } = useAppTranslation();
+  const isTouch = isTouchDevice();
 
   const button = useSound("button");
 
@@ -70,7 +74,7 @@ export const Controls: React.FC<Props> = ({ onBack }) => {
           <OuterPanel className="w-full flex flex-col items-center gap-2">
             <Label type="default">{t(`${PORTAL_NAME}.controls.move`)}</Label>
             <div className="h-100 flex-1 flex flex-col items-center justify-center">
-              {isTouchDevice() ? (
+              {isTouch ? (
                 <img src={joystick} className="h-20 my-3" />
               ) : (
                 <>
@@ -80,30 +84,19 @@ export const Controls: React.FC<Props> = ({ onBack }) => {
               )}
             </div>
           </OuterPanel>
-          {/* <OuterPanel className="w-full flex flex-col items-center">
-            <Label type="default">{t(`${PORTAL_NAME}.controls.useTool`)}</Label>
+          <OuterPanel className="w-full flex flex-col items-center gap-2">
+            <Label type="default">{t(`${PORTAL_NAME}.controls.profile`)}</Label>
             <div className="h-100 flex-1 flex flex-col items-center justify-center">
-              {isTouchDevice() ? (
-                <img src={useToolButton} className="h-10" />
+              {isTouch ? (
+                <img src={bumpkinAvatar} className="h-20 my-3" />
               ) : (
-                <>
-                  <img src={spaceKey} className="h-10" />
-                  <img src={eKey} className="h-10" />
+                <div className="flex flex-col items-center gap-2">
                   <img src={vKey} className="h-10" />
-                </>
+                  <img src={spaceKey} className="h-10" />
+                </div>
               )}
             </div>
-            <Label type="default">
-              {t(`${PORTAL_NAME}.controls.changeTool`)}
-            </Label>
-            <div className="h-100 flex-1 flex flex-col items-center justify-center">
-              {isTouchDevice() ? (
-                <img src={changeToolButton} className="h-10" />
-              ) : (
-                <img src={qKey} className="h-10" />
-              )}
-            </div>
-          </OuterPanel> */}
+          </OuterPanel>
         </div>
       </div>
     </div>

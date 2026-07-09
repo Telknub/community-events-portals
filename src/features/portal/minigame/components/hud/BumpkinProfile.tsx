@@ -33,6 +33,7 @@ import {
   WEARABLES_TAB_ITEMS,
 } from "../../constants";
 import { Label } from "components/ui/Label";
+import { isTouchDevice } from "features/world/lib/device";
 
 const DIMENSIONS = {
   scaled: 160,
@@ -144,6 +145,19 @@ const _profileState = (state: PortalMachineState) => ({
   nextLevelXP: state.context.nextLevelXP,
   xpPoints: state.context.xpPoints,
 });
+
+const isEditableTarget = (target: EventTarget | null) => {
+  if (!(target instanceof HTMLElement)) return false;
+
+  const tagName = target.tagName.toLowerCase();
+
+  return (
+    target.isContentEditable ||
+    tagName === "input" ||
+    tagName === "textarea" ||
+    tagName === "select"
+  );
+};
 
 const BumpkinAvatar: React.FC<{
   bumpkinParts?: BumpkinParts;
@@ -423,6 +437,35 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
     setProfilePanelTab(mode === "preGame" ? "wearables" : "weapons");
     setInternalShowModal(true);
   };
+
+  useEffect(() => {
+    if (mode !== "hud" || isControlled || isTouchDevice()) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isProfileShortcut = event.code === "KeyV" || event.code === "Space";
+
+      if (
+        !isProfileShortcut ||
+        event.repeat ||
+        isEditableTarget(event.target)
+      ) {
+        return;
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault();
+      }
+
+      setProfilePanelTab("weapons");
+      setInternalShowModal((show) => !show);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isControlled, mode]);
 
   useEffect(() => {
     portalService.send("SET_GAMEPLAY_PAUSED", { isPaused: isModalOpen });

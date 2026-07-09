@@ -84,6 +84,7 @@ export const WEARABLES_TAB_ITEMS: BumpkinItem[] = [
   "Faulty Barrier Background",
   "Cardboard Wings",
   "Glitch Aura",
+  "Pumpkin Head",
 ];
 
 export const NEW_WEARABLES = new Set<BumpkinItem>([
@@ -349,6 +350,11 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     target: { type: "weaponStat", weapon: "pumpkin", stat: "damage" },
     value: 1,
     descriptionKey: "wearables.buff.404ChicTop",
+  },
+  "Pumpkin Head": {
+    target: { type: "weaponStat", weapon: "pumpkin", stat: "cooldownMs" },
+    value: -100,
+    descriptionKey: "wearables.buff.pumpkinHead",
   },
   "Neon Noiz Pants": {
     target: { type: "weaponStat", weapon: "banana", stat: "damage" },

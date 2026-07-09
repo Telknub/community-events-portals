@@ -5,7 +5,7 @@ import { Mission } from "./Mission";
 import { PANEL_NPC_WEARABLES, PORTAL_NAME } from "../../constants";
 import { Guide } from "./Guide";
 
-import misionIcon from "public/world/page.png";
+import misionIcon from "public/world/portal/images/banana_icon.webp";
 import guideIcon from "public/world/page.png";
 import leaderboardIcon from "assets/icons/trophy.png";
 import { Leaderboard } from "./Leaderboard";

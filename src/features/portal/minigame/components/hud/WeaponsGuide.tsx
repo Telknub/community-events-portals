@@ -20,7 +20,7 @@ import type { WeaponId, WeaponLevel, WeaponRuntimeStats } from "../../Types";
 import { formatStatValue, getUpgradeableWeaponStats } from "./weaponStats";
 import infoIcon from "assets/icons/info.webp";
 
-const PANEL_CONTENT_HEIGHT = "h-[385px]";
+const PANEL_CONTENT_HEIGHT = "h-[430px]";
 const GUIDE_LEVELS: WeaponLevel[] = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const WeaponsGuide: React.FC = () => {
