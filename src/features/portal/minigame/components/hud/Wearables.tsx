@@ -157,14 +157,14 @@ export const WearablesTab: React.FC<{
   );
 
   return (
-    <div className={`flex gap-2 ${PANEL_CONTENT_HEIGHT}`}>
-      <OuterPanel className="flex h-full flex-col p-2 w-[61%]">
+    <div className={`flex gap-1 sm:gap-2 ${PANEL_CONTENT_HEIGHT}`}>
+      <OuterPanel className="flex h-full w-[60%] flex-col p-2 sm:w-[61%]">
         <div className="mb-2 flex items-center">
           <Label type="default">{t(`equip.${selectedBumpkinPart}`)}</Label>
         </div>
 
         <div className="flex h-full overflow-y-auto scrollable">
-          <div className="grid grid-cols-5 gap-1 h-fit">
+          <div className="grid h-fit grid-cols-3 gap-0 sm:gap-1 [@media(max-width:360px)]:grid-cols-1 sm:grid-cols-5">
             {wearablesForPart.map((name) => {
               const isEquipped = equipped?.[BUMPKIN_ITEM_PART[name]] === name;
               const isAvailable = isWearableAvailable(name);
@@ -198,8 +198,8 @@ export const WearablesTab: React.FC<{
         </div>
       </OuterPanel>
 
-      <OuterPanel className="flex h-full flex-col items-center p-2 text-center flex-1">
-        <Label type="default" className="text-sm w-full">
+      <OuterPanel className="flex h-full flex-1 flex-col items-center p-2 text-center sm:flex-1">
+        <Label type="default" className="sm:text-sm w-full">
           {effectiveSelectedWearable}
         </Label>
         <div className="flex w-24 h-24 items-center justify-center rounded-md overflow-hidden mt-2">
@@ -210,7 +210,7 @@ export const WearablesTab: React.FC<{
           />
         </div>
         {isSelectedWearableNew && (
-          <Label type="info" className="mt-2">
+          <Label type="info" className="mt-2 sm:text-xs">
             {t("wearables.new")}
           </Label>
         )}
@@ -218,7 +218,7 @@ export const WearablesTab: React.FC<{
           <Label
             type="formula"
             icon={selectedWearableBuffIcon}
-            className="mt-2 max-w-full text-center leading-tight"
+            className="mt-2 sm:text-xs max-w-full text-center leading-tight"
           >
             {getWearableBuffDescription(selectedWearableBuff)}
           </Label>

@@ -287,7 +287,7 @@ export const saveStoredLoadouts = ({
 };
 
 export const Profile: React.FC<{
-  onClose: () => void;
+  onClose?: () => void;
   currentTab: WearableLoadoutSlot;
   setCurrentTab: React.Dispatch<React.SetStateAction<WearableLoadoutSlot>>;
   username?: string;
@@ -413,7 +413,7 @@ export const Profile: React.FC<{
   );
 
   return (
-    <div className="min-w-[429px]">
+    <div className="sm:min-w-[429px]">
       <CloseButtonPanel
         tabs={LOADOUT_SLOTS.map((slot) => ({
           id: slot,
@@ -431,10 +431,10 @@ export const Profile: React.FC<{
               equipped={equipped}
               selected={selectedBumpkinPart}
               onSelect={onSelectBumpkinPart}
-              gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
+              gridStyling="grid grid-cols-2 gap-1 sm:gap-1 max-w-[110px] h-fit"
             />
             <div className="flex flex-col items-center gap-1">
-              <div className="relative h-[165px] w-[165px] overflow-hidden">
+              <div className="relative h-[125px] w-[125px] overflow-hidden sm:h-[165px] sm:w-[165px]">
                 <InnerPanel style={{ padding: "0px" }}>
                   <DynamicNFT
                     showBackground
@@ -442,14 +442,14 @@ export const Profile: React.FC<{
                     key={JSON.stringify(equipped)}
                   />
                 </InnerPanel>
-                <div className="absolute w-8 h-8 bottom-4 right-4">
+                <div className="absolute bottom-4 right-4 h-8 w-8">
                   <NPCIcon parts={equipped} key={JSON.stringify(equipped)} />
                 </div>
                 {username && (
                   <div className="absolute left-2 top-2">
                     <Label>
                       <span
-                        className="block max-w-[136px] overflow-hidden text-ellipsis whitespace-nowrap"
+                        className="block max-w-[96px] overflow-hidden text-ellipsis whitespace-nowrap sm:max-w-[136px]"
                         title={username}
                       >
                         {username}
@@ -467,7 +467,7 @@ export const Profile: React.FC<{
               equipped={equipped}
               selected={selectedBumpkinPart}
               onSelect={onSelectBumpkinPart}
-              gridStyling="grid grid-cols-2 gap-2 max-w-[110px] h-fit"
+              gridStyling="grid grid-cols-2 gap-1 max-w-[110px] h-fit"
             />
           </div>
         </div>

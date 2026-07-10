@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "@xstate/react";
 
 import { SUNNYSIDE } from "assets/sunnyside";
@@ -34,6 +34,8 @@ import {
 } from "../../constants";
 import { Label } from "components/ui/Label";
 import { isTouchDevice } from "features/world/lib/device";
+import { Button } from "components/ui/Button";
+import { useSound } from "lib/utils/hooks/useSound";
 
 const DIMENSIONS = {
   scaled: 160,
@@ -245,6 +247,7 @@ const StatusBar: React.FC<{
 };
 
 type BumpkinProfileMode = "preGame" | "hud";
+type MobileProfilePanel = "profile" | "details";
 
 interface BumpkinProfileProps {
   mode?: BumpkinProfileMode;
@@ -267,6 +270,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
 }) => {
   const { portalService } = useContext(PortalContext);
   const { t } = useAppTranslation();
+  const buttonSound = useSound("button");
   const [internalShowModal, setInternalShowModal] = useState(false);
   const [currentTab, setCurrentTab] = useState<WearableLoadoutSlot>("I");
   const [profilePanelTab, setProfilePanelTab] = useState<ProfilePanelTab>(
@@ -277,6 +281,8 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   const [equipped, setEquipped] = useState<BumpkinParts>();
   const [selectedBumpkinPart, setSelectedBumpkinPart] =
     useState<BumpkinPart>("background");
+  const [mobilePanel, setMobilePanel] = useState<MobileProfilePanel>("profile");
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const {
     farmId,
@@ -421,6 +427,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   const bumpkinParts = activeWearables ?? bumpkin?.equipped;
   const isControlled = showModal !== undefined;
   const isModalOpen = showModal ?? internalShowModal;
+  const isTouch = isTouchDevice();
   const profilePanelTabs: ProfilePanelTab[] =
     mode === "preGame" ? ["wearables", "guide"] : ["weapons", "guide"];
 
@@ -435,7 +442,65 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
 
   const openModal = () => {
     setProfilePanelTab(mode === "preGame" ? "wearables" : "weapons");
+    setMobilePanel("profile");
     setInternalShowModal(true);
+  };
+
+  const openMobileProfile = () => {
+    setMobilePanel("profile");
+  };
+
+  const openMobileDetails = () => {
+    setMobilePanel("details");
+  };
+
+  const handleSelectBumpkinPart = (part: BumpkinPart) => {
+    setSelectedBumpkinPart(part);
+
+    const canShowWearables = profilePanelTabs.includes("wearables");
+    if (!canShowWearables) return;
+
+    setProfilePanelTab("wearables");
+
+    if (isTouch) {
+      setMobilePanel("details");
+    }
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    touchStart.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStart.current;
+    const touch = event.changedTouches[0];
+    touchStart.current = null;
+
+    if (!start || !touch) return;
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    const horizontalDistance = Math.abs(deltaX);
+
+    if (horizontalDistance < 50 || horizontalDistance <= Math.abs(deltaY)) {
+      return;
+    }
+
+    if (mobilePanel === "profile" && deltaX < 0) {
+      buttonSound.play();
+      openMobileDetails();
+    }
+
+    if (mobilePanel === "details" && deltaX > 0) {
+      buttonSound.play();
+      openMobileProfile();
+    }
   };
 
   useEffect(() => {
@@ -470,6 +535,44 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   useEffect(() => {
     portalService.send("SET_GAMEPLAY_PAUSED", { isPaused: isModalOpen });
   }, [isModalOpen, portalService]);
+
+  useEffect(() => {
+    if (!isModalOpen || !isTouch) return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMobilePanel("profile");
+  }, [isModalOpen, isTouch]);
+
+  const profile = equipped && loadouts && (
+    <Profile
+      onClose={isTouch ? closeModal : undefined}
+      currentTab={currentTab}
+      setCurrentTab={setCurrentTab}
+      username={username}
+      equipped={equipped}
+      selectedBumpkinPart={selectedBumpkinPart}
+      onSelectBumpkinPart={handleSelectBumpkinPart}
+      lives={lives}
+      maxLives={maxLives}
+      farmId={farmId}
+      onStart={mode === "preGame" ? onStart : undefined}
+      onStartTraining={mode === "preGame" ? onStartTraining : undefined}
+      onBack={mode === "preGame" ? (onBack ?? closeModal) : undefined}
+    />
+  );
+
+  const profilePanel = (
+    <ProfilePanel
+      currentTab={profilePanelTab}
+      setCurrentTab={setProfilePanelTab}
+      tabs={profilePanelTabs}
+      selectedBumpkinPart={selectedBumpkinPart}
+      equipped={equipped}
+      availableWearableCounts={availableWearableCounts}
+      onEquipWearable={equipWearable}
+      onClose={closeModal}
+    />
+  );
 
   return (
     <>
@@ -521,40 +624,48 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
       )}
 
       <Modal show={isModalOpen} onHide={closeModal} size="lg">
-        <div className="flex max-h-[90vh]">
-          {equipped && loadouts && (
-            <Profile
-              onClose={closeModal}
-              currentTab={currentTab}
-              setCurrentTab={setCurrentTab}
-              username={username}
-              equipped={equipped}
-              selectedBumpkinPart={selectedBumpkinPart}
-              onSelectBumpkinPart={(part) => {
-                setSelectedBumpkinPart(part);
-                if (mode === "preGame") {
-                  setProfilePanelTab("wearables");
-                }
-              }}
-              lives={lives}
-              maxLives={maxLives}
-              farmId={farmId}
-              onStart={mode === "preGame" ? onStart : undefined}
-              onStartTraining={mode === "preGame" ? onStartTraining : undefined}
-              onBack={mode === "preGame" ? (onBack ?? closeModal) : undefined}
-            />
-          )}
-          <ProfilePanel
-            currentTab={profilePanelTab}
-            setCurrentTab={setProfilePanelTab}
-            tabs={profilePanelTabs}
-            selectedBumpkinPart={selectedBumpkinPart}
-            equipped={equipped}
-            availableWearableCounts={availableWearableCounts}
-            onEquipWearable={equipWearable}
-            onClose={closeModal}
-          />
-        </div>
+        {isTouch ? (
+          <div
+            className="relative flex max-h-[90vh] justify-center"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {mobilePanel === "profile" ? (
+              <div className="relative">
+                {profile}
+                {profile && (
+                  <Button
+                    className="absolute top-1/2 h-8 w-8 -translate-y-1/5 z-30 -right-2"
+                    onClick={openMobileDetails}
+                  >
+                    <img
+                      src={SUNNYSIDE.icons.arrow_right}
+                      className="absolute -top-1/3 h-4 mt-1 object-contain pixelated"
+                    />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                <Button
+                  className="absolute top-1/2 h-8 w-8 -translate-y-1/5 z-30 -left-2"
+                  onClick={openMobileProfile}
+                >
+                  <img
+                    src={SUNNYSIDE.icons.arrow_left}
+                    className="absolute -top-1/3 h-4 mt-1 object-contain pixelated"
+                  />
+                </Button>
+                {profilePanel}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex max-h-[90vh]">
+            {profile}
+            {profilePanel}
+          </div>
+        )}
       </Modal>
     </>
   );

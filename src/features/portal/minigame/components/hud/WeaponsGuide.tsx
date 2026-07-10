@@ -39,7 +39,7 @@ export const WeaponsGuide: React.FC = () => {
   }, [selectedLevel, selectedWeapon]);
 
   return (
-    <div className={`relative flex ${PANEL_CONTENT_HEIGHT}`}>
+    <div className={`relative flex ${PANEL_CONTENT_HEIGHT} pl-4 sm:pl-0`}>
       <div className="flex h-full w-12 flex-col items-center justify-center">
         <div className="flex max-h-full flex-col gap-1 overflow-y-auto scrollable">
           {WEAPON_IDS.map((weapon) => (
@@ -62,14 +62,14 @@ export const WeaponsGuide: React.FC = () => {
         </div>
       </div>
 
-      <OuterPanel className="flex h-full flex-1 gap-3 p-2">
-        <div className="flex h-full w-[38%] flex-col items-center gap-10">
+      <OuterPanel className="flex h-full flex-1 flex-col gap-2 overflow-y-auto p-2 sm:flex-row sm:gap-3 sm:overflow-visible scrollable">
+        <div className="flex w-full flex-col items-center gap-2 sm:h-full sm:w-[38%] sm:gap-10">
           <Label className="w-full text-sm">
             {t(WEAPON_NAMES[selectedWeapon])}
           </Label>
           <div className="relative flex items-center justify-center">
             <div
-              className="absolute bottom-4 h-12 w-28 rounded-full opacity-70 blur-md"
+              className="absolute bottom-3 h-8 w-20 rounded-full opacity-70 blur-md sm:bottom-4 sm:h-12 sm:w-28"
               style={{
                 background:
                   "radial-gradient(circle, #fff2a8 0%, #f8c65a 38%, transparent 72%)",
@@ -78,17 +78,17 @@ export const WeaponsGuide: React.FC = () => {
             <img
               src={WEAPON_ICONS[selectedWeapon]}
               alt={t(WEAPON_NAMES[selectedWeapon])}
-              className="relative z-10 h-28 w-28 object-contain pixelated drop-shadow-[0_0_8px_rgba(255,235,160,0.85)]"
+              className="relative z-10 h-20 w-20 object-contain pixelated drop-shadow-[0_0_8px_rgba(255,235,160,0.85)] sm:h-28 sm:w-28"
             />
           </div>
-          <InnerPanel className="flex items-center flex-1">
+          <InnerPanel className="flex w-full items-center sm:flex-1">
             <p className="px-1 text-center text-xs leading-tight">
               {t(WEAPON_DESCRIPTIONS[selectedWeapon])}
             </p>
           </InnerPanel>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center">
+        <div className="flex min-w-0 flex-1 flex-col justify-start sm:justify-center">
           <div className="grid grid-cols-4 gap-1">
             {GUIDE_LEVELS.map((level) => (
               <ButtonPanel

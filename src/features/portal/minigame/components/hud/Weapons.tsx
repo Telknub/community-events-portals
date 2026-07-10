@@ -128,8 +128,8 @@ export const WeaponsTab: React.FC = () => {
   };
 
   return (
-    <div className={`flex gap-2 ${PANEL_CONTENT_HEIGHT}`}>
-      <OuterPanel className="flex h-full flex-col p-2 w-[61%]">
+    <div className={`flex gap-1 sm:gap-2 ${PANEL_CONTENT_HEIGHT}`}>
+      <OuterPanel className="flex h-full w-fit flex-col p-2 sm:w-[61%]">
         <div className="mb-2 flex items-center">
           <Label type={xpPoints > 0 ? "warning" : "default"}>
             {t(`${PORTAL_NAME}.xpPoints`, { points: xpPoints })}
@@ -137,7 +137,7 @@ export const WeaponsTab: React.FC = () => {
         </div>
 
         <div className="h-full overflow-y-auto scrollable">
-          <div className="grid grid-cols-3 gap-2 h-fit pt-3">
+          <div className="grid h-fit grid-cols-1 gap-1 pt-3 sm:grid-cols-3 sm:gap-2">
             {WEAPON_IDS.map((weapon) => {
               const level = weaponLevels[weapon];
               const isUnlocked = level > 0;
@@ -154,7 +154,7 @@ export const WeaponsTab: React.FC = () => {
                   selected={weapon === selectedWeapon}
                   disabled={!isUnlocked}
                   onClick={() => setInspectedWeapon(weapon)}
-                  className="min-h-[82px] mb-2"
+                  className="mb-2 min-h-[82px] w-20 sm:w-auto"
                 />
               );
             })}
