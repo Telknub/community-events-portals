@@ -300,6 +300,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
 
   const bumpkinEquipment = gameState?.bumpkin?.equipped as
     BumpkinParts | undefined;
+  const bumpkinEquipmentKey = JSON.stringify(bumpkinEquipment);
 
   useEffect(() => {
     if (!bumpkinEquipment || !gameState) return;
@@ -329,7 +330,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
       wearables: loadouts[currentTab],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [farmId, !!bumpkinEquipment, !!gameState]);
+  }, [farmId, bumpkinEquipmentKey]);
 
   useEffect(() => {
     if (!loadouts) return;

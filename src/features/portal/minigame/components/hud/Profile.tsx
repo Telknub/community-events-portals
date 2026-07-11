@@ -31,8 +31,10 @@ import {
   getPlayerStatValue,
   getPlayerStatValueIncrease,
   PLAYER_STAT_IDS,
+  WEARABLE_BUFFS,
 } from "../../constants";
 import type { PlayerStatId } from "../../Types";
+import { reconcileLoadoutWithDefaultEquipment } from "./loadoutUtils";
 
 export type WearableLoadoutSlot = "I" | "II" | "III";
 export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;
@@ -43,6 +45,9 @@ export type StoredWearableLoadouts = {
 };
 
 export const LOADOUT_SLOTS: WearableLoadoutSlot[] = ["I", "II", "III"];
+
+const isMinigameBuffWearable = (wearable: BumpkinItem) =>
+  !!WEARABLE_BUFFS[wearable];
 
 export const REQUIRED: BumpkinPart[] = [
   "background",
@@ -242,13 +247,17 @@ export const loadStoredLoadouts = ({
 
     const loadouts = LOADOUT_SLOTS.reduce((loadouts, slot) => {
       const stored = storedLoadouts[slot];
+      const sanitized = sanitizeEquipment({
+        equipment: stored,
+        fallback,
+        allowedItems,
+      });
 
       return {
         ...loadouts,
-        [slot]: sanitizeEquipment({
-          equipment: stored,
-          fallback,
-          allowedItems,
+        [slot]: reconcileLoadoutWithDefaultEquipment({
+          loadout: sanitized,
+          defaultEquipment: fallback,
         }),
       };
     }, defaults);
@@ -431,6 +440,7 @@ export const Profile: React.FC<{
               equipped={equipped}
               selected={selectedBumpkinPart}
               onSelect={onSelectBumpkinPart}
+              isBuffWearable={isMinigameBuffWearable}
               gridStyling="grid grid-cols-2 gap-1 sm:gap-1 max-w-[110px] h-fit"
             />
             <div className="flex flex-col items-center gap-1">
@@ -467,6 +477,7 @@ export const Profile: React.FC<{
               equipped={equipped}
               selected={selectedBumpkinPart}
               onSelect={onSelectBumpkinPart}
+              isBuffWearable={isMinigameBuffWearable}
               gridStyling="grid grid-cols-2 gap-1 max-w-[110px] h-fit"
             />
           </div>

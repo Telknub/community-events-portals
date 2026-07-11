@@ -6,7 +6,7 @@ import { SquareIcon } from "components/ui/SquareIcon";
 import { SUNNYSIDE } from "assets/sunnyside";
 import lightning from "assets/icons/lightning.png";
 
-import type { BumpkinPart } from "features/game/types/bumpkin";
+import type { BumpkinItem, BumpkinPart } from "features/game/types/bumpkin";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import {
   BUMPKIN_ITEM_BUFF_LABELS,
@@ -26,6 +26,7 @@ interface Props {
   selected: string;
   onSelect: (bumpkinPart: BumpkinPart) => void;
   gridStyling?: string;
+  isBuffWearable?: (wearable: BumpkinItem) => boolean;
 }
 
 export const BumpkinPartGroup: React.FC<Props> = ({
@@ -34,6 +35,7 @@ export const BumpkinPartGroup: React.FC<Props> = ({
   selected,
   onSelect,
   gridStyling,
+  isBuffWearable,
 }) => {
   return (
     <div
@@ -44,14 +46,17 @@ export const BumpkinPartGroup: React.FC<Props> = ({
       {bumpkinParts.map((name) => {
         const bumpkinItem = equipped[name];
         const boostLabel = bumpkinItem
-          ? ((BUMPKIN_ITEM_BUFF_LABELS[bumpkinItem] &&
-              !SPECIAL_ITEM_LABELS[bumpkinItem]) ??
-            "")
+          ? isBuffWearable
+            ? isBuffWearable(bumpkinItem)
+            : ((BUMPKIN_ITEM_BUFF_LABELS[bumpkinItem] &&
+                !SPECIAL_ITEM_LABELS[bumpkinItem]) ??
+              "")
           : "";
 
-        const specialItem = bumpkinItem
-          ? (SPECIAL_ITEM_LABELS[bumpkinItem] ?? "")
-          : "";
+        const specialItem =
+          bumpkinItem && !isBuffWearable
+            ? (SPECIAL_ITEM_LABELS[bumpkinItem] ?? "")
+            : "";
 
         const buffLabel = boostLabel || specialItem;
         return (
