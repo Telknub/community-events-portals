@@ -26,7 +26,7 @@ import {
 } from "./weaponStats";
 import powerupIcon from "assets/icons/level_up.png";
 
-const PANEL_CONTENT_HEIGHT = "h-[430px]";
+const PANEL_CONTENT_HEIGHT = "h-[442px]";
 
 const _weaponPanelState = (state: PortalMachineState) => ({
   weaponLevels: state.context.weaponLevels,

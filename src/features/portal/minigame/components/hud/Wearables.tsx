@@ -19,6 +19,7 @@ import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import {
   getWearableBuffDescriptionKey,
   NEW_WEARABLES,
+  NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
   PASSIVE_ABILITY_ITEM,
   PORTAL_NAME,
   WEAPON_ICONS,
@@ -34,7 +35,7 @@ import speedIcon from "public/world/portal/images/lightning.png";
 import swordIcon from "public/world/portal/images/sword_icon.png";
 import { formatStatValue } from "./weaponStats";
 
-const PANEL_CONTENT_HEIGHT = "h-[400px]";
+const PANEL_CONTENT_HEIGHT = "h-[442px]";
 
 const STAT_BUFF_ICONS: Record<PlayerStatId, string> = {
   health: SUNNYSIDE.icons.heart,
@@ -158,45 +159,53 @@ export const WearablesTab: React.FC<{
 
   return (
     <div className={`flex gap-1 sm:gap-2 ${PANEL_CONTENT_HEIGHT}`}>
-      <OuterPanel className="flex h-full w-[60%] flex-col p-2 sm:w-[61%]">
-        <div className="mb-2 flex items-center">
-          <Label type="default">{t(`equip.${selectedBumpkinPart}`)}</Label>
-        </div>
-
-        <div className="flex h-full overflow-y-auto scrollable">
-          <div className="grid h-fit grid-cols-3 gap-0 sm:gap-1 [@media(max-width:360px)]:grid-cols-1 sm:grid-cols-5">
-            {wearablesForPart.map((name) => {
-              const isEquipped = equipped?.[BUMPKIN_ITEM_PART[name]] === name;
-              const isAvailable = isWearableAvailable(name);
-              const amount = Math.min(availableWearableCounts[name] ?? 0, 3);
-
-              return (
-                <Box
-                  key={name}
-                  isSelected={effectiveSelectedWearable === name}
-                  onClick={() => setSelectedWearable(name)}
-                  count={new Decimal(amount)}
-                  countLabelType="default"
-                >
-                  <>
-                    {isEquipped ? (
-                      <img
-                        src={SUNNYSIDE.icons.confirm}
-                        className="absolute -left-2 -top-2 z-10 h-5"
-                      />
-                    ) : null}
-                    <SquareIcon
-                      icon={getWearableImage(name)}
-                      width={INNER_CANVAS_WIDTH}
-                      className={classNames({ grayscale: !isAvailable })}
-                    />
-                  </>
-                </Box>
-              );
-            })}
+      <div className="flex h-full w-[60%] flex-col gap-2 sm:w-[61%]">
+        <OuterPanel className="h-full p-2">
+          <div className="mb-2 flex items-center">
+            <Label type="default">{t(`equip.${selectedBumpkinPart}`)}</Label>
           </div>
-        </div>
-      </OuterPanel>
+
+          <div className="flex h-full overflow-y-auto scrollable">
+            <div className="grid h-fit grid-cols-3 gap-0 sm:gap-1 [@media(max-width:360px)]:grid-cols-1 sm:grid-cols-5">
+              {wearablesForPart.map((name) => {
+                const isEquipped = equipped?.[BUMPKIN_ITEM_PART[name]] === name;
+                const isAvailable = isWearableAvailable(name);
+                const amount = Math.min(availableWearableCounts[name] ?? 0, 3);
+
+                return (
+                  <Box
+                    key={name}
+                    isSelected={effectiveSelectedWearable === name}
+                    onClick={() => setSelectedWearable(name)}
+                    count={new Decimal(amount)}
+                    countLabelType="default"
+                  >
+                    <>
+                      {isEquipped ? (
+                        <img
+                          src={SUNNYSIDE.icons.confirm}
+                          className="absolute -left-2 -top-2 z-10 h-5"
+                        />
+                      ) : null}
+                      <SquareIcon
+                        icon={getWearableImage(name)}
+                        width={INNER_CANVAS_WIDTH}
+                        className={classNames({ grayscale: !isAvailable })}
+                      />
+                    </>
+                  </Box>
+                );
+              })}
+            </div>
+          </div>
+        </OuterPanel>
+
+        <Label type="info" className="w-full">
+          {t(`${PORTAL_NAME}.noWearableBuffScoreBonus`, {
+            multiplier: NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
+          })}
+        </Label>
+      </div>
 
       <OuterPanel className="flex h-full flex-1 flex-col items-center p-2 text-center sm:flex-1">
         <Label type="default" className="sm:text-sm w-full">

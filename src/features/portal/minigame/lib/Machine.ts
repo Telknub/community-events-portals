@@ -20,6 +20,8 @@ import {
   PLAYER_INITIAL_LEVEL,
   shouldGrantXPPoint,
   ENEMY_BALANCE_STATS,
+  getActiveWearableBuffs,
+  NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
 } from "../constants";
 import type { GameState } from "features/game/types/game";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
@@ -46,6 +48,21 @@ const getJWT = () => {
 
 const getRunScore = (context: Context) => context.collected;
 
+const roundToTwoDecimals = (value: number) => Math.round(value * 100) / 100;
+
+const getFinalRunScore = (context: Context) => {
+  const baseScore = getRunScore(context);
+  const bonusApplied = !context.usedWearableBuff;
+
+  return {
+    baseScore,
+    bonusApplied,
+    score: bonusApplied
+      ? roundToTwoDecimals(baseScore * NO_WEARABLE_BUFF_SCORE_MULTIPLIER)
+      : baseScore,
+  };
+};
+
 const getMaxLives = (
   playerStatLevels: PlayerStatLevels,
   activeWearables?: BumpkinParts,
@@ -59,6 +76,9 @@ export interface Context {
   score: number;
   collected: number;
   lastScore: number;
+  lastBaseScore: number;
+  lastScoreBonusApplied: boolean;
+  usedWearableBuff: boolean;
   endAt: number;
   attemptsLeft: number;
   lives: number;
@@ -340,6 +360,9 @@ const resetGameTransition = {
 
       return {
         score: 0,
+        lastBaseScore: 0,
+        lastScoreBonusApplied: false,
+        usedWearableBuff: false,
         lives: maxLives,
         maxLives,
         endAt: 0,
@@ -364,6 +387,9 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
 
     score: 0,
     lastScore: 0,
+    lastBaseScore: 0,
+    lastScoreBonusApplied: false,
+    usedWearableBuff: false,
     lives: GAME_LIVES,
     maxLives: GAME_LIVES,
     attemptsLeft: 0,
@@ -384,7 +410,10 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     },
     SET_ACTIVE_WEARABLES: {
       actions: assign(
-        (context: Context, event: SetActiveWearablesEvent): Partial<Context> => {
+        (
+          context: Context,
+          event: SetActiveWearablesEvent,
+        ): Partial<Context> => {
           const maxLives = getMaxLives(
             context.playerStatLevels,
             event.wearables,
@@ -393,6 +422,9 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
 
           return {
             activeWearables: event.wearables,
+            usedWearableBuff:
+              context.usedWearableBuff ||
+              getActiveWearableBuffs(event.wearables).length > 0,
             maxLives,
             lives:
               maxLivesDelta > 0
@@ -629,6 +661,10 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             return {
               endAt: 0,
               score: 0,
+              lastBaseScore: 0,
+              lastScoreBonusApplied: false,
+              usedWearableBuff:
+                getActiveWearableBuffs(context.activeWearables).length > 0,
               lives: maxLives,
               maxLives,
               ...progression,
@@ -744,32 +780,38 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           }),
         },
         END_GAME_EARLY: {
-          actions: assign({
-            endAt: () => Date.now(),
-            lastScore: (context: Context) => {
-              if (context.isTraining) return context.lastScore;
-              return getRunScore(context);
-            },
-            state: (context: Context) => {
-              if (context.isTraining) return context.state;
-              const score = getRunScore(context);
+          actions: assign((context: Context): Partial<Context> => {
+            const { baseScore, bonusApplied, score } =
+              getFinalRunScore(context);
 
-              submitScore({ score });
-              return submitMinigameScore({
-                state: context.state as GameState,
-                action: {
-                  type: "minigame.scoreSubmitted",
-                  score: Math.round(score),
-                  id: PORTAL_NAME,
-                },
-              });
-            },
+            return {
+              endAt: Date.now(),
+              collected: score,
+              lastBaseScore: baseScore,
+              lastScoreBonusApplied: bonusApplied,
+              lastScore: context.isTraining ? context.lastScore : score,
+              state: (() => {
+                if (context.isTraining) return context.state;
+
+                submitScore({ score });
+                return submitMinigameScore({
+                  state: context.state as GameState,
+                  action: {
+                    type: "minigame.scoreSubmitted",
+                    score,
+                    id: PORTAL_NAME,
+                  },
+                });
+              })(),
+            };
           }),
           target: "introduction",
         },
         GAME_OVER: {
           target: "gameOver",
           actions: assign((context: Context): Partial<Context> => {
+            const { baseScore, bonusApplied, score } =
+              getFinalRunScore(context);
             const progression = getInitialProgression();
             const maxLives = getMaxLives(
               progression.playerStatLevels,
@@ -781,21 +823,20 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               lives: maxLives,
               maxLives,
               ...progression,
-              collected: getRunScore(context),
+              collected: score,
+              lastBaseScore: baseScore,
+              lastScoreBonusApplied: bonusApplied,
               validations: structuredClone(VALIDATIONS),
-              lastScore: context.isTraining
-                ? context.lastScore
-                : getRunScore(context),
+              lastScore: context.isTraining ? context.lastScore : score,
               state: (() => {
                 if (context.isTraining) return context.state;
-                const score = getRunScore(context);
 
                 submitScore({ score });
                 return submitMinigameScore({
                   state: context.state as GameState,
                   action: {
                     type: "minigame.scoreSubmitted",
-                    score: Math.round(score),
+                    score,
                     id: PORTAL_NAME,
                   },
                 });

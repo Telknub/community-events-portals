@@ -23,6 +23,8 @@ export type WearableBuff = {
   descriptionKey: string;
 };
 
+export const NO_WEARABLE_BUFF_SCORE_MULTIPLIER = 1.1;
+
 export const WEARABLES_TAB_ITEMS: BumpkinItem[] = [
   "Carrot Pitchfork",
   "Handheld Bunny",

@@ -5786,6 +5786,7 @@
   "festival-of-colors.score": "Score: {{score}}",
   "festival-of-colors.bestToday": "Today's best",
   "festival-of-colors.bestAllTime": "Highest score",
+  "festival-of-colors.noWearableBuffScoreBonus": "Activate only equipment without buff wearables during the game to receive x{{multiplier}} on your XP Orb score at the end.",
   "festival-of-colors.donationDescription": "This minigame is created for the community. Donations are greatly appreciated!",
   "festival-of-colors.mission": "Mission",
   "festival-of-colors.passiveAbility": "Passive Ability",

@@ -9,7 +9,10 @@ import { Attempts } from "./Attempts";
 import { getAttemptsLeft, isWithinRange } from "../../lib/Utils";
 import { goHome } from "features/portal/lib/portalUtil";
 import type { PortalMachineState } from "../../lib/Machine";
-import { PORTAL_NAME } from "../../constants";
+import {
+  NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
+  PORTAL_NAME,
+} from "../../constants";
 import { decodeToken } from "features/auth/actions/login";
 import { getUrl } from "features/portal/actions/loadPortal";
 // import { hasFeatureAccess } from "lib/flags";
@@ -32,6 +35,10 @@ interface Props {
 }
 
 const _lastScore = (state: PortalMachineState) => state.context.lastScore;
+const _lastBaseScore = (state: PortalMachineState) =>
+  state.context.lastBaseScore;
+const _lastScoreBonusApplied = (state: PortalMachineState) =>
+  state.context.lastScoreBonusApplied;
 const _minigame = (state: PortalMachineState) =>
   state.context.state?.minigames.games[PORTAL_NAME];
 const _bumpkinParts = (state: PortalMachineState) =>
@@ -52,6 +59,11 @@ export const Mission: React.FC<Props> = ({
   const { portalService } = useContext(PortalContext);
 
   const lastScore = useSelector(portalService, _lastScore);
+  const lastBaseScore = useSelector(portalService, _lastBaseScore);
+  const lastScoreBonusApplied = useSelector(
+    portalService,
+    _lastScoreBonusApplied,
+  );
   const minigame = useSelector(portalService, _minigame);
   const jwt = useSelector(portalService, _jwt);
   const bumpkinParts = useSelector(portalService, _bumpkinParts);
@@ -105,9 +117,21 @@ export const Mission: React.FC<Props> = ({
             <div className="w-full flex flex-col gap-1 mb-3">
               {showScore && (
                 <>
+                  <Label type="info" className="w-full">
+                    {t(`${PORTAL_NAME}.noWearableBuffScoreBonus`, {
+                      multiplier: NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
+                    })}
+                  </Label>
                   <OuterPanel className="w-full flex flex-col items-center">
                     <Label type="info">{t("leaderboard.score")}</Label>
-                    <div>{formattedLastScore()}</div>
+                    {lastScoreBonusApplied ? (
+                      <div className="flex gap-2">
+                        <span className="line-through">{lastBaseScore}</span>
+                        <span>{formattedLastScore()}</span>
+                      </div>
+                    ) : (
+                      <div>{formattedLastScore()}</div>
+                    )}
                   </OuterPanel>
                   <div className="flex gap-1">
                     <OuterPanel className="w-full flex flex-col items-center">

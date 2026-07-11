@@ -66,8 +66,8 @@ export const WALKING_SPEED = getPlayerStatValue(
 
 // Attempts
 export const INITIAL_DATE = "2026-07-13"; // YYYY-MM-DD
-export const INITIAL_DATE_LEADERBOARD = "2026-07-13"; // YYYY-MM-DD
-export const FINAL_DATE_LEADERBOARD = "2026-07-20"; // YYYY-MM-DD
+export const INITIAL_DATE_LEADERBOARD = "2026-07-17"; // YYYY-MM-DD
+export const FINAL_DATE_LEADERBOARD = "2026-07-23"; // YYYY-MM-DD
 export const ATTEMPTS_BETA_TESTERS = 0;
 export const UNLIMITED_ATTEMPTS_SFL = 200; // If this value is less than 0, the option disappears
 export const UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL = 150;

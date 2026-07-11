@@ -7,9 +7,11 @@ import { useSelector } from "@xstate/react";
 import {
   FINAL_DATE_LEADERBOARD,
   INITIAL_DATE_LEADERBOARD,
+  NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
   PORTAL_NAME,
 } from "../../constants";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
+import { Label } from "components/ui/Label";
 
 const _jwt = (state: PortalMachineState) => state.context.jwt;
 
@@ -28,6 +30,11 @@ export const Leaderboard: React.FC = () => {
       <div className="flex flex-col gap-2 px-2 pt-2">
         <p>{t(`${PORTAL_NAME}.competition.description1`)}</p>
         <p>{t(`${PORTAL_NAME}.competition.description2`)}</p>
+        <Label type="info" className="w-full">
+          {t(`${PORTAL_NAME}.noWearableBuffScoreBonus`, {
+            multiplier: NO_WEARABLE_BUFF_SCORE_MULTIPLIER,
+          })}
+        </Label>
       </div>
       <PortalLeaderboard
         isAccumulator

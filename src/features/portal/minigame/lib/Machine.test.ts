@@ -27,10 +27,12 @@ jest.mock("features/game/events/minigames/purchaseMinigameItem", () => ({
 jest.mock("../constants", () => {
   const playerLevel = jest.requireActual("../constants/PlayerLevelConstants");
   const playerStats = jest.requireActual("../constants/PlayerStatConstants");
+  const wearables = jest.requireActual("../constants/WearableConstants");
 
   return {
     ...playerLevel,
     ...playerStats,
+    ...wearables,
     DROP_ITEM_XP_VALUES: {
       blueOrb: 1,
       greenOrb: 2,
@@ -56,6 +58,9 @@ jest.mock("../constants", () => {
     BETA_TESTERS: [],
     PORTAL_NAME: "colors-2026",
     RESTOCK_ATTEMPTS: [],
+    ATTEMPTS_PURCHASED_BY_MISTAKE: [],
+    UNLIMITED_ATTEMPTS_AURA_DISCOUNT_SFL: 120,
+    UNLIMITED_ATTEMPTS_DISCOUNT_AURAS: [],
     UNLIMITED_ATTEMPTS_SFL: 150,
   };
 });
@@ -231,7 +236,7 @@ describe("portalMachine progression flow", () => {
     nowSpy.mockRestore();
   });
 
-  it("applies health wearable buffs when active wearables change", () => {
+  it("keeps health unchanged when active wearables buff other stats", () => {
     const service = interpret(
       portalMachine.withContext({
         ...portalMachine.initialState.context,
@@ -242,26 +247,26 @@ describe("portalMachine progression flow", () => {
       wearables: { tool: "Handheld Bunny" },
     });
 
-    expect(service.state.context.maxLives).toBe(120);
-    expect(service.state.context.lives).toBe(120);
+    expect(service.state.context.maxLives).toBe(100);
+    expect(service.state.context.lives).toBe(100);
 
     service.send("SET_ACTIVE_WEARABLES", {
       wearables: { pants: "Comfy Xmas Pants" },
     });
 
-    expect(service.state.context.maxLives).toBe(125);
-    expect(service.state.context.lives).toBe(125);
+    expect(service.state.context.maxLives).toBe(100);
+    expect(service.state.context.lives).toBe(100);
 
     service.send("LOSE_LIFE", { enemyType: "mob1" });
     service.send("SET_ACTIVE_WEARABLES", { wearables: {} });
 
     expect(service.state.context.maxLives).toBe(100);
-    expect(service.state.context.lives).toBe(100);
+    expect(service.state.context.lives).toBe(99);
 
     service.stop();
   });
 
-  it("starts runs with active health wearable buffs applied", () => {
+  it("starts runs without applying non-health wearable buffs to health", () => {
     const service = interpret(
       portalMachine.withContext({
         ...portalMachine.initialState.context,
@@ -272,8 +277,8 @@ describe("portalMachine progression flow", () => {
 
     service.send("START");
 
-    expect(service.state.context.maxLives).toBe(120);
-    expect(service.state.context.lives).toBe(120);
+    expect(service.state.context.maxLives).toBe(100);
+    expect(service.state.context.lives).toBe(100);
 
     service.stop();
   });
@@ -369,15 +374,150 @@ describe("portalMachine progression flow", () => {
     service.send("GAME_OVER");
 
     expect(service.state.matches("winner")).toBe(true);
-    expect(service.state.context.lastScore).toBe(10);
-    expect(submitScore).toHaveBeenCalledWith({ score: 10 });
+    expect(service.state.context.lastScore).toBe(11);
+    expect(submitScore).toHaveBeenCalledWith({ score: 11 });
     expect(submitMinigameScore).toHaveBeenCalledWith(
       expect.objectContaining({
         action: expect.objectContaining({
-          score: 10,
+          score: 11,
         }),
       }),
     );
+
+    service.stop();
+  });
+
+  it("applies the no-buff score multiplier and submits two decimal precision", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10.05,
+        activeWearables: { hair: "Basic Hair" },
+        usedWearableBuff: false,
+        isTraining: false,
+      }),
+    ).start("playing");
+
+    service.send("GAME_OVER");
+
+    expect(service.state.context.lastBaseScore).toBe(10.05);
+    expect(service.state.context.collected).toBe(11.06);
+    expect(service.state.context.lastScore).toBe(11.06);
+    expect(service.state.context.lastScoreBonusApplied).toBe(true);
+    expect(submitScore).toHaveBeenCalledWith({ score: 11.06 });
+    expect(submitMinigameScore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({ score: 11.06 }),
+      }),
+    );
+
+    service.stop();
+  });
+
+  it("does not apply the multiplier when the initial loadout has a buff", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        activeWearables: { tool: "Handheld Bunny" },
+        attemptsLeft: 1,
+      }),
+    ).start("ready");
+
+    service.send("START");
+    const weapon = service.state.context.pendingLevelUpChoice?.options[0];
+    service.send("SELECT_LEVEL_UP_WEAPON", { weapon: weapon! });
+    service.send("COLLECT_ITEM", { itemKey: "purpleOrb" });
+    service.send("GAME_OVER");
+
+    expect(service.state.context.collected).toBe(5);
+    expect(service.state.context.lastScoreBonusApplied).toBe(false);
+
+    service.stop();
+  });
+
+  it("keeps buff usage for the run after switching to a no-buff loadout", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10,
+        usedWearableBuff: false,
+        isTraining: false,
+      }),
+    ).start("playing");
+
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { tool: "Handheld Bunny" },
+    });
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { hair: "Basic Hair" },
+    });
+    service.send("GAME_OVER");
+
+    expect(service.state.context.collected).toBe(10);
+    expect(service.state.context.lastScoreBonusApplied).toBe(false);
+
+    service.stop();
+  });
+
+  it("keeps the bonus when switching only between no-buff loadouts", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10,
+        usedWearableBuff: false,
+        isTraining: false,
+      }),
+    ).start("playing");
+
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { hair: "Basic Hair" },
+    });
+    service.send("SET_ACTIVE_WEARABLES", {
+      wearables: { body: "Light Brown Farmer Potion" },
+    });
+    service.send("GAME_OVER");
+
+    expect(service.state.context.collected).toBe(11);
+    expect(service.state.context.lastScoreBonusApplied).toBe(true);
+
+    service.stop();
+  });
+
+  it("applies the same bonus when the game ends early", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10.05,
+        usedWearableBuff: false,
+        isTraining: false,
+      }),
+    ).start("playing");
+
+    service.send("END_GAME_EARLY");
+
+    expect(service.state.context.collected).toBe(11.06);
+    expect(service.state.context.lastScore).toBe(11.06);
+    expect(service.state.context.lastScoreBonusApplied).toBe(true);
+    expect(submitScore).toHaveBeenCalledWith({ score: 11.06 });
+
+    service.stop();
+  });
+
+  it("resets recorded buff usage when retrying", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        usedWearableBuff: true,
+        lastBaseScore: 10,
+        lastScoreBonusApplied: false,
+      }),
+    ).start("loser");
+
+    service.send("RETRY");
+
+    expect(service.state.context.usedWearableBuff).toBe(false);
+    expect(service.state.context.lastBaseScore).toBe(0);
+    expect(service.state.context.lastScoreBonusApplied).toBe(false);
 
     service.stop();
   });
