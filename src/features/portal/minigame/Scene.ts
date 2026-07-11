@@ -366,7 +366,7 @@ export class Scene extends BaseScene {
     // Background music
     this.backgroundMusic = this.sound.add("backgroundMusic", {
       loop: true,
-      volume: 0.4,
+      volume: 0.2,
     });
   }
 
@@ -595,7 +595,18 @@ export class Scene extends BaseScene {
       this.velocity = 0;
     }
 
+    this.updateEnemies(delta);
     super.update();
+  }
+
+  private updateEnemies(delta: number) {
+    for (const mob of this.swarmEnemies) {
+      mob.updateMovement(delta);
+    }
+
+    for (const boss of this.bossEnemies) {
+      boss.updateMovement(delta);
+    }
   }
 
   private syncPhysicsPause() {
@@ -901,8 +912,6 @@ export class Scene extends BaseScene {
   }
 
   private groupCollision() {
-    this.physics.add.collider(this.swarmGroup, this.swarmGroup);
-
     this.physics.add.collider(
       this.obstacleGroup,
       this.swarmGroup,
@@ -913,8 +922,6 @@ export class Scene extends BaseScene {
       },
     );
 
-    this.physics.add.collider(this.bossEnemies, this.bossEnemies);
-
     this.physics.add.collider(
       this.obstacleGroup,
       this.bossGroup,
@@ -924,6 +931,17 @@ export class Scene extends BaseScene {
         boss.changeDirection();
       },
     );
+
+    if (this.currentPlayer) {
+      this.physics.add.overlap(
+        this.currentPlayer,
+        this.enemyGroup,
+        (_player, enemyObj) => {
+          const enemy = enemyObj as SwarmMob | BossEnemy;
+          enemy.handlePlayerContact();
+        },
+      );
+    }
   }
 
   private scoreBaseWave() {

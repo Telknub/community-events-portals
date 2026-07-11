@@ -26,6 +26,7 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
   public hitCooldownMs = 0;
   private target?: EnemyLike;
   private nextRetargetAt = 0;
+  private nextSteerAt = 0;
   private movementRotation = 0;
   private readonly spawnSprite: Phaser.GameObjects.Sprite;
   private readonly hitAt = new Map<EnemyLike, number>();
@@ -72,7 +73,9 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.expiresAt = expiresAt;
     this.hitCooldownMs = hitCooldownMs;
     this.target = undefined;
-    this.nextRetargetAt = 0;
+    const now = this.scene.time.now;
+    this.nextRetargetAt = now + Phaser.Math.Between(0, 120);
+    this.nextSteerAt = now + Phaser.Math.Between(0, 35);
     this.hitAt.clear();
     this.syncSpawnSprite();
     this.spawnSprite.setActive(true);
@@ -100,12 +103,12 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
   }
 
   public steer(time: number, targeting: TargetingSystem) {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+
     if (time >= this.nextRetargetAt || !this.target?.active) {
       this.target = targeting.nearest(this);
-      this.nextRetargetAt = time + 180;
+      this.nextRetargetAt = time + 320;
     }
-
-    const body = this.body as Phaser.Physics.Arcade.Body;
 
     if (!this.target) {
       body.setVelocity(0, 0);
@@ -113,19 +116,28 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    const target = enemyCenter(this.target);
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
-    this.movementRotation = Phaser.Math.Angle.RotateTo(
-      this.movementRotation,
-      angle,
-      0.15,
-    );
+    if (time >= this.nextSteerAt) {
+      const target = enemyCenter(this.target);
+      const angle = Phaser.Math.Angle.Between(
+        this.x,
+        this.y,
+        target.x,
+        target.y,
+      );
+      this.movementRotation = Phaser.Math.Angle.RotateTo(
+        this.movementRotation,
+        angle,
+        0.24,
+      );
 
-    this.applyBeePresentation(this.movementRotation);
-    body.setVelocity(
-      Math.cos(this.movementRotation) * this.speed,
-      Math.sin(this.movementRotation) * this.speed,
-    );
+      this.applyBeePresentation(this.movementRotation);
+      body.setVelocity(
+        Math.cos(this.movementRotation) * this.speed,
+        Math.sin(this.movementRotation) * this.speed,
+      );
+      this.nextSteerAt = time + 50;
+    }
+
     this.setDepth(getWeaponVisualDepth(this.y));
     this.syncSpawnSprite();
   }
@@ -161,6 +173,8 @@ export class HomingBee extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.target = undefined;
+    this.nextRetargetAt = 0;
+    this.nextSteerAt = 0;
     this.hitAt.clear();
 
     const body = this.body as Phaser.Physics.Arcade.Body | undefined;

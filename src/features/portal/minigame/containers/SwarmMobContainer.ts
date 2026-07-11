@@ -5,6 +5,10 @@ import type { DamagePayload, MobTypes } from "../Types";
 import type { EnemyConfig } from "../Types";
 import { MOB_CONFIGS } from "../constants/EnemyConstants";
 import { WEAPON_SFX, WEAPON_SFX_VOL } from "../constants";
+import { WeaponSfxLimiter } from "../lib/combat/WeaponSfxLimiter";
+
+const MOVEMENT_UPDATE_INTERVAL_MS = 100;
+const FRAME_DURATION_MS = 1000 / 60;
 
 interface Props {
   x: number;
@@ -25,6 +29,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   public isDead = false;
   public config: EnemyConfig;
   private isHurting = false;
+  private hurtFlashRemainingMs = 0;
   public deSpawnState = false;
   private mobType: MobTypes;
 
@@ -32,6 +37,10 @@ export class SwarmMob extends Phaser.GameObjects.Container {
   private avoidY = 0;
   private avoidTimer = 0;
   private deathHandled = false;
+  private movementCheckElapsed = Phaser.Math.Between(
+    0,
+    MOVEMENT_UPDATE_INTERVAL_MS,
+  );
 
   constructor({ scene, x, y, player, mobType }: Props) {
     super(scene, x, y);
@@ -66,29 +75,29 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.enemyBody.setImmovable(false);
 
     this.createAnim();
-    this.handleMovement();
-    this.handleCollider();
-    this.once("destroy", () => {
-      this.scene.events.off("update", this.handleSceneUpdate);
-    });
   }
 
   private createAnim() {
     const animKey = `${this.config.key}_anim`;
-    this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers(this.config.key, {
-        start: this.config.frameStart,
-        end: this.config.frameEnd,
-      }),
-      frameRate: this.config.frameRate,
-      repeat: -1,
-    });
+
+    if (!this.scene.anims.exists(animKey)) {
+      this.scene.anims.create({
+        key: animKey,
+        frames: this.scene.anims.generateFrameNumbers(this.config.key, {
+          start: this.config.frameStart,
+          end: this.config.frameEnd,
+        }),
+        frameRate: this.config.frameRate,
+        repeat: -1,
+      });
+    }
 
     this.sprite.play(animKey);
   }
 
-  private readonly handleSceneUpdate = () => {
+  public updateMovement(delta: number) {
+    this.updateHurtVisual(delta);
+
     if (!this.player || !this.active || this.isDead) return;
 
     if (this.deSpawnState) {
@@ -105,34 +114,40 @@ export class SwarmMob extends Phaser.GameObjects.Container {
       return;
     }
 
-    const speed = this.config.speed;
+    this.movementCheckElapsed += delta;
+    this.avoidTimer = Math.max(0, this.avoidTimer - delta);
+
+    if (this.movementCheckElapsed < MOVEMENT_UPDATE_INTERVAL_MS) return;
+
+    this.movementCheckElapsed %= MOVEMENT_UPDATE_INTERVAL_MS;
 
     const dx = this.player.x - this.x;
     const dy = this.player.y - this.y;
+    const distanceSq = dx * dx + dy * dy;
 
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < 5) {
+    if (distanceSq < 25) {
       this.enemyBody.setVelocity(0, 0);
       return;
     }
 
-    let moveX = dx / distance;
-    let moveY = dy / distance;
+    const inverseDistance = 1 / Math.sqrt(distanceSq);
+    let moveX = dx * inverseDistance;
+    let moveY = dy * inverseDistance;
 
     if (this.avoidTimer > 0) {
       moveX += this.avoidX * 2;
       moveY += this.avoidY * 2;
-      this.avoidTimer--;
+
+      const moveDistanceSq = moveX * moveX + moveY * moveY;
+      if (moveDistanceSq > 0) {
+        const inverseMoveDistance = 1 / Math.sqrt(moveDistanceSq);
+        moveX *= inverseMoveDistance;
+        moveY *= inverseMoveDistance;
+      }
     }
 
-    const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY) || 1;
-
-    moveX /= moveDistance;
-    moveY /= moveDistance;
-
-    const velocityX = moveX * speed;
-    const velocityY = moveY * speed;
+    const velocityX = moveX * this.config.speed;
+    const velocityY = moveY * this.config.speed;
 
     this.enemyBody.setVelocity(velocityX, velocityY);
 
@@ -141,17 +156,11 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     } else if (velocityX > 0) {
       this.sprite.setFlipX(false);
     }
-  };
+  }
 
   setSwarmMove(value: boolean) {
     this.swarmMove = value;
     if (!value) this.enemyBody.setVelocity(0, 0);
-  }
-
-  handleMovement() {
-    if (!this.player) return;
-
-    this.scene.events.on("update", this.handleSceneUpdate);
   }
 
   separateFrom(enemy: SwarmMob) {
@@ -163,7 +172,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     this.avoidX = dx / distance;
     this.avoidY = dy / distance;
 
-    this.avoidTimer = 20;
+    this.avoidTimer = 20 * FRAME_DURATION_MS;
   }
 
   changeDirection() {
@@ -177,43 +186,36 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     const dirX = dx / distance;
     const dirY = dy / distance;
 
-    const side = Math.random() < 1 ? -2 : 2;
+    const side = Math.random() < 0.5 ? -2 : 2;
 
     this.avoidX = -dirY * side;
     this.avoidY = dirX * side;
 
-    this.avoidTimer = 30;
+    this.avoidTimer = 30 * FRAME_DURATION_MS;
   }
 
-  private handleCollider() {
-    if (!this.player) return;
-    this.scene.physics.add.collider(
-      this,
-      this.player,
-      () => {
-        this.player?.hurt(this.mobType);
-      },
-      undefined,
-      this,
-    );
+  public handlePlayerContact() {
+    if (!this.active || this.isDead) return;
+    this.player?.hurt(this.mobType);
+  }
+
+  private updateHurtVisual(delta: number) {
+    if (!this.isHurting) return;
+
+    this.hurtFlashRemainingMs = Math.max(0, this.hurtFlashRemainingMs - delta);
+
+    if (this.hurtFlashRemainingMs > 0) return;
+
+    this.sprite.setAlpha(1);
+    this.isHurting = false;
   }
 
   public isHurt() {
     if (this.isHurting || this.isDead) return;
 
     this.isHurting = true;
-
-    this.scene.tweens.add({
-      targets: this.sprite,
-      alpha: 0.3,
-      duration: 100,
-      yoyo: true,
-      repeat: 2,
-      onComplete: () => {
-        this.sprite.setAlpha(1);
-        this.isHurting = false;
-      },
-    });
+    this.hurtFlashRemainingMs = 120;
+    this.sprite.setAlpha(0.3);
   }
 
   public takeDamage(damage: number, _payload: DamagePayload) {
@@ -222,9 +224,7 @@ export class SwarmMob extends Phaser.GameObjects.Container {
     const sfx = WEAPON_SFX[_payload.sourceWeaponId];
 
     if (sfx?.activate) {
-      this.scene.sound.play(sfx.activate, {
-        volume: WEAPON_SFX_VOL,
-      });
+      WeaponSfxLimiter.play(this.scene, sfx.activate, WEAPON_SFX_VOL);
     }
 
     this.isHurt();

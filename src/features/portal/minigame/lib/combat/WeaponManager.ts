@@ -63,9 +63,10 @@ type WeaponManagerProps = {
 };
 
 export class WeaponManager {
+  public readonly weaponCollisionGroup: Phaser.Physics.Arcade.Group;
   public readonly projectileGroup: Phaser.Physics.Arcade.Group;
   public readonly rollingProjectileGroup: Phaser.Physics.Arcade.Group;
-  public readonly hitboxGroup: Phaser.Physics.Arcade.Group;
+  public readonly hitboxGroup: Phaser.GameObjects.Group;
   public readonly slashHitboxGroup: Phaser.Physics.Arcade.Group;
   public readonly orbitalGroup: Phaser.Physics.Arcade.Group;
   public readonly beeGroup: Phaser.Physics.Arcade.Group;
@@ -76,10 +77,15 @@ export class WeaponManager {
   private readonly targetingSystem: TargetingSystem;
   private readonly activeWeapons = new Map<WeaponId, RuntimeWeapon>();
   private lastAimVector: Vector = { ...FALLBACK_AIM_VECTOR };
+  private nextAreaCollisionCheckAt = 0;
   private isShutDown = false;
 
   constructor(private readonly props: WeaponManagerProps) {
     this.createFallbackTextures();
+
+    this.weaponCollisionGroup = props.scene.physics.add.group({
+      runChildUpdate: false,
+    });
 
     this.projectileGroup = props.scene.physics.add.group({
       classType: Projectile,
@@ -91,7 +97,7 @@ export class WeaponManager {
       maxSize: Math.ceil(COMBAT_CONFIG.projectilePoolSize / 3),
       runChildUpdate: false,
     });
-    this.hitboxGroup = props.scene.physics.add.group({
+    this.hitboxGroup = props.scene.add.group({
       classType: AreaHitbox,
       maxSize: COMBAT_CONFIG.hitboxPoolSize,
       runChildUpdate: false,
@@ -189,6 +195,7 @@ export class WeaponManager {
     this.isShutDown = true;
     this.targetingSystem.shutdown();
     this.statusEffectSystem.shutdown();
+    this.destroyGroup(this.weaponCollisionGroup, false);
     this.destroyGroup(this.projectileGroup);
     this.destroyGroup(this.rollingProjectileGroup);
     this.destroyGroup(this.hitboxGroup);
@@ -199,45 +206,13 @@ export class WeaponManager {
 
   private setupOverlaps(enemyGroup: Phaser.Physics.Arcade.Group) {
     this.props.scene.physics.add.overlap(
-      this.projectileGroup,
+      this.weaponCollisionGroup,
       enemyGroup,
-      (projectile, enemy) =>
-        this.handleProjectileHit(projectile as Projectile, enemy as EnemyLike),
-    );
-    this.props.scene.physics.add.overlap(
-      this.rollingProjectileGroup,
-      enemyGroup,
-      (projectile, enemy) =>
-        this.handleProjectileHit(projectile as Projectile, enemy as EnemyLike),
-    );
-    this.props.scene.physics.add.overlap(
-      this.hitboxGroup,
-      enemyGroup,
-      (hitbox, enemy) =>
-        this.handleHitboxHit(
-          hitbox as Phaser.GameObjects.GameObject,
+      (weaponObject, enemy) =>
+        this.handleWeaponCollision(
+          weaponObject as Phaser.GameObjects.GameObject,
           enemy as EnemyLike,
         ),
-    );
-    this.props.scene.physics.add.overlap(
-      this.slashHitboxGroup,
-      enemyGroup,
-      (hitbox, enemy) =>
-        this.handleHitboxHit(
-          hitbox as Phaser.GameObjects.GameObject,
-          enemy as EnemyLike,
-        ),
-    );
-    this.props.scene.physics.add.overlap(
-      this.orbitalGroup,
-      enemyGroup,
-      (orbital, enemy) =>
-        this.handleOrbitalHit(orbital as OrbitalWeapon, enemy as EnemyLike),
-    );
-    this.props.scene.physics.add.overlap(
-      this.beeGroup,
-      enemyGroup,
-      (bee, enemy) => this.handleBeeHit(bee as HomingBee, enemy as EnemyLike),
     );
   }
 
@@ -279,6 +254,7 @@ export class WeaponManager {
 
       if (!hitbox) return;
 
+      this.registerCollisionBody(hitbox);
       hitbox.spawn({
         x: this.props.player.x,
         y: this.props.player.y,
@@ -424,6 +400,7 @@ export class WeaponManager {
 
       if (!bee) continue;
 
+      this.registerCollisionBody(bee);
       bee.spawn({
         x: this.props.player.x + (index - weapon.stats.projectileCount / 2) * 4,
         y: this.props.player.y,
@@ -501,6 +478,7 @@ export class WeaponManager {
 
     if (!projectileObject) return;
 
+    this.registerCollisionBody(projectileObject);
     const normalized = normalizeVector(direction);
     projectileObject.spawn({
       x,
@@ -555,6 +533,7 @@ export class WeaponManager {
 
       if (!orbital) continue;
 
+      this.registerCollisionBody(orbital);
       orbital.spawn({
         ownerWeaponId: weapon.id,
         texture: weapon.config.texture,
@@ -586,12 +565,37 @@ export class WeaponManager {
       },
     );
 
+    const shouldCheckAreas = time >= this.nextAreaCollisionCheckAt;
+
     this.hitboxGroup.getChildren().forEach((hitbox) => {
-      if (!hitbox.active) return;
-      if (hitbox instanceof AreaHitbox && hitbox.hasExpired(time)) {
+      if (!(hitbox instanceof AreaHitbox) || !hitbox.active) return;
+
+      if (hitbox.hasExpired(time)) {
         hitbox.despawn();
+        return;
+      }
+
+      if (!shouldCheckAreas) return;
+
+      const { halfWidth, halfHeight } = hitbox.getQueryBounds();
+      const nearbyEnemies = this.targetingSystem.inBounds(
+        hitbox,
+        halfWidth,
+        halfHeight,
+      );
+
+      for (let index = 0; index < nearbyEnemies.length; index++) {
+        const enemy = nearbyEnemies[index];
+        if (!enemy.active || !hitbox.canHit(enemy, time)) continue;
+
+        hitbox.registerHit(enemy, time);
+        this.damageSystem.applyDamage(enemy, hitbox.payload, time);
       }
     });
+
+    if (shouldCheckAreas) {
+      this.nextAreaCollisionCheckAt = time + 50;
+    }
 
     this.slashHitboxGroup.getChildren().forEach((hitbox) => {
       if (!hitbox.active) return;
@@ -617,6 +621,38 @@ export class WeaponManager {
 
       bee.steer(time, this.targetingSystem);
     });
+  }
+
+  private handleWeaponCollision(
+    weaponObject: Phaser.GameObjects.GameObject,
+    enemy: EnemyLike,
+  ) {
+    if (weaponObject instanceof Projectile) {
+      this.handleProjectileHit(weaponObject, enemy);
+      return;
+    }
+
+    if (weaponObject instanceof SlashHitbox) {
+      this.handleHitboxHit(weaponObject, enemy);
+      return;
+    }
+
+    if (weaponObject instanceof OrbitalWeapon) {
+      this.handleOrbitalHit(weaponObject, enemy);
+      return;
+    }
+
+    if (weaponObject instanceof HomingBee) {
+      this.handleBeeHit(weaponObject, enemy);
+    }
+  }
+
+  private registerCollisionBody(
+    weaponObject: Phaser.GameObjects.GameObject,
+  ) {
+    if (!this.weaponCollisionGroup.contains(weaponObject)) {
+      this.weaponCollisionGroup.add(weaponObject);
+    }
   }
 
   private handleProjectileHit(projectile: Projectile, enemy: EnemyLike) {
@@ -668,13 +704,6 @@ export class WeaponManager {
     enemy: EnemyLike,
   ) {
     const time = this.props.scene.time.now;
-
-    if (hitbox instanceof AreaHitbox) {
-      if (!hitbox.canHit(enemy, time)) return;
-      hitbox.registerHit(enemy, time);
-      this.damageSystem.applyDamage(enemy, hitbox.payload, time);
-      return;
-    }
 
     if (hitbox instanceof SlashHitbox) {
       if (!hitbox.canHit(enemy)) return;
@@ -857,7 +886,7 @@ export class WeaponManager {
     return weapon?.stats.projectileSpeed ?? 0;
   }
 
-  private clearGroup(group: Phaser.Physics.Arcade.Group) {
+  private clearGroup(group: Phaser.GameObjects.Group) {
     const children = this.getSafeGroupChildren(group);
     if (!children.length) return;
 
@@ -870,7 +899,7 @@ export class WeaponManager {
     });
   }
 
-  private getSafeGroupChildren(group?: Phaser.Physics.Arcade.Group) {
+  private getSafeGroupChildren(group?: Phaser.GameObjects.Group) {
     if (!group || !(group as any).scene)
       return [] as Phaser.GameObjects.GameObject[];
 
@@ -881,11 +910,14 @@ export class WeaponManager {
     }
   }
 
-  private destroyGroup(group?: Phaser.Physics.Arcade.Group) {
+  private destroyGroup(
+    group?: Phaser.GameObjects.Group,
+    destroyChildren = true,
+  ) {
     if (!group) return;
 
     try {
-      group.destroy(true);
+      group.destroy(destroyChildren);
     } catch {
       // Scene shutdown can partially tear down Arcade groups before this runs.
     }

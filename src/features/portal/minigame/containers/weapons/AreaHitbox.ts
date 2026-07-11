@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import type { DamagePayload, EnemyLike } from "../../Types";
-import { distanceBetween, enemyCenter } from "../../lib/combat/geometry";
+import { enemyCenter } from "../../lib/combat/geometry";
 import { getWeaponVisualDepth } from "../../constants/DepthConstants";
 
 type AreaHitboxShape = "circle" | "spriteBounds";
@@ -21,13 +21,15 @@ type AreaHitboxSpawnProps = {
   hitboxSize?: AreaHitboxSize;
 };
 
-export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
+export class AreaHitbox extends Phaser.GameObjects.Sprite {
   public payload!: DamagePayload;
   public expiresAt = 0;
   public radius = 0;
   public hitCooldownMs = 0;
   public persistent = false;
   private hitboxShape: AreaHitboxShape = "circle";
+  private hitboxWidth = 0;
+  private hitboxHeight = 0;
   private despawnWhenAnimationCompletes = false;
   private readonly hitAt = new Map<EnemyLike, number>();
 
@@ -35,7 +37,6 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
-    scene.physics.add.existing(this);
     this.despawn();
   }
 
@@ -82,26 +83,20 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
       this.anims.stop();
     }
 
-    const body = this.body as Phaser.Physics.Arcade.Body;
-    body.enable = true;
-    if (hitboxShape === "spriteBounds") {
-      body.setSize(
-        hitboxSize?.width ?? this.displayWidth,
-        hitboxSize?.height ?? this.displayHeight,
-        true,
-      );
-    } else {
-      body.setCircle(radius);
-      body.setOffset(this.width / 2 - radius, this.height / 2 - radius);
-    }
-    body.setAllowGravity(false);
-    body.setImmovable(true);
+    this.hitboxWidth = hitboxSize?.width ?? radius * 2;
+    this.hitboxHeight = hitboxSize?.height ?? radius * 2;
   }
 
   public canHit(enemy: EnemyLike, time: number) {
-    if (
-      this.hitboxShape === "circle" &&
-      distanceBetween(this, enemyCenter(enemy)) > this.radius
+    const center = enemyCenter(enemy);
+    const dx = center.x - this.x;
+    const dy = center.y - this.y;
+
+    if (this.hitboxShape === "circle") {
+      if (dx * dx + dy * dy > this.radius * this.radius) return false;
+    } else if (
+      Math.abs(dx) > this.hitboxWidth / 2 ||
+      Math.abs(dy) > this.hitboxHeight / 2
     ) {
       return false;
     }
@@ -115,6 +110,17 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
 
   public registerHit(enemy: EnemyLike, time: number) {
     this.hitAt.set(enemy, time);
+  }
+
+  public getQueryBounds() {
+    if (this.hitboxShape === "circle") {
+      return { halfWidth: this.radius, halfHeight: this.radius };
+    }
+
+    return {
+      halfWidth: this.hitboxWidth / 2,
+      halfHeight: this.hitboxHeight / 2,
+    };
   }
 
   public hasExpired(time: number) {
@@ -132,10 +138,7 @@ export class AreaHitbox extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(false);
     this.hitAt.clear();
 
-    const body = this.body as Phaser.Physics.Arcade.Body | undefined;
-    if (!body) return;
-
-    body.stop();
-    body.enable = false;
+    this.hitboxWidth = 0;
+    this.hitboxHeight = 0;
   }
 }
