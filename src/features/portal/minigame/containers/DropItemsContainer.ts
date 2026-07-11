@@ -39,7 +39,6 @@ export class DropItem extends Phaser.GameObjects.Sprite {
 
     scene.add.existing(this);
     this.setDepth(ORB_DEPTH);
-    this.postFX.addGlow(0xffd966, 1.5, 0, false, 0.03, 24);
 
     const magnetRange = this.hasPassiveAbility()
       ? this.magnetRangeWithWings

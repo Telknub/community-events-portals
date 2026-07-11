@@ -109,8 +109,8 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.slimeAura",
   },
   "Butterfly Aura": {
-    target: { type: "weaponStat", weapon: "beehive", stat: "projectileCount" },
-    value: 1,
+    target: { type: "weaponStat", weapon: "beehive", stat: "homingSpeed" },
+    value: 20,
     descriptionKey: "wearables.buff.butterflyAura",
   },
   "Wisp Aura": {
@@ -119,18 +119,18 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.wispAura",
   },
   "Diamond Snow Aura": {
-    target: { type: "weaponStat", weapon: "sunflower", stat: "orbitalCount" },
-    value: 1,
+    target: { type: "weaponStat", weapon: "sunflower", stat: "damage" },
+    value: 3,
     descriptionKey: "wearables.buff.diamondSnowAura",
   },
   "Glitch Aura": {
     target: { type: "weaponStat", weapon: "tomato", stat: "bounceCount" },
-    value: 3,
+    value: 1,
     descriptionKey: "wearables.buff.glitchAura",
   },
   "Slime Wings": {
-    target: { type: "playerStat", stat: "health" },
-    value: 50,
+    target: { type: "weaponStat", weapon: "oil", stat: "statusDurationMs" },
+    value: 200,
     descriptionKey: "wearables.buff.slimeWings",
   },
   "Rainbow Wings": {
@@ -139,8 +139,8 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.rainbowWings",
   },
   "Sweet Devil Wings": {
-    target: { type: "weaponStat", weapon: "banana", stat: "orbitalCount" },
-    value: 1,
+    target: { type: "weaponStat", weapon: "banana", stat: "damage" },
+    value: 2,
     descriptionKey: "wearables.buff.sweetDevilWings",
   },
   "Cardboard Wings": {
@@ -197,14 +197,14 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     target: {
       type: "weaponStat",
       weapon: "wateringCan",
-      stat: "projectileCount",
+      stat: "damage",
     },
-    value: 1,
+    value: 2,
     descriptionKey: "wearables.buff.greenSlimeHair",
   },
   "Blue Slime Shirt": {
-    target: { type: "playerStat", stat: "health" },
-    value: 20,
+    target: { type: "weaponStat", weapon: "wateringCan", stat: "pierce" },
+    value: 1,
     descriptionKey: "wearables.buff.blueSlimeShirt",
   },
   "Slime Splattered Shirt": {
@@ -219,7 +219,7 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
   },
   "Yellow Slime Puppet": {
     target: { type: "weaponStat", weapon: "beehive", stat: "durationMs" },
-    value: 0.2,
+    value: 200,
     descriptionKey: "wearables.buff.yellowSlimePuppet",
   },
   "Sad Slime Hat": {
@@ -233,8 +233,8 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.redJellyPants",
   },
   "Blue Jelly Shoes": {
-    target: { type: "playerStat", stat: "health" },
-    value: 20,
+    target: { type: "weaponStat", weapon: "sunflower", stat: "projectileSpeed" },
+    value: 15,
     descriptionKey: "wearables.buff.blueJellyShoes",
   },
   "Sad Slime Slippers": {
@@ -302,13 +302,13 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.jackOSweets",
   },
   "Frank Onesie": {
-    target: { type: "playerStat", stat: "health" },
-    value: 20,
+    target: { type: "weaponStat", weapon: "broomScythe", stat: "range" },
+    value: 5,
     descriptionKey: "wearables.buff.frankOnesie",
   },
   "Comfy Xmas Sweater": {
-    target: { type: "weaponStat", weapon: "beehive", stat: "hitCooldownMs" },
-    value: -50,
+    target: { type: "weaponStat", weapon: "beehive", stat: "durationMs" },
+    value: 300,
     descriptionKey: "wearables.buff.comfyXmasSweater",
   },
   "Comfy Xmas Pants": {

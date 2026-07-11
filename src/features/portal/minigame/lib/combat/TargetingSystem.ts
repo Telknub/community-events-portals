@@ -15,10 +15,24 @@ type EnemyEntry = {
 const DEFAULT_GRID_CELL_SIZE = 96;
 
 export class TargetingSystem {
-  private enemies: EnemyLike[] = [];
-  private entries: EnemyEntry[] = [];
+  private readonly enemies: EnemyLike[] = [];
+  private readonly entries: EnemyEntry[] = [];
   private readonly entriesByEnemy = new Map<EnemyLike, EnemyEntry>();
-  private readonly grid = new Map<string, EnemyEntry[]>();
+  private readonly grid = new Map<number, EnemyEntry[]>();
+
+  private readonly entryPool: EnemyEntry[] = [];
+  private readonly bucketPool: EnemyEntry[][] = [];
+  private readonly queryEntriesBuffer: EnemyEntry[] = [];
+  private readonly radiusResult: EnemyLike[] = [];
+  private readonly boundsResult: EnemyLike[] = [];
+  private readonly coneResult: EnemyLike[] = [];
+
+  private minCellX = 0;
+  private maxCellX = -1;
+  private minCellY = 0;
+  private maxCellY = -1;
+  private nearestScratchEnemy: EnemyLike | undefined;
+  private nearestScratchDistanceSq = Infinity;
   private nextScanAt = 0;
 
   constructor(
@@ -39,52 +53,85 @@ export class TargetingSystem {
   }
 
   public nearest(origin: Vector, candidates?: EnemyLike[]) {
-    let nearestEnemy: EnemyLike | undefined;
-    let nearestDistanceSq = Infinity;
+    if (candidates) {
+      return this.nearestFromCandidates(origin, candidates);
+    }
 
-    if (!candidates) {
-      for (let index = 0; index < this.entries.length; index++) {
-        const entry = this.entries[index];
-        const dx = entry.x - origin.x;
-        const dy = entry.y - origin.y;
-        const distanceSq = dx * dx + dy * dy;
+    if (this.entries.length === 0) return undefined;
 
-        if (distanceSq < nearestDistanceSq) {
-          nearestDistanceSq = distanceSq;
-          nearestEnemy = entry.enemy;
+    const originCellX = this.toCell(origin.x);
+    const originCellY = this.toCell(origin.y);
+    const maxRing = Math.max(
+      Math.abs(originCellX - this.minCellX),
+      Math.abs(originCellX - this.maxCellX),
+      Math.abs(originCellY - this.minCellY),
+      Math.abs(originCellY - this.maxCellY),
+    );
+
+    this.nearestScratchEnemy = undefined;
+    this.nearestScratchDistanceSq = Infinity;
+
+    for (let ring = 0; ring <= maxRing; ring++) {
+      if (ring === 0) {
+        this.scanCellForNearest(origin, originCellX, originCellY);
+      } else {
+        const minX = originCellX - ring;
+        const maxX = originCellX + ring;
+        const minY = originCellY - ring;
+        const maxY = originCellY + ring;
+
+        for (let cellX = minX; cellX <= maxX; cellX++) {
+          this.scanCellForNearest(origin, cellX, minY);
+          this.scanCellForNearest(origin, cellX, maxY);
+        }
+
+        for (let cellY = minY + 1; cellY < maxY; cellY++) {
+          this.scanCellForNearest(origin, minX, cellY);
+          this.scanCellForNearest(origin, maxX, cellY);
         }
       }
 
-      return nearestEnemy;
-    }
+      if (!this.nearestScratchEnemy) continue;
 
-    for (let index = 0; index < candidates.length; index++) {
-      const enemy = candidates[index];
-      const entry = this.entriesByEnemy.get(enemy);
-      const center = entry ?? enemyCenter(enemy);
-      const dx = center.x - origin.x;
-      const dy = center.y - origin.y;
-      const distanceSq = dx * dx + dy * dy;
+      const left = (originCellX - ring) * this.gridCellSize;
+      const right = (originCellX + ring + 1) * this.gridCellSize;
+      const top = (originCellY - ring) * this.gridCellSize;
+      const bottom = (originCellY + ring + 1) * this.gridCellSize;
+      const distanceToOutside = Math.min(
+        origin.x - left,
+        right - origin.x,
+        origin.y - top,
+        bottom - origin.y,
+      );
 
-      if (distanceSq < nearestDistanceSq) {
-        nearestDistanceSq = distanceSq;
-        nearestEnemy = enemy;
+      if (
+        this.nearestScratchDistanceSq <=
+        distanceToOutside * distanceToOutside
+      ) {
+        break;
       }
     }
 
-    return nearestEnemy;
+    return this.nearestScratchEnemy;
   }
 
   public random(candidates = this.enemies) {
     if (candidates.length === 0) return undefined;
 
-    return Phaser.Utils.Array.GetRandom(candidates);
+    return candidates[Phaser.Math.Between(0, candidates.length - 1)];
   }
 
   public inRadius(origin: Vector, radius: number) {
     const radiusSq = radius * radius;
-    const nearbyEntries = this.queryGrid(origin.x, origin.y, radius, radius);
-    const result: EnemyLike[] = [];
+    const nearbyEntries = this.queryGridInto(
+      origin.x,
+      origin.y,
+      radius,
+      radius,
+      this.queryEntriesBuffer,
+    );
+    const result = this.radiusResult;
+    result.length = 0;
 
     for (let index = 0; index < nearbyEntries.length; index++) {
       const entry = nearbyEntries[index];
@@ -100,13 +147,15 @@ export class TargetingSystem {
   }
 
   public inBounds(origin: Vector, halfWidth: number, halfHeight: number) {
-    const nearbyEntries = this.queryGrid(
+    const nearbyEntries = this.queryGridInto(
       origin.x,
       origin.y,
       halfWidth,
       halfHeight,
+      this.queryEntriesBuffer,
     );
-    const result: EnemyLike[] = [];
+    const result = this.boundsResult;
+    result.length = 0;
 
     for (let index = 0; index < nearbyEntries.length; index++) {
       const entry = nearbyEntries[index];
@@ -134,7 +183,8 @@ export class TargetingSystem {
     arcDegrees: number;
   }) {
     const candidates = this.inRadius(origin, range);
-    const result: EnemyLike[] = [];
+    const result = this.coneResult;
+    result.length = 0;
 
     for (let index = 0; index < candidates.length; index++) {
       const enemy = candidates[index];
@@ -164,15 +214,53 @@ export class TargetingSystem {
     chainRadius: number;
     excluded: Set<EnemyLike>;
   }) {
-    const nearby = this.inRadius(origin, chainRadius);
+    const nearbyEntries = this.queryGridInto(
+      origin.x,
+      origin.y,
+      chainRadius,
+      chainRadius,
+      this.queryEntriesBuffer,
+    );
+    const chainRadiusSq = chainRadius * chainRadius;
     let nearestEnemy: EnemyLike | undefined;
     let nearestDistanceSq = Infinity;
 
-    for (let index = 0; index < nearby.length; index++) {
-      const enemy = nearby[index];
+    for (let index = 0; index < nearbyEntries.length; index++) {
+      const entry = nearbyEntries[index];
+      const enemy = entry.enemy;
       if (excluded.has(enemy)) continue;
 
-      const center = this.getCenter(enemy);
+      const dx = entry.x - origin.x;
+      const dy = entry.y - origin.y;
+      const distanceSq = dx * dx + dy * dy;
+
+      if (distanceSq <= chainRadiusSq && distanceSq < nearestDistanceSq) {
+        nearestDistanceSq = distanceSq;
+        nearestEnemy = enemy;
+      }
+    }
+
+    return nearestEnemy;
+  }
+
+  public shutdown() {
+    this.recycleIndexStorage();
+    this.enemies.length = 0;
+    this.entriesByEnemy.clear();
+    this.queryEntriesBuffer.length = 0;
+    this.radiusResult.length = 0;
+    this.boundsResult.length = 0;
+    this.coneResult.length = 0;
+  }
+
+  private nearestFromCandidates(origin: Vector, candidates: EnemyLike[]) {
+    let nearestEnemy: EnemyLike | undefined;
+    let nearestDistanceSq = Infinity;
+
+    for (let index = 0; index < candidates.length; index++) {
+      const enemy = candidates[index];
+      const entry = this.entriesByEnemy.get(enemy);
+      const center = entry ?? enemyCenter(enemy);
       const dx = center.x - origin.x;
       const dy = center.y - origin.y;
       const distanceSq = dx * dx + dy * dy;
@@ -186,18 +274,32 @@ export class TargetingSystem {
     return nearestEnemy;
   }
 
-  public shutdown() {
-    this.enemies = [];
-    this.entries = [];
-    this.entriesByEnemy.clear();
-    this.grid.clear();
+  private scanCellForNearest(origin: Vector, cellX: number, cellY: number) {
+    const bucket = this.grid.get(this.cellKey(cellX, cellY));
+    if (!bucket) return;
+
+    for (let index = 0; index < bucket.length; index++) {
+      const entry = bucket[index];
+      const dx = entry.x - origin.x;
+      const dy = entry.y - origin.y;
+      const distanceSq = dx * dx + dy * dy;
+
+      if (distanceSq < this.nearestScratchDistanceSq) {
+        this.nearestScratchDistanceSq = distanceSq;
+        this.nearestScratchEnemy = entry.enemy;
+      }
+    }
   }
 
   private rebuildSpatialIndex() {
-    this.enemies = [];
-    this.entries = [];
+    this.recycleIndexStorage();
+    this.enemies.length = 0;
     this.entriesByEnemy.clear();
-    this.grid.clear();
+
+    this.minCellX = Infinity;
+    this.maxCellX = -Infinity;
+    this.minCellY = Infinity;
+    this.maxCellY = -Infinity;
 
     const children = this.getSafeGroupChildren();
 
@@ -206,11 +308,10 @@ export class TargetingSystem {
       if (!isEnemyAlive(enemy)) continue;
 
       const center = enemyCenter(enemy);
-      const entry: EnemyEntry = {
-        enemy,
-        x: center.x,
-        y: center.y,
-      };
+      const entry = this.entryPool.pop() ?? ({} as EnemyEntry);
+      entry.enemy = enemy;
+      entry.x = center.x;
+      entry.y = center.y;
 
       this.enemies.push(enemy);
       this.entries.push(entry);
@@ -218,28 +319,57 @@ export class TargetingSystem {
 
       const cellX = this.toCell(center.x);
       const cellY = this.toCell(center.y);
-      const key = this.cellKey(cellX, cellY);
-      const bucket = this.grid.get(key);
+      this.minCellX = Math.min(this.minCellX, cellX);
+      this.maxCellX = Math.max(this.maxCellX, cellX);
+      this.minCellY = Math.min(this.minCellY, cellY);
+      this.maxCellY = Math.max(this.maxCellY, cellY);
 
-      if (bucket) {
-        bucket.push(entry);
-      } else {
-        this.grid.set(key, [entry]);
+      const key = this.cellKey(cellX, cellY);
+      let bucket = this.grid.get(key);
+
+      if (!bucket) {
+        bucket = this.bucketPool.pop() ?? [];
+        bucket.length = 0;
+        this.grid.set(key, bucket);
       }
+
+      bucket.push(entry);
+    }
+
+    if (this.entries.length === 0) {
+      this.minCellX = 0;
+      this.maxCellX = -1;
+      this.minCellY = 0;
+      this.maxCellY = -1;
     }
   }
 
-  private queryGrid(
+  private recycleIndexStorage() {
+    for (let index = 0; index < this.entries.length; index++) {
+      this.entryPool.push(this.entries[index]);
+    }
+    this.entries.length = 0;
+
+    for (const bucket of this.grid.values()) {
+      bucket.length = 0;
+      this.bucketPool.push(bucket);
+    }
+    this.grid.clear();
+  }
+
+  private queryGridInto(
     x: number,
     y: number,
     halfWidth: number,
     halfHeight: number,
+    result: EnemyEntry[],
   ) {
+    result.length = 0;
+
     const minCellX = this.toCell(x - halfWidth);
     const maxCellX = this.toCell(x + halfWidth);
     const minCellY = this.toCell(y - halfHeight);
     const maxCellY = this.toCell(y + halfHeight);
-    const result: EnemyEntry[] = [];
 
     for (let cellY = minCellY; cellY <= maxCellY; cellY++) {
       for (let cellX = minCellX; cellX <= maxCellX; cellX++) {
@@ -264,7 +394,11 @@ export class TargetingSystem {
   }
 
   private cellKey(cellX: number, cellY: number) {
-    return `${cellX}:${cellY}`;
+    const x = cellX >= 0 ? cellX * 2 : -cellX * 2 - 1;
+    const y = cellY >= 0 ? cellY * 2 : -cellY * 2 - 1;
+    const sum = x + y;
+
+    return (sum * (sum + 1)) / 2 + y;
   }
 
   private getSafeGroupChildren() {

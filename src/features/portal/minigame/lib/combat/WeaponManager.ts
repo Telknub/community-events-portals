@@ -330,8 +330,20 @@ export class WeaponManager {
     const target = this.targetingSystem.nearest(this.props.player);
     if (!target) return false;
 
-    const orbitals = this.getActiveOrbitals(weapon.id);
-    orbitals.forEach((orbital) => {
+    const children = this.orbitalGroup.getChildren();
+    let fired = false;
+
+    for (let index = 0; index < children.length; index++) {
+      const orbital = children[index];
+      if (
+        !(orbital instanceof OrbitalWeapon) ||
+        !orbital.active ||
+        orbital.ownerWeaponId !== weapon.id
+      ) {
+        continue;
+      }
+
+      fired = true;
       this.fireProjectile({
         weapon,
         time,
@@ -344,9 +356,9 @@ export class WeaponManager {
           y: target.y - orbital.y,
         }),
       });
-    });
+    }
 
-    return orbitals.length > 0;
+    return fired;
   }
 
   private fireOil(weapon: RuntimeWeapon, time: number) {
@@ -512,17 +524,46 @@ export class WeaponManager {
   }
 
   private ensureOrbitals(weapon: RuntimeWeapon) {
-    const orbitals = this.getActiveOrbitals(weapon.id);
     const expectedCount = Math.max(1, Math.round(weapon.stats.orbitalCount));
+    const children = this.orbitalGroup.getChildren();
+    let activeCount = 0;
 
-    if (orbitals.length === expectedCount) {
-      orbitals.forEach((orbital) =>
-        orbital.updateOrbit(this.props.player, this.props.scene.time.now),
-      );
+    for (let index = 0; index < children.length; index++) {
+      const orbital = children[index];
+      if (
+        orbital instanceof OrbitalWeapon &&
+        orbital.active &&
+        orbital.ownerWeaponId === weapon.id
+      ) {
+        activeCount++;
+      }
+    }
+
+    if (activeCount === expectedCount) {
+      const time = this.props.scene.time.now;
+      for (let index = 0; index < children.length; index++) {
+        const orbital = children[index];
+        if (
+          orbital instanceof OrbitalWeapon &&
+          orbital.active &&
+          orbital.ownerWeaponId === weapon.id
+        ) {
+          orbital.updateOrbit(this.props.player, time);
+        }
+      }
       return;
     }
 
-    orbitals.forEach((orbital) => orbital.despawn());
+    for (let index = 0; index < children.length; index++) {
+      const orbital = children[index];
+      if (
+        orbital instanceof OrbitalWeapon &&
+        orbital.active &&
+        orbital.ownerWeaponId === weapon.id
+      ) {
+        orbital.despawn();
+      }
+    }
 
     for (let slot = 0; slot < expectedCount; slot++) {
       const orbital = this.orbitalGroup.get(
@@ -549,33 +590,40 @@ export class WeaponManager {
   }
 
   private updatePooledObjects(time: number) {
-    this.getActiveProjectiles(this.projectileGroup).forEach((projectile) => {
-      if (!projectile.hasExpired(time)) return;
+    const projectiles = this.projectileGroup.getChildren();
+    for (let index = 0; index < projectiles.length; index++) {
+      const projectile = projectiles[index];
+      if (!(projectile instanceof Projectile) || !projectile.active) continue;
+      if (!projectile.hasExpired(time)) continue;
+
       if (projectile.behavior === "exploding") {
         this.spawnExplosion(projectile, time);
       }
       projectile.despawn();
-    });
+    }
 
-    this.getActiveProjectiles(this.rollingProjectileGroup).forEach(
-      (projectile) => {
-        if (projectile.hasExpired(time)) {
-          projectile.despawn();
-        }
-      },
-    );
+    const rollingProjectiles = this.rollingProjectileGroup.getChildren();
+    for (let index = 0; index < rollingProjectiles.length; index++) {
+      const projectile = rollingProjectiles[index];
+      if (!(projectile instanceof Projectile) || !projectile.active) continue;
+
+      if (projectile.hasExpired(time)) {
+        projectile.despawn();
+      }
+    }
 
     const shouldCheckAreas = time >= this.nextAreaCollisionCheckAt;
-
-    this.hitboxGroup.getChildren().forEach((hitbox) => {
-      if (!(hitbox instanceof AreaHitbox) || !hitbox.active) return;
+    const hitboxes = this.hitboxGroup.getChildren();
+    for (let index = 0; index < hitboxes.length; index++) {
+      const hitbox = hitboxes[index];
+      if (!(hitbox instanceof AreaHitbox) || !hitbox.active) continue;
 
       if (hitbox.hasExpired(time)) {
         hitbox.despawn();
-        return;
+        continue;
       }
 
-      if (!shouldCheckAreas) return;
+      if (!shouldCheckAreas) continue;
 
       const { halfWidth, halfHeight } = hitbox.getQueryBounds();
       const nearbyEnemies = this.targetingSystem.inBounds(
@@ -584,43 +632,51 @@ export class WeaponManager {
         halfHeight,
       );
 
-      for (let index = 0; index < nearbyEnemies.length; index++) {
-        const enemy = nearbyEnemies[index];
+      for (let enemyIndex = 0; enemyIndex < nearbyEnemies.length; enemyIndex++) {
+        const enemy = nearbyEnemies[enemyIndex];
         if (!enemy.active || !hitbox.canHit(enemy, time)) continue;
 
         hitbox.registerHit(enemy, time);
         this.damageSystem.applyDamage(enemy, hitbox.payload, time);
       }
-    });
+    }
 
     if (shouldCheckAreas) {
       this.nextAreaCollisionCheckAt = time + 50;
     }
 
-    this.slashHitboxGroup.getChildren().forEach((hitbox) => {
-      if (!hitbox.active) return;
-      if (hitbox instanceof SlashHitbox && hitbox.hasExpired(time)) {
+    const slashHitboxes = this.slashHitboxGroup.getChildren();
+    for (let index = 0; index < slashHitboxes.length; index++) {
+      const hitbox = slashHitboxes[index];
+      if (
+        hitbox instanceof SlashHitbox &&
+        hitbox.active &&
+        hitbox.hasExpired(time)
+      ) {
         hitbox.despawn();
       }
-    });
+    }
 
-    this.getActiveOrbitals("banana").forEach((orbital) =>
-      orbital.updateOrbit(this.props.player, time),
-    );
-    this.getActiveOrbitals("sunflower").forEach((orbital) =>
-      orbital.updateOrbit(this.props.player, time),
-    );
+    const orbitals = this.orbitalGroup.getChildren();
+    for (let index = 0; index < orbitals.length; index++) {
+      const orbital = orbitals[index];
+      if (!(orbital instanceof OrbitalWeapon) || !orbital.active) continue;
 
-    this.beeGroup.getChildren().forEach((bee) => {
-      if (!(bee instanceof HomingBee) || !bee.active) return;
+      orbital.updateOrbit(this.props.player, time);
+    }
+
+    const bees = this.beeGroup.getChildren();
+    for (let index = 0; index < bees.length; index++) {
+      const bee = bees[index];
+      if (!(bee instanceof HomingBee) || !bee.active) continue;
 
       if (bee.hasExpired(time)) {
         bee.despawn();
-        return;
+        continue;
       }
 
       bee.steer(time, this.targetingSystem);
-    });
+    }
   }
 
   private handleWeaponCollision(
@@ -860,26 +916,6 @@ export class WeaponManager {
     );
   }
 
-  private getActiveOrbitals(id: WeaponId) {
-    return this.orbitalGroup
-      .getChildren()
-      .filter(
-        (orbital): orbital is OrbitalWeapon =>
-          orbital instanceof OrbitalWeapon &&
-          orbital.active &&
-          orbital.ownerWeaponId === id,
-      );
-  }
-
-  private getActiveProjectiles(group: Phaser.Physics.Arcade.Group) {
-    return group
-      .getChildren()
-      .filter(
-        (projectile): projectile is Projectile =>
-          projectile instanceof Projectile && projectile.active,
-      );
-  }
-
   private getProjectileSpeed(projectile: Projectile) {
     const weapon = this.activeWeapons.get(projectile.ownerWeaponId);
 
@@ -890,13 +926,14 @@ export class WeaponManager {
     const children = this.getSafeGroupChildren(group);
     if (!children.length) return;
 
-    children.forEach((child) => {
+    for (let index = 0; index < children.length; index++) {
+      const child = children[index];
       if ("despawn" in child && typeof child.despawn === "function") {
         child.despawn();
       } else {
         (child as Phaser.GameObjects.Sprite).setActive(false).setVisible(false);
       }
-    });
+    }
   }
 
   private getSafeGroupChildren(group?: Phaser.GameObjects.Group) {
