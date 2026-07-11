@@ -167,6 +167,11 @@ export class Scene extends BaseScene {
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
 
+    // Boss icons
+    this.load.image("icon_boss_1", "world/portal/images/icon_boss_1.webp");
+    this.load.image("icon_boss_2", "world/portal/images/icon_boss_2.webp");
+    this.load.image("icon_boss_3", "world/portal/images/icon_boss_3.webp");
+
     // Weapons
     this.load.spritesheet("weapon_banana", "world/portal/images/banana.png", {
       frameWidth: 16,
@@ -361,7 +366,7 @@ export class Scene extends BaseScene {
     // Background music
     this.backgroundMusic = this.sound.add("backgroundMusic", {
       loop: true,
-      volume: 0.4,
+      volume: 0.2,
     });
   }
 
@@ -590,7 +595,18 @@ export class Scene extends BaseScene {
       this.velocity = 0;
     }
 
+    this.updateEnemies(delta);
     super.update();
+  }
+
+  private updateEnemies(delta: number) {
+    for (const mob of this.swarmEnemies) {
+      mob.updateMovement(delta);
+    }
+
+    for (const boss of this.bossEnemies) {
+      boss.updateMovement(delta);
+    }
   }
 
   private syncPhysicsPause() {
@@ -896,8 +912,6 @@ export class Scene extends BaseScene {
   }
 
   private groupCollision() {
-    this.physics.add.collider(this.swarmGroup, this.swarmGroup);
-
     this.physics.add.collider(
       this.obstacleGroup,
       this.swarmGroup,
@@ -908,8 +922,6 @@ export class Scene extends BaseScene {
       },
     );
 
-    this.physics.add.collider(this.bossEnemies, this.bossEnemies);
-
     this.physics.add.collider(
       this.obstacleGroup,
       this.bossGroup,
@@ -919,6 +931,17 @@ export class Scene extends BaseScene {
         boss.changeDirection();
       },
     );
+
+    if (this.currentPlayer) {
+      this.physics.add.overlap(
+        this.currentPlayer,
+        this.enemyGroup,
+        (_player, enemyObj) => {
+          const enemy = enemyObj as SwarmMob | BossEnemy;
+          enemy.handlePlayerContact();
+        },
+      );
+    }
   }
 
   private scoreBaseWave() {
@@ -1038,18 +1061,47 @@ export class Scene extends BaseScene {
       this.unregisterBossEnemy(boss);
     });
   }
+  private bossWarning(bossType: BossTypes) {
+    if (!this.currentPlayer) return;
 
-  private bossWarningFlash() {
-    for (let i = 0; i < 3; i++) {
-      this.time.delayedCall(i * 100, () => {
-        this.cameras.main.flash(100, 255, 0, 0);
-      });
-    }
+    const BOSS_ICONS: Record<BossTypes, string> = {
+      boss1: "icon_boss_1",
+      boss2: "icon_boss_2",
+      boss3: "icon_boss_3",
+    };
+
+    const key = BOSS_ICONS[bossType];
+    if (!key) return;
+
+    const icon = this.add
+      .image(this.currentPlayer.x, this.currentPlayer.y - 20, key)
+      .setDepth(9999)
+      .setAlpha(0);
+    icon.setScale(0.8);
+
+    const followPlayer = () => {
+      if (!this.currentPlayer || !icon.active) return;
+      icon.setPosition(this.currentPlayer.x, this.currentPlayer.y - 20);
+    };
+    this.events.on("update", followPlayer);
+
+    this.tweens.add({
+      targets: icon,
+      alpha: 1,
+      duration: 400,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => {
+        icon.setVisible(false);
+        this.events.off("update", followPlayer);
+        icon.destroy();
+      },
+    });
   }
 
   private bossSpawnWave(bossType: BossTypes, total: number) {
     for (let i = 0; i < total; i++) {
-      this.bossWarningFlash();
+      this.bossWarning(bossType);
       this.createBossEnemy(bossType);
     }
   }
