@@ -15,6 +15,9 @@ type Props = {
   icon?: string;
   placeholder?: string;
   maxLength?: number;
+  type?: React.HTMLInputTypeAttribute;
+  min?: string;
+  max?: string;
 };
 
 export const TextInput: React.FC<Props> = ({
@@ -25,6 +28,9 @@ export const TextInput: React.FC<Props> = ({
   placeholder,
   onCancel,
   maxLength,
+  type = "text",
+  min,
+  max,
 }) => {
   const { t } = useAppTranslation();
 
@@ -53,9 +59,11 @@ export const TextInput: React.FC<Props> = ({
           borderWidth: `10px 10px 10px 10px`,
           borderImageSlice: isFocused ? "4 fill" : "4 4 4 4 fill",
         }}
-        type="text"
+        type={type}
         placeholder={placeholder ?? t("searchHere")}
         value={value}
+        min={min}
+        max={max}
         maxLength={maxLength}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           onValueChange(e.target.value);
