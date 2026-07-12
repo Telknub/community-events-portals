@@ -35,6 +35,11 @@ export const NPCS_WITH_ALERTS: Partial<Record<NPCName, boolean>> = {
 };
 
 const HURT_INVINCIBILITY_MS = 800;
+const BUMPKIN_FRAME_WIDTH = 96;
+const BUMPKIN_FRAME_HEIGHT = 64;
+
+const isOpaqueBlackPixel = ([red, green, blue, alpha]: Uint8ClampedArray) =>
+  alpha > 250 && red < 8 && green < 8 && blue < 8;
 
 export class BumpkinContainer extends Phaser.GameObjects.Container {
   public sprite: Phaser.GameObjects.Sprite | undefined;
@@ -237,6 +242,114 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
       MachineInterpreter | undefined;
   }
 
+  private hasOpaqueBlackFrameBackground(textureKey: string) {
+    const frame = this.scene.textures.getFrame(textureKey, 0);
+    const sourceImage = (frame?.source as { image?: CanvasImageSource })?.image;
+
+    if (!frame || !sourceImage || typeof document === "undefined") {
+      return false;
+    }
+
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+
+      const context = canvas.getContext("2d", {
+        willReadFrequently: true,
+      });
+      if (!context) return false;
+
+      const cutX = (frame as unknown as { cutX?: number }).cutX ?? 0;
+      const cutY = (frame as unknown as { cutY?: number }).cutY ?? 0;
+      const width =
+        (frame as unknown as { cutWidth?: number }).cutWidth ??
+        BUMPKIN_FRAME_WIDTH;
+      const height =
+        (frame as unknown as { cutHeight?: number }).cutHeight ??
+        BUMPKIN_FRAME_HEIGHT;
+      const samplePoints = [
+        [cutX, cutY],
+        [cutX + width - 1, cutY],
+        [cutX, cutY + height - 1],
+        [cutX + width - 1, cutY + height - 1],
+      ];
+
+      return samplePoints.every(([x, y]) => {
+        context.clearRect(0, 0, 1, 1);
+        context.drawImage(sourceImage, x, y, 1, 1, 0, 0, 1, 1);
+
+        return isOpaqueBlackPixel(context.getImageData(0, 0, 1, 1).data);
+      });
+    } catch {
+      return false;
+    }
+  }
+
+  private useSilhouetteForInvalidBumpkinTexture(
+    textureKey: string,
+    url?: string,
+  ) {
+    if (!this.hasOpaqueBlackFrameBackground(textureKey)) return false;
+
+    // eslint-disable-next-line no-console
+    console.warn(
+      "Invalid Bumpkin texture detected. Using silhouette fallback.",
+      {
+        spriteKey: textureKey,
+        url,
+      },
+    );
+
+    this.sprite = this.silhouette;
+    this.ready = true;
+
+    return true;
+  }
+
+  private createBumpkinSprite({
+    textureKey,
+    url,
+    createBaseAnimations,
+  }: {
+    textureKey: string;
+    url?: string;
+    createBaseAnimations: boolean;
+  }) {
+    if (this.useSilhouetteForInvalidBumpkinTexture(textureKey, url)) return;
+
+    const idle = this.scene.add.sprite(0, 2, textureKey).setOrigin(0.5);
+    this.add(idle);
+
+    if (this.clothing.aura !== undefined) {
+      this.moveTo(idle, 2);
+    } else if (this.clothing.aura === undefined && this.shadow?.active) {
+      this.moveTo(idle, 1);
+    }
+
+    this.sprite = idle;
+
+    if (this.direction === "left") {
+      this.faceLeft();
+    }
+    this.syncEquippedWeaponDepth();
+
+    if (createBaseAnimations) {
+      this.createIdleAnimation(0, 8);
+      this.createWalkingAnimation(9, 16);
+      this.createDigAnimation(17, 29);
+      this.createDrillAnimation(30, 38);
+    }
+    this.createHurtAnimation(39, 46);
+    this.sprite.play(this.idleAnimationKey as string, true);
+
+    if (this.silhouette?.active) {
+      this.silhouette.destroy();
+    }
+
+    this.ready = true;
+  }
+
   private async loadSprites(scene: Phaser.Scene) {
     this.spriteKey = tokenUriBuilder(this.clothing);
     this.idleAnimationKey = `${this.spriteKey}-bumpkin-idle`;
@@ -251,28 +364,10 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
 
     if (scene.textures.exists(this.spriteKey)) {
       // If we have idle sheet then we can create the idle animation and set the sprite up straight away
-      const idle = scene.add.sprite(0, 2, this.spriteKey).setOrigin(0.5);
-      this.add(idle);
-      if (this.clothing.aura !== undefined) {
-        this.moveTo(idle, 2);
-      } else if (this.clothing.aura === undefined && this.shadow?.active) {
-        this.moveTo(idle, 1);
-      }
-      this.sprite = idle;
-
-      if (this.direction === "left") {
-        this.faceLeft();
-      }
-      this.syncEquippedWeaponDepth();
-
-      this.createHurtAnimation(39, 46);
-      this.sprite.play(this.idleAnimationKey, true);
-
-      if (this.silhouette?.active) {
-        this.silhouette?.destroy();
-      }
-
-      this.ready = true;
+      this.createBumpkinSprite({
+        textureKey: this.spriteKey,
+        createBaseAnimations: false,
+      });
     } else {
       const url = getAnimationUrl(this.clothing, [
         "idle",
@@ -282,8 +377,8 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         "hurt",
       ]);
       const idleLoader = scene.load.spritesheet(this.spriteKey, url, {
-        frameWidth: 96,
-        frameHeight: 64,
+        frameWidth: BUMPKIN_FRAME_WIDTH,
+        frameHeight: BUMPKIN_FRAME_HEIGHT,
       });
 
       idleLoader.once(`filecomplete-spritesheet-${this.spriteKey}`, () => {
@@ -291,34 +386,11 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
           return;
         }
 
-        const idle = scene.add
-          .sprite(0, 2, this.spriteKey as string)
-          .setOrigin(0.5);
-        this.add(idle);
-        if (this.clothing.aura !== undefined) {
-          this.moveTo(idle, 2);
-        } else if (this.clothing.aura === undefined && this.shadow?.active) {
-          this.moveTo(idle, 1);
-        }
-
-        this.sprite = idle;
-
-        if (this.direction === "left") {
-          this.faceLeft();
-        }
-        this.syncEquippedWeaponDepth();
-
-        this.createIdleAnimation(0, 8);
-        this.createWalkingAnimation(9, 16);
-        this.createDigAnimation(17, 29);
-        this.createDrillAnimation(30, 38);
-        this.createHurtAnimation(39, 46);
-        this.sprite.play(this.idleAnimationKey as string, true);
-
-        this.ready = true;
-        if (this.silhouette?.active) {
-          this.silhouette?.destroy();
-        }
+        this.createBumpkinSprite({
+          textureKey: this.spriteKey as string,
+          url,
+          createBaseAnimations: true,
+        });
       });
     }
 
@@ -330,8 +402,8 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
         this.swimmingAnimationKey,
         url,
         {
-          frameWidth: 96,
-          frameHeight: 64,
+          frameWidth: BUMPKIN_FRAME_WIDTH,
+          frameHeight: BUMPKIN_FRAME_HEIGHT,
         },
       );
       swimLoader.once(Phaser.Loader.Events.COMPLETE, () => {

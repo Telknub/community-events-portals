@@ -958,9 +958,6 @@ export abstract class BaseScene extends Phaser.Scene {
 
     textObject.setOrigin(0.5);
 
-    this.physics.add.existing(textObject);
-    (textObject.body as Phaser.Physics.Arcade.Body).checkCollision.none = true;
-
     return textObject;
   }
 
