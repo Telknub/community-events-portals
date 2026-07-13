@@ -162,10 +162,14 @@ export class Scene extends BaseScene {
     this.load.image("heart", SUNNYSIDE.icons.heart);
 
     // Obstacles
-    this.load.image("rock", SUNNYSIDE.resource.stone_rock);
-    this.load.image("tree", SUNNYSIDE.resource.tree);
+    this.load.image("rock", "world/portal/images/TematicRock.webp");
+    this.load.image("tree", "world/portal/images/TematicTree.webp");
     this.load.image("tree_stump", SUNNYSIDE.resource.tree_stump);
     this.load.image("water", SUNNYSIDE.decorations.ocean);
+    this.load.image("deco_1", "world/portal/images/deco_1.webp");
+    this.load.image("deco_2", "world/portal/images/deco_2.webp");
+    this.load.image("deco_3", "world/portal/images/deco_3.webp");
+    this.load.image("deco_4", "world/portal/images/deco_4.webp");
 
     // Boss icons
     this.load.image("icon_boss_1", "world/portal/images/icon_boss_1.webp");

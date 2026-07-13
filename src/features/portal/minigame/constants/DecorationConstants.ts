@@ -14,6 +14,7 @@ export const OBSTACLES_LAYOUT = {
     { name: "tree", x: 50, y: 25 },
     { name: "tree", x: 22, y: 50 },
     { name: "tree", x: 48, y: 35 },
+    { name: "tree", x: 3, y: 52 },
     // tree stumps
     { name: "tree_stump", x: 28, y: 30 },
     { name: "tree_stump", x: 4, y: 36 },
@@ -21,6 +22,7 @@ export const OBSTACLES_LAYOUT = {
     { name: "tree_stump", x: 43, y: 56 },
     { name: "tree_stump", x: 9, y: 47 },
     { name: "tree_stump", x: 52, y: 12 },
+    { name: "tree_stump", x: 9, y: 56 },
     // rocks
     { name: "rock", x: 20, y: 5 },
     { name: "rock", x: 29, y: 13 },
@@ -30,10 +32,10 @@ export const OBSTACLES_LAYOUT = {
     { name: "rock", x: 35, y: 22 },
     { name: "rock", x: 35, y: 10 },
     { name: "rock", x: 40, y: 2 },
-    { name: "rock", x: 50, y: 5 },
+    { name: "rock", x: 52, y: 4 },
     { name: "rock", x: 52, y: 18 },
     { name: "rock", x: 18, y: 20 },
-    { name: "rock", x: 5, y: 5 },
+    { name: "rock", x: 3, y: 4 },
     { name: "rock", x: 12, y: 40 },
     { name: "rock", x: 45, y: 45 },
     // water
@@ -59,5 +61,10 @@ export const OBSTACLES_LAYOUT = {
     { name: "water", x: 61, y: 17 },
     { name: "water", x: 31, y: 50 },
     { name: "water", x: 35, y: 50 },
+    // huge deco
+    { name: "deco_1", x: 5, y: 5 },
+    { name: "deco_2", x: 50, y: 50 },
+    { name: "deco_3", x: 50, y: 5 },
+    { name: "deco_4", x: 6, y: 54 },
   ] as Obstacle[],
 };
