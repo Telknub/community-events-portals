@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 
 import settings from "assets/icons/settings.png";
+import zoom from "assets/icons/recenter.png"
 
 import { PIXEL_SCALE } from "features/game/lib/constants";
 
@@ -14,6 +15,7 @@ import { isTouchDevice } from "features/world/lib/device";
 import sound_on from "assets/icons/sound_on.png";
 import sound_off from "assets/icons/sound_off.png";
 import { useIsAudioMuted } from "lib/utils/hooks/useIsAudioMuted";
+import { useCameraZoom } from "./UseCameraZoom"
 
 const buttonWidth = PIXEL_SCALE * 22;
 const buttonHeight = PIXEL_SCALE * 23;
@@ -25,6 +27,7 @@ export const Settings: React.FC = () => {
   const { portalService } = useContext(PortalContext);
 
   const { isAudioMuted, toggleAudioMuted } = useIsAudioMuted();
+  const { isZoomedOut, toggleZoom } = useCameraZoom();
 
   useEffect(() => {
     Howler.mute(isAudioMuted);
@@ -130,8 +133,31 @@ export const Settings: React.FC = () => {
       />,
     );
 
+
+  const zoomButton = (index: number) =>
+    settingButton(
+      index,
+      () => {
+        button.play();
+        toggleZoom();
+      },
+      <img
+        src={zoom}
+        className={classNames("absolute", { "opacity-50": isZoomedOut })}
+        style={{
+          top: `${PIXEL_SCALE * 4}px`,
+          left: `${PIXEL_SCALE * 4}px`,
+          width: `${PIXEL_SCALE * 14}px`,
+        }}
+      />,
+    );
+
+  // zoom toggle only makes sense on touch devices - the visible area
+  // isn't a problem with a mouse + large monitor
   // list of buttons to show in the HUD from right to left in order
-  const buttons = [gearButton, audioButton];
+  const buttons = isTouchDevice()
+    ? [gearButton, audioButton, zoomButton]
+    : [gearButton, audioButton];
 
   return (
     <div

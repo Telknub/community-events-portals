@@ -79,13 +79,13 @@ export const Hud: React.FC = () => {
               <Timer />
               <Codex />
               <HudWeapons />
+              <Settings />
             </>
           )}
         </div>
         {!isJoystickActive && (
           <>
             <Travel />
-            <Settings />
           </>
         )}
       </div>
