@@ -8,6 +8,10 @@ import type { Wardrobe } from "features/game/types/game";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { PORTAL_NAME } from "../../constants/PortalConstants";
 import { reconcileLoadoutWithDefaultEquipment } from "./loadoutUtils";
+import {
+  loadCookieStoredLoadouts,
+  saveCookieStoredLoadouts,
+} from "./wearableLoadoutCookieStorage";
 
 export type WearableLoadoutSlot = "I" | "II" | "III";
 export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;
@@ -263,13 +267,31 @@ export const loadStoredLoadouts = ({
   fallback: BumpkinParts;
   available: Wardrobe;
 }): LoadedWearableLoadouts => {
-  const raw = localStorage.getItem(getStorageKey(farmId));
+  const cookieStored = loadCookieStoredLoadouts({ farmId, fallback });
+  if (cookieStored) {
+    return resolveStoredLoadouts({
+      storedValue: cookieStored,
+      fallback,
+      available,
+    });
+  }
 
-  return resolveStoredLoadouts({
+  const raw = localStorage.getItem(getStorageKey(farmId));
+  const localStored = resolveStoredLoadouts({
     storedValue: raw,
     fallback,
     available,
   });
+
+  if (raw && localStored.hasStoredLoadouts) {
+    saveCookieStoredLoadouts({
+      farmId,
+      defaultEquipment: localStored.defaultEquipment,
+      loadouts: localStored.loadouts,
+    });
+  }
+
+  return localStored;
 };
 
 export const saveStoredLoadouts = ({
@@ -281,6 +303,8 @@ export const saveStoredLoadouts = ({
   defaultEquipment: BumpkinParts;
   loadouts: WearableLoadouts;
 }) => {
+  saveCookieStoredLoadouts({ farmId, defaultEquipment, loadouts });
+
   localStorage.setItem(
     getStorageKey(farmId),
     JSON.stringify({

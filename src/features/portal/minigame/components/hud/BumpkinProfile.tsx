@@ -11,15 +11,10 @@ import {
   loadStoredLoadouts,
   LOADOUT_SLOTS,
   Profile,
-  resolveStoredLoadouts,
   saveStoredLoadouts,
   type WearableLoadouts,
   type WearableLoadoutSlot,
 } from "./Profile";
-import {
-  requestParentStoredLoadouts,
-  saveParentStoredLoadouts,
-} from "./parentWearableLoadoutStorage";
 import { ProfilePanel, type ProfilePanelTab } from "./ProfilePanel";
 import {
   BUMPKIN_ITEM_PART,
@@ -313,72 +308,32 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
   useEffect(() => {
     if (!bumpkinEquipment || !gameState) return;
 
-    let cancelled = false;
+    const stored = loadStoredLoadouts({
+      farmId,
+      fallback: bumpkinEquipment,
+      available: availableWardrobe(gameState as GameState),
+    });
+    const loadouts = enforceWearableInventory({
+      defaultEquipment: stored.defaultEquipment,
+      loadouts: stored.loadouts,
+      wardrobe: gameState.wardrobe,
+    });
 
-    const initialiseLoadouts = async () => {
-      const available = availableWardrobe(gameState as GameState);
-      const localStored = loadStoredLoadouts({
+    if (stored.shouldPersist || !areLoadoutsEqual(stored.loadouts, loadouts)) {
+      saveStoredLoadouts({
         farmId,
-        fallback: bumpkinEquipment,
-        available,
-      });
-      const parentStoredValue = await requestParentStoredLoadouts({ farmId });
-
-      if (cancelled) return;
-
-      const stored =
-        parentStoredValue === undefined || parentStoredValue === null
-          ? localStored
-          : resolveStoredLoadouts({
-              storedValue: parentStoredValue,
-              fallback: bumpkinEquipment,
-              available,
-            });
-      const loadouts = enforceWearableInventory({
         defaultEquipment: stored.defaultEquipment,
-        loadouts: stored.loadouts,
-        wardrobe: gameState.wardrobe,
+        loadouts,
       });
-      const shouldPersist =
-        stored.shouldPersist || !areLoadoutsEqual(stored.loadouts, loadouts);
-      const shouldSeedParentFromLocal =
-        stored === localStored &&
-        localStored.hasStoredLoadouts &&
-        !parentStoredValue;
+    }
 
-      if (shouldPersist || shouldSeedParentFromLocal) {
-        saveStoredLoadouts({
-          farmId,
-          defaultEquipment: stored.defaultEquipment,
-          loadouts,
-        });
-        saveParentStoredLoadouts({
-          farmId,
-          defaultEquipment: stored.defaultEquipment,
-          loadouts,
-        });
-      } else if (parentStoredValue && stored.hasStoredLoadouts) {
-        saveStoredLoadouts({
-          farmId,
-          defaultEquipment: stored.defaultEquipment,
-          loadouts,
-        });
-      }
-
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDefaultEquipment(stored.defaultEquipment);
-      setLoadouts(loadouts);
-      setEquipped(loadouts[currentTab]);
-      portalService.send("SET_ACTIVE_WEARABLES", {
-        wearables: loadouts[currentTab],
-      });
-    };
-
-    initialiseLoadouts();
-
-    return () => {
-      cancelled = true;
-    };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDefaultEquipment(stored.defaultEquipment);
+    setLoadouts(loadouts);
+    setEquipped(loadouts[currentTab]);
+    portalService.send("SET_ACTIVE_WEARABLES", {
+      wearables: loadouts[currentTab],
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [farmId, bumpkinEquipmentKey]);
 
@@ -426,11 +381,6 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
     setEquipped(nextEquipment);
     setLoadouts(nextLoadouts);
     saveStoredLoadouts({
-      farmId,
-      defaultEquipment,
-      loadouts: nextLoadouts,
-    });
-    saveParentStoredLoadouts({
       farmId,
       defaultEquipment,
       loadouts: nextLoadouts,

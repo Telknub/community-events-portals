@@ -6,10 +6,16 @@ import {
   loadStoredLoadouts,
   LOADOUT_SLOTS,
   resolveStoredLoadouts,
+  saveStoredLoadouts,
   type StoredWearableLoadouts,
   type WearableLoadouts,
 } from "./loadoutStorage";
 import type { Wardrobe } from "features/game/types/game";
+import {
+  getSharedCookieDomain,
+  getWearableLoadoutCookieName,
+  saveCookieStoredLoadouts,
+} from "./wearableLoadoutCookieStorage";
 
 const FARM_ID = 123;
 
@@ -26,6 +32,12 @@ const makeLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
 describe("wearable loadout default equipment synchronization", () => {
   beforeEach(() => {
     localStorage.clear();
+    document.cookie.split(";").forEach((cookie) => {
+      const name = cookie.split("=")[0]?.trim();
+      if (!name) return;
+
+      document.cookie = `${name}=; Max-Age=0; Path=/`;
+    });
   });
 
   it("keeps minigame wearables and refreshes or removes other parts", () => {
@@ -200,5 +212,94 @@ describe("wearable loadout default equipment synchronization", () => {
     expect(stored.hasStoredLoadouts).toBe(true);
     expect(stored.shouldPersist).toBe(false);
     expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
+  });
+
+  it("loads shared cookie loadouts before subdomain localStorage", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const cookieLoadouts = makeLoadouts(fallback);
+    cookieLoadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+    const localLoadouts = makeLoadouts(fallback);
+    localLoadouts.III = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    saveCookieStoredLoadouts({
+      farmId: FARM_ID,
+      defaultEquipment: fallback,
+      loadouts: cookieLoadouts,
+    });
+    localStorage.setItem(
+      getStorageKey(FARM_ID),
+      JSON.stringify({
+        version: 1,
+        defaultEquipment: fallback,
+        loadouts: localLoadouts,
+      } satisfies StoredWearableLoadouts),
+    );
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
+    expect(stored.loadouts.III.tool).toBe(fallback.tool);
+  });
+
+  it("migrates existing subdomain localStorage loadouts into the shared cookie", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    localStorage.setItem(
+      getStorageKey(FARM_ID),
+      JSON.stringify({
+        version: 1,
+        defaultEquipment: fallback,
+        loadouts,
+      } satisfies StoredWearableLoadouts),
+    );
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
+    expect(document.cookie).toContain(getWearableLoadoutCookieName(FARM_ID));
+  });
+
+  it("saves loadouts to localStorage and the shared cookie", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.I = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    saveStoredLoadouts({
+      farmId: FARM_ID,
+      defaultEquipment: fallback,
+      loadouts,
+    });
+
+    expect(localStorage.getItem(getStorageKey(FARM_ID))).toBeTruthy();
+    expect(document.cookie).toContain(getWearableLoadoutCookieName(FARM_ID));
+  });
+
+  it("uses a host-only cookie outside sunflower-land.com hosts", () => {
+    expect(getSharedCookieDomain("localhost")).toBeUndefined();
+    expect(getSharedCookieDomain("halloween.sunflower-land.com")).toBe(
+      ".sunflower-land.com",
+    );
   });
 });

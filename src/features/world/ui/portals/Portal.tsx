@@ -24,10 +24,6 @@ import { ITEM_DETAILS } from "features/game/types/images";
 import sflIcon from "assets/icons/flower_token.webp";
 import { type IPortalDonation, PortalDonation } from "./PortalDonation";
 import { getCachedFont } from "lib/utils/fonts";
-import {
-  getIframeOrigin,
-  handleMinigameWearableLoadoutStorageMessage,
-} from "./minigameWearableLoadoutStorage";
 
 type PortalPurchase = {
   sfl: number;
@@ -102,7 +98,6 @@ export const Portal: React.FC<Props> = ({
   const { authService } = useContext(AuthProvider.Context);
   const [authState] = useActor(authService);
   const [url, setUrl] = useState<string>();
-  const urlRef = useRef<string | undefined>(undefined);
 
   const [loading, setLoading] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
@@ -128,10 +123,6 @@ export const Portal: React.FC<Props> = ({
     rawTokenRef.current = rawToken;
     farmIdRef.current = farmId;
   }, [rawToken, farmId]);
-
-  useEffect(() => {
-    urlRef.current = url;
-  }, [url]);
 
   useEffect(() => {
     const load = async () => {
@@ -177,18 +168,6 @@ export const Portal: React.FC<Props> = ({
 
   // Function to handle messages from the iframe
   const handleMessage = (event: any) => {
-    if (
-      handleMinigameWearableLoadoutStorageMessage({
-        event,
-        iframeWindow: iframeRef.current?.contentWindow,
-        expectedOrigin: getIframeOrigin(urlRef.current),
-        portalName,
-        farmId: farmIdRef.current,
-      })
-    ) {
-      return;
-    }
-
     if (event.data?.event === "closePortal") {
       // Close the modal when the message is received
       setLoading(false);
@@ -270,6 +249,7 @@ export const Portal: React.FC<Props> = ({
     gameService.send("minigame.prizeClaimed", {
       id: portalName,
     });
+    console.log("entrooo");
 
     onClose();
   };
