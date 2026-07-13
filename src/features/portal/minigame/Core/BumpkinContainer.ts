@@ -75,9 +75,16 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   public islandType: IslandType | undefined;
 
   private ready = false;
+  private spriteLoadGeneration = 0;
 
   // Animation Keys
   private spriteKey: string | undefined;
+  private idleTextureKey: string | undefined;
+  private walkingTextureKey: string | undefined;
+  private digTextureKey: string | undefined;
+  private drillTextureKey: string | undefined;
+  private swimmingTextureKey: string | undefined;
+  private hurtTextureKey: string | undefined;
   private idleAnimationKey: string | undefined;
   private walkingAnimationKey: string | undefined;
   private digAnimationKey: string | undefined;
@@ -310,11 +317,9 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
   private createBumpkinSprite({
     textureKey,
     url,
-    createBaseAnimations,
   }: {
     textureKey: string;
     url?: string;
-    createBaseAnimations: boolean;
   }) {
     if (this.useSilhouetteForInvalidBumpkinTexture(textureKey, url)) return;
 
@@ -334,13 +339,6 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     }
     this.syncEquippedWeaponDepth();
 
-    if (createBaseAnimations) {
-      this.createIdleAnimation(0, 8);
-      this.createWalkingAnimation(9, 16);
-      this.createDigAnimation(17, 29);
-      this.createDrillAnimation(30, 38);
-    }
-    this.createHurtAnimation(39, 46);
     this.sprite.play(this.idleAnimationKey as string, true);
 
     if (this.silhouette?.active) {
@@ -350,67 +348,125 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.ready = true;
   }
 
+  private loadAnimationSheet({
+    textureKey,
+    animationName,
+    onLoaded,
+  }: {
+    textureKey: string;
+    animationName:
+      "idle" | "walking" | "dig" | "drilling" | "hurt" | "swimming";
+    onLoaded: (url?: string) => void;
+  }) {
+    if (this.scene.textures.exists(textureKey)) {
+      onLoaded();
+      return;
+    }
+
+    const url = getAnimationUrl(this.clothing, [animationName]);
+    const loader = this.scene.load.spritesheet(textureKey, url, {
+      frameWidth: BUMPKIN_FRAME_WIDTH,
+      frameHeight: BUMPKIN_FRAME_HEIGHT,
+    });
+
+    loader.once(`filecomplete-spritesheet-${textureKey}`, () => {
+      if (!this.scene.textures.exists(textureKey)) return;
+      onLoaded(url);
+    });
+  }
+
   private async loadSprites(scene: Phaser.Scene) {
+    const loadGeneration = ++this.spriteLoadGeneration;
     this.spriteKey = tokenUriBuilder(this.clothing);
+
+    // Keep every animation on its own texture. Some Android/WebGL devices
+    // render the combined dynamic sheet as an opaque black rectangle.
+    this.idleTextureKey = `${this.spriteKey}-bumpkin-idle-sheet`;
+    this.walkingTextureKey = `${this.spriteKey}-bumpkin-walking-sheet`;
+    this.digTextureKey = `${this.spriteKey}-bumpkin-dig-sheet`;
+    this.drillTextureKey = `${this.spriteKey}-bumpkin-drilling-sheet`;
+    this.hurtTextureKey = `${this.spriteKey}-bumpkin-hurt-sheet`;
+    this.swimmingTextureKey = `${this.spriteKey}-bumpkin-swim-sheet`;
+
+    const idleTextureKey = this.idleTextureKey;
+    const walkingTextureKey = this.walkingTextureKey;
+    const digTextureKey = this.digTextureKey;
+    const drillTextureKey = this.drillTextureKey;
+    const hurtTextureKey = this.hurtTextureKey;
+    const swimmingTextureKey = this.swimmingTextureKey;
+
     this.idleAnimationKey = `${this.spriteKey}-bumpkin-idle`;
     this.walkingAnimationKey = `${this.spriteKey}-bumpkin-walking`;
     this.digAnimationKey = `${this.spriteKey}-bumpkin-dig`;
+    this.drillAnimationKey = `${this.spriteKey}-bumpkin-drill`;
     this.swimmingAnimationKey = `${this.spriteKey}-bumpkin-swim`;
     this.hurtAnimationKey = `${this.spriteKey}-bumpkin-hurt`;
 
+    // Retained because aura sheets depend on the NPC sheet builder side effects.
+    // The combined Bumpkin texture itself is intentionally not used here.
     await buildNPCSheets({
       parts: this.clothing,
-    }); //Removing this causes Aura to not show onload
+    });
 
-    if (scene.textures.exists(this.spriteKey)) {
-      // If we have idle sheet then we can create the idle animation and set the sprite up straight away
-      this.createBumpkinSprite({
-        textureKey: this.spriteKey,
-        createBaseAnimations: false,
-      });
-    } else {
-      const url = getAnimationUrl(this.clothing, [
-        "idle",
-        "walking",
-        "dig",
-        "drilling",
-        "hurt",
-      ]);
-      const idleLoader = scene.load.spritesheet(this.spriteKey, url, {
-        frameWidth: BUMPKIN_FRAME_WIDTH,
-        frameHeight: BUMPKIN_FRAME_HEIGHT,
-      });
+    if (loadGeneration !== this.spriteLoadGeneration || !this.active) return;
 
-      idleLoader.once(`filecomplete-spritesheet-${this.spriteKey}`, () => {
-        if (!scene.textures.exists(this.spriteKey as string) || this.ready) {
-          return;
-        }
-
+    this.loadAnimationSheet({
+      textureKey: idleTextureKey,
+      animationName: "idle",
+      onLoaded: (url) => {
+        if (loadGeneration !== this.spriteLoadGeneration || this.ready) return;
+        this.createIdleAnimation();
         this.createBumpkinSprite({
-          textureKey: this.spriteKey as string,
+          textureKey: idleTextureKey,
           url,
-          createBaseAnimations: true,
         });
-      });
-    }
+      },
+    });
 
-    if (scene.textures.exists(this.swimmingAnimationKey)) {
-      this.createSwimAnimation();
-    } else {
-      const url = getAnimationUrl(this.clothing, ["swimming"]);
-      const swimLoader = scene.load.spritesheet(
-        this.swimmingAnimationKey,
-        url,
-        {
-          frameWidth: BUMPKIN_FRAME_WIDTH,
-          frameHeight: BUMPKIN_FRAME_HEIGHT,
-        },
-      );
-      swimLoader.once(Phaser.Loader.Events.COMPLETE, () => {
+    this.loadAnimationSheet({
+      textureKey: walkingTextureKey,
+      animationName: "walking",
+      onLoaded: () => {
+        if (loadGeneration !== this.spriteLoadGeneration) return;
+        this.createWalkingAnimation();
+      },
+    });
+
+    this.loadAnimationSheet({
+      textureKey: digTextureKey,
+      animationName: "dig",
+      onLoaded: () => {
+        if (loadGeneration !== this.spriteLoadGeneration) return;
+        this.createDigAnimation();
+      },
+    });
+
+    this.loadAnimationSheet({
+      textureKey: drillTextureKey,
+      animationName: "drilling",
+      onLoaded: () => {
+        if (loadGeneration !== this.spriteLoadGeneration) return;
+        this.createDrillAnimation();
+      },
+    });
+
+    this.loadAnimationSheet({
+      textureKey: hurtTextureKey,
+      animationName: "hurt",
+      onLoaded: () => {
+        if (loadGeneration !== this.spriteLoadGeneration) return;
+        this.createHurtAnimation();
+      },
+    });
+
+    this.loadAnimationSheet({
+      textureKey: swimmingTextureKey,
+      animationName: "swimming",
+      onLoaded: () => {
+        if (loadGeneration !== this.spriteLoadGeneration) return;
         this.createSwimAnimation();
-        swimLoader.removeAllListeners();
-      });
-    }
+      },
+    });
 
     scene.load.start();
   }
@@ -443,65 +499,55 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     this.bringToTop(this.equippedWeapon);
   }
 
-  private createDrillAnimation(start: number, end: number) {
-    if (!this.scene || !this.scene.anims) return;
+  private createDrillAnimation() {
+    if (!this.scene?.anims || !this.drillTextureKey || !this.drillAnimationKey)
+      return;
+    if (this.scene.anims.exists(this.drillAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.drillAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
-        start,
-        end,
-      }),
+      frames: this.scene.anims.generateFrameNumbers(this.drillTextureKey),
       frameRate: 10,
       repeat: -1,
     });
   }
 
-  private createHurtAnimation(start: number, end: number) {
-    if (!this.scene || !this.scene.anims) return;
-    if (
-      !this.hurtAnimationKey ||
-      this.scene.anims.exists(this.hurtAnimationKey)
-    ) {
+  private createHurtAnimation() {
+    if (!this.scene?.anims || !this.hurtTextureKey || !this.hurtAnimationKey)
       return;
-    }
+    if (this.scene.anims.exists(this.hurtAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.hurtAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
-        start,
-        end,
-      }),
+      frames: this.scene.anims.generateFrameNumbers(this.hurtTextureKey),
       frameRate: 10,
       repeat: 0,
     });
   }
 
-  private createDigAnimation(start: number, end: number) {
-    if (!this.scene || !this.scene.anims) return;
+  private createDigAnimation() {
+    if (!this.scene?.anims || !this.digTextureKey || !this.digAnimationKey)
+      return;
+    if (this.scene.anims.exists(this.digAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.digAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
-        start,
-        end,
-      }),
+      frames: this.scene.anims.generateFrameNumbers(this.digTextureKey),
       frameRate: 10,
       repeat: -1,
     });
   }
 
-  private createIdleAnimation(start: number, end: number) {
-    if (!this.scene || !this.scene.anims) return;
+  private createIdleAnimation() {
+    if (!this.scene?.anims || !this.idleTextureKey || !this.idleAnimationKey)
+      return;
+    if (this.scene.anims.exists(this.idleAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.idleAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
-        start,
-        end,
-      }),
-      repeat: -1,
+      frames: this.scene.anims.generateFrameNumbers(this.idleTextureKey),
       frameRate: 10,
+      repeat: -1,
     });
   }
 
@@ -539,28 +585,35 @@ export class BumpkinContainer extends Phaser.GameObjects.Container {
     });
   }
 
-  private createWalkingAnimation(start: number, end: number) {
-    if (!this.scene || !this.scene.anims) return;
+  private createWalkingAnimation() {
+    if (
+      !this.scene?.anims ||
+      !this.walkingTextureKey ||
+      !this.walkingAnimationKey
+    )
+      return;
+    if (this.scene.anims.exists(this.walkingAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.walkingAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(this.spriteKey as string, {
-        start,
-        end,
-      }),
-      repeat: -1,
+      frames: this.scene.anims.generateFrameNumbers(this.walkingTextureKey),
       frameRate: 10,
+      repeat: -1,
     });
   }
 
   private createSwimAnimation() {
-    if (!this.scene || !this.scene.anims) return;
+    if (
+      !this.scene?.anims ||
+      !this.swimmingTextureKey ||
+      !this.swimmingAnimationKey
+    )
+      return;
+    if (this.scene.anims.exists(this.swimmingAnimationKey)) return;
 
     this.scene.anims.create({
       key: this.swimmingAnimationKey,
-      frames: this.scene.anims.generateFrameNumbers(
-        this.swimmingAnimationKey as string,
-      ),
+      frames: this.scene.anims.generateFrameNumbers(this.swimmingTextureKey),
       frameRate: 20,
       repeat: -1,
     });
