@@ -225,6 +225,7 @@ export const Profile: React.FC<{
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
         innerPanelFooter={playerStats}
+        onClose={onClose}
       >
         <div className="p-1">
           <div className="flex items-center gap-2">

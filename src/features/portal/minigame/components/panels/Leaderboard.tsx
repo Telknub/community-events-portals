@@ -214,7 +214,6 @@ export const Leaderboard: React.FC = () => {
             endDate={toUtcDate(appliedEndDate)}
             farmId={Number(farmId)}
             jwt={jwt as string}
-            onBack={() => null}
           />
         </div>
       )}

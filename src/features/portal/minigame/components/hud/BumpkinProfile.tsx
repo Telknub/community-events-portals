@@ -629,7 +629,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
         </div>
       )}
 
-      <Modal show={isModalOpen} onHide={closeModal} size="lg">
+      <Modal show={isModalOpen} backdrop="static" size="lg">
         {isTouch ? (
           <div
             className="relative flex max-h-[90vh] justify-center"
