@@ -84,6 +84,9 @@ const applyIncompatibleWearableRules = (outfit: BumpkinParts) => {
   }
 };
 
+const areLoadoutsEqual = (left: WearableLoadouts, right: WearableLoadouts) =>
+  JSON.stringify(left) === JSON.stringify(right);
+
 const enforceWearableInventory = ({
   defaultEquipment,
   loadouts,
@@ -316,11 +319,13 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
       wardrobe: gameState.wardrobe,
     });
 
-    saveStoredLoadouts({
-      farmId,
-      defaultEquipment: stored.defaultEquipment,
-      loadouts,
-    });
+    if (stored.shouldPersist || !areLoadoutsEqual(stored.loadouts, loadouts)) {
+      saveStoredLoadouts({
+        farmId,
+        defaultEquipment: stored.defaultEquipment,
+        loadouts,
+      });
+    }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDefaultEquipment(stored.defaultEquipment);

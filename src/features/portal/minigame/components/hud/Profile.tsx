@@ -6,14 +6,8 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { CloseButtonPanel } from "features/game/components/CloseablePanel";
 import { DynamicNFT } from "features/bumpkins/components/DynamicNFT";
 import { BumpkinPartGroup } from "features/bumpkins/components/BumpkinPartGroup";
-import {
-  BUMPKIN_ITEM_PART,
-  type BumpkinItem,
-  type BumpkinPart,
-} from "features/game/types/bumpkin";
+import type { BumpkinItem, BumpkinPart } from "features/game/types/bumpkin";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
-import type { Wardrobe } from "features/game/types/game";
-import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { BETA_TESTERS, INITIAL_DATE, PORTAL_NAME } from "../../constants";
 import { NPCIcon } from "features/island/bumpkin/components/NPC";
 import { InnerPanel } from "components/ui/Panel";
@@ -34,28 +28,22 @@ import {
   WEARABLE_BUFFS,
 } from "../../constants";
 import type { PlayerStatId } from "../../Types";
-import { reconcileLoadoutWithDefaultEquipment } from "./loadoutUtils";
-
-export type WearableLoadoutSlot = "I" | "II" | "III";
-export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;
-export type StoredWearableLoadouts = {
-  version: 1;
-  defaultEquipment: BumpkinParts;
-  loadouts: WearableLoadouts;
-};
-
-export const LOADOUT_SLOTS: WearableLoadoutSlot[] = ["I", "II", "III"];
+import { LOADOUT_SLOTS, type WearableLoadoutSlot } from "./loadoutStorage";
+export {
+  getStorageKey,
+  loadStoredLoadouts,
+  LOADOUT_SLOTS,
+  saveStoredLoadouts,
+} from "./loadoutStorage";
+export type {
+  LoadedWearableLoadouts,
+  StoredWearableLoadouts,
+  WearableLoadouts,
+  WearableLoadoutSlot,
+} from "./loadoutStorage";
 
 const isMinigameBuffWearable = (wearable: BumpkinItem) =>
   !!WEARABLE_BUFFS[wearable];
-
-export const REQUIRED: BumpkinPart[] = [
-  "background",
-  "body",
-  "hair",
-  "shoes",
-  "tool",
-];
 
 // const REQUIRED_BUT_INCOMPATIBLE: BumpkinPart[][] = [
 //   ["shirt", "pants"],
@@ -86,9 +74,6 @@ const RIGHT_EQUIPMENT: BumpkinPart[] = [
 
 // const BOTTOM_EQUIPMENT: BumpkinPart[] = ["secondaryTool", "aura"];
 
-const getStorageKey = (farmId: number) =>
-  `portal:${PORTAL_NAME}:wearableLoadouts:${farmId}`;
-
 const _playerStatsState = (state: PortalMachineState) => ({
   xpPoints: state.context.xpPoints,
   selectedStat: state.context.selectedStat,
@@ -101,199 +86,6 @@ const isStartDateReached = () =>
 
 const canFarmStart = (farmId: number) =>
   isStartDateReached() || BETA_TESTERS.includes(farmId);
-
-const getDefaultLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
-  I: { ...equipment },
-  II: { ...equipment },
-  III: { ...equipment },
-});
-
-const isValidEquipment = (value: unknown): value is BumpkinParts => {
-  if (!value || typeof value !== "object") return false;
-
-  const equipment = value as BumpkinParts;
-  return REQUIRED.every((part) => !!equipment[part]);
-};
-
-const getAllowedItems = ({
-  available,
-  defaultEquipment,
-}: {
-  available: Wardrobe;
-  defaultEquipment: BumpkinParts;
-}) => {
-  return new Set([
-    ...Object.values(defaultEquipment),
-    ...Object.values(INITIAL_EQUIPMENT),
-    ...Object.entries(available)
-      .filter(([, amount]) => amount > 0)
-      .map(([name]) => name as BumpkinItem),
-  ]);
-};
-
-const getFallbackItem = ({
-  part,
-  fallback,
-  allowedItems,
-}: {
-  part: BumpkinPart;
-  fallback: BumpkinParts;
-  allowedItems: Set<BumpkinItem | undefined>;
-}) => {
-  const defaultItem = fallback[part];
-  if (defaultItem && allowedItems.has(defaultItem)) return defaultItem;
-
-  const initialItem = INITIAL_EQUIPMENT[part];
-  if (initialItem && allowedItems.has(initialItem)) return initialItem;
-
-  return undefined;
-};
-
-const sanitizeEquipment = ({
-  equipment,
-  fallback,
-  allowedItems,
-}: {
-  equipment: unknown;
-  fallback: BumpkinParts;
-  allowedItems: Set<BumpkinItem | undefined>;
-}): BumpkinParts => {
-  if (!isValidEquipment(equipment)) return { ...fallback };
-
-  const sanitized = { ...equipment };
-
-  Object.entries(sanitized).forEach(([part, item]) => {
-    const bumpkinPart = part as BumpkinPart;
-    const bumpkinItem = item as BumpkinItem | undefined;
-    const itemMatchesPart =
-      !!bumpkinItem && BUMPKIN_ITEM_PART[bumpkinItem] === bumpkinPart;
-
-    if (bumpkinItem && allowedItems.has(bumpkinItem) && itemMatchesPart) {
-      return;
-    }
-
-    const fallbackItem = getFallbackItem({
-      part: bumpkinPart,
-      fallback,
-      allowedItems,
-    });
-
-    if (fallbackItem) {
-      sanitized[bumpkinPart] = fallbackItem as never;
-    } else {
-      delete sanitized[bumpkinPart];
-    }
-  });
-
-  REQUIRED.forEach((part) => {
-    if (sanitized[part]) return;
-
-    const fallbackItem = getFallbackItem({ part, fallback, allowedItems });
-    if (fallbackItem) {
-      sanitized[part] = fallbackItem as never;
-    }
-  });
-
-  return isValidEquipment(sanitized) ? sanitized : { ...fallback };
-};
-
-export const loadStoredLoadouts = ({
-  farmId,
-  fallback,
-  available,
-}: {
-  farmId: number;
-  fallback: BumpkinParts;
-  available: Wardrobe;
-}): StoredWearableLoadouts => {
-  const defaults = getDefaultLoadouts(fallback);
-  const allowedItems = getAllowedItems({
-    available,
-    defaultEquipment: fallback,
-  });
-
-  const getStoredLoadouts = (
-    value: unknown,
-  ): Partial<WearableLoadouts> | undefined => {
-    if (!value || typeof value !== "object") return undefined;
-
-    const parsed = value as
-      Partial<WearableLoadouts> | Partial<StoredWearableLoadouts>;
-
-    return "loadouts" in parsed
-      ? (parsed.loadouts as Partial<WearableLoadouts> | undefined)
-      : (parsed as Partial<WearableLoadouts>);
-  };
-
-  try {
-    const raw = localStorage.getItem(getStorageKey(farmId));
-    if (!raw) {
-      return {
-        version: 1,
-        defaultEquipment: { ...fallback },
-        loadouts: defaults,
-      };
-    }
-
-    const parsed = JSON.parse(raw) as unknown;
-    const storedLoadouts = getStoredLoadouts(parsed);
-    if (!storedLoadouts) {
-      return {
-        version: 1,
-        defaultEquipment: { ...fallback },
-        loadouts: defaults,
-      };
-    }
-
-    const loadouts = LOADOUT_SLOTS.reduce((loadouts, slot) => {
-      const stored = storedLoadouts[slot];
-      const sanitized = sanitizeEquipment({
-        equipment: stored,
-        fallback,
-        allowedItems,
-      });
-
-      return {
-        ...loadouts,
-        [slot]: reconcileLoadoutWithDefaultEquipment({
-          loadout: sanitized,
-          defaultEquipment: fallback,
-        }),
-      };
-    }, defaults);
-
-    return {
-      version: 1,
-      defaultEquipment: { ...fallback },
-      loadouts,
-    };
-  } catch {
-    return {
-      version: 1,
-      defaultEquipment: { ...fallback },
-      loadouts: defaults,
-    };
-  }
-};
-
-export const saveStoredLoadouts = ({
-  farmId,
-  defaultEquipment,
-  loadouts,
-}: {
-  farmId: number;
-  defaultEquipment: BumpkinParts;
-  loadouts: WearableLoadouts;
-}) => {
-  localStorage.setItem(
-    getStorageKey(farmId),
-    JSON.stringify({
-      version: 1,
-      defaultEquipment,
-      loadouts,
-    } satisfies StoredWearableLoadouts),
-  );
-};
 
 export const Profile: React.FC<{
   onClose?: () => void;

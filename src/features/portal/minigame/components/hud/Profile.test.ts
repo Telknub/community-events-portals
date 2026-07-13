@@ -1,8 +1,32 @@
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { reconcileLoadoutWithDefaultEquipment } from "./loadoutUtils";
+import {
+  getStorageKey,
+  loadStoredLoadouts,
+  LOADOUT_SLOTS,
+  type StoredWearableLoadouts,
+  type WearableLoadouts,
+} from "./loadoutStorage";
+import type { Wardrobe } from "features/game/types/game";
+
+const FARM_ID = 123;
+
+const wardrobe = {
+  "Handheld Bunny": 3,
+} as Wardrobe;
+
+const makeLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
+  I: { ...equipment },
+  II: { ...equipment },
+  III: { ...equipment },
+});
 
 describe("wearable loadout default equipment synchronization", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it("keeps minigame wearables and refreshes or removes other parts", () => {
     const loadout = {
       ...INITIAL_EQUIPMENT,
@@ -50,5 +74,106 @@ describe("wearable loadout default equipment synchronization", () => {
     expect(reconciled.I.hair).toBe("Buzz Cut");
     expect(reconciled.II.hair).toBe("Buzz Cut");
     expect(reconciled.III.hair).toBe("Buzz Cut");
+  });
+
+  it("loads default loadouts in memory without marking empty storage for persistence", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(stored.hasStoredLoadouts).toBe(false);
+    expect(stored.shouldPersist).toBe(false);
+    expect(stored.defaultEquipment).toEqual(fallback);
+    LOADOUT_SLOTS.forEach((slot) => {
+      expect(stored.loadouts[slot]).toEqual(fallback);
+    });
+  });
+
+  it("keeps existing stored minigame wearable loadouts instead of replacing them with defaults", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+    const storedLoadouts: StoredWearableLoadouts = {
+      version: 1,
+      defaultEquipment: fallback,
+      loadouts,
+    };
+
+    localStorage.setItem(getStorageKey(FARM_ID), JSON.stringify(storedLoadouts));
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(stored.hasStoredLoadouts).toBe(true);
+    expect(stored.shouldPersist).toBe(false);
+    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
+    expect(stored.loadouts.I).toEqual(fallback);
+  });
+
+  it("refreshes base equipment changes while preserving minigame buff wearables", () => {
+    const previousDefault = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const currentDefault = {
+      ...INITIAL_EQUIPMENT,
+      hair: "Buzz Cut",
+    } as BumpkinParts;
+    const loadouts = makeLoadouts(previousDefault);
+    loadouts.I = {
+      ...previousDefault,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    localStorage.setItem(
+      getStorageKey(FARM_ID),
+      JSON.stringify({
+        version: 1,
+        defaultEquipment: previousDefault,
+        loadouts,
+      } satisfies StoredWearableLoadouts),
+    );
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback: currentDefault,
+      available: wardrobe,
+    });
+
+    expect(stored.hasStoredLoadouts).toBe(true);
+    expect(stored.shouldPersist).toBe(true);
+    expect(stored.defaultEquipment).toEqual(currentDefault);
+    expect(stored.loadouts.I.tool).toBe("Handheld Bunny");
+    expect(stored.loadouts.I.hair).toBe("Buzz Cut");
+    expect(stored.loadouts.II.hair).toBe("Buzz Cut");
+  });
+
+  it("loads legacy slot-only storage and marks it for v1 persistence", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const legacyLoadouts = makeLoadouts(fallback);
+    legacyLoadouts.III = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    localStorage.setItem(getStorageKey(FARM_ID), JSON.stringify(legacyLoadouts));
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(stored.hasStoredLoadouts).toBe(true);
+    expect(stored.shouldPersist).toBe(true);
+    expect(stored.loadouts.III.tool).toBe("Handheld Bunny");
+    expect(stored.defaultEquipment).toEqual(fallback);
   });
 });

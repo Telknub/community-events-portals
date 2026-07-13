@@ -55,18 +55,35 @@ export async function portal(request: Request) {
 }
 
 const host = window.location.host.replace(/^www\./, "");
-const LOCAL_STORAGE_KEY = `sb_wiz.zpc.minigame.${host}-${window.location.pathname}`;
+const LOCAL_STORAGE_KEY = `sb_wiz.zpc.minigame.${host}`;
+const LEGACY_LOCAL_STORAGE_KEY = `${LOCAL_STORAGE_KEY}-${window.location.pathname}`;
 
 type MinigameSessions = Partial<Record<string, string>>;
 
-function getMinigameToken(name: string): string | null {
-  const item = localStorage.getItem(LOCAL_STORAGE_KEY);
-
-  if (!item) {
-    return null;
+function getStoredSessions(): MinigameSessions {
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored) as MinigameSessions;
+    } catch {
+      return {};
+    }
   }
 
-  const sessions = JSON.parse(item) as MinigameSessions;
+  const legacyStored = localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
+  if (!legacyStored) return {};
+
+  try {
+    const sessions = JSON.parse(legacyStored) as MinigameSessions;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessions));
+    return sessions;
+  } catch {
+    return {};
+  }
+}
+
+function getMinigameToken(name: string): string | null {
+  const sessions = getStoredSessions();
 
   return sessions[name] as string;
 }
@@ -90,15 +107,7 @@ export function decodeToken(token: string): Token {
 const TOKEN_BUFFER_MS = 1000 * 60 * 60 * 1;
 
 export function saveJWT({ token, name }: { token: string; name: string }) {
-  let sessions: MinigameSessions = {};
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (stored) {
-    try {
-      sessions = JSON.parse(stored);
-    } catch {
-      sessions = {};
-    }
-  }
+  const sessions = getStoredSessions();
 
   sessions[name] = token;
 
@@ -107,4 +116,5 @@ export function saveJWT({ token, name }: { token: string; name: string }) {
 
 export function removeMinigameJWTs() {
   localStorage.removeItem(LOCAL_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
 }
