@@ -661,6 +661,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             return {
               endAt: 0,
               score: 0,
+              lastScore: 0,
               lastBaseScore: 0,
               lastScoreBonusApplied: false,
               usedWearableBuff:
@@ -789,7 +790,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               collected: score,
               lastBaseScore: baseScore,
               lastScoreBonusApplied: bonusApplied,
-              lastScore: context.isTraining ? context.lastScore : score,
+              lastScore: score,
               state: (() => {
                 if (context.isTraining) return context.state;
 
@@ -827,7 +828,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
               lastBaseScore: baseScore,
               lastScoreBonusApplied: bonusApplied,
               validations: structuredClone(VALIDATIONS),
-              lastScore: context.isTraining ? context.lastScore : score,
+              lastScore: score,
               state: (() => {
                 if (context.isTraining) return context.state;
 

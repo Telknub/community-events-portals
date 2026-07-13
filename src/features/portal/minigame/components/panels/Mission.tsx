@@ -27,6 +27,7 @@ import { Prize } from "./Prize";
 interface Props {
   mode: "introduction" | "success" | "failed";
   showScore?: boolean;
+  showOnlyScore?: boolean;
   showExitButton: boolean;
   confirmButtonText: string;
   onConfirm: () => void;
@@ -48,6 +49,7 @@ const _jwt = (state: PortalMachineState) => state.context.jwt;
 export const Mission: React.FC<Props> = ({
   mode,
   showScore,
+  showOnlyScore,
   showExitButton,
   confirmButtonText,
   onConfirm,
@@ -133,20 +135,22 @@ export const Mission: React.FC<Props> = ({
                       <div>{formattedLastScore()}</div>
                     )}
                   </OuterPanel>
-                  <div className="flex gap-1">
-                    <OuterPanel className="w-full flex flex-col items-center">
-                      <Label type="default">
-                        {t(`${PORTAL_NAME}.bestToday`)}
-                      </Label>
-                      <div>{formattedBestToday()}</div>
-                    </OuterPanel>
-                    <OuterPanel className="w-full flex flex-col items-center">
-                      <Label type="default">
-                        {t(`${PORTAL_NAME}.bestAllTime`)}
-                      </Label>
-                      <div>{formattedBestAllTime()}</div>
-                    </OuterPanel>
-                  </div>
+                  {!showOnlyScore && (
+                    <div className="flex gap-1">
+                      <OuterPanel className="w-full flex flex-col items-center">
+                        <Label type="default">
+                          {t(`${PORTAL_NAME}.bestToday`)}
+                        </Label>
+                        <div>{formattedBestToday()}</div>
+                      </OuterPanel>
+                      <OuterPanel className="w-full flex flex-col items-center">
+                        <Label type="default">
+                          {t(`${PORTAL_NAME}.bestAllTime`)}
+                        </Label>
+                        <div>{formattedBestAllTime()}</div>
+                      </OuterPanel>
+                    </div>
+                  )}
                 </>
               )}
               {!showScore && (
@@ -154,7 +158,9 @@ export const Mission: React.FC<Props> = ({
                   <Prize />
                 </div>
               )}
-              <AbilityWearables bumpkinParts={bumpkinParts!} />
+              {!showOnlyScore && (
+                <AbilityWearables bumpkinParts={bumpkinParts!} />
+              )}
             </div>
           </div>
 

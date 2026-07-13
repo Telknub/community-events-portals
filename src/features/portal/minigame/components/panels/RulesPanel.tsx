@@ -13,6 +13,7 @@ import { Leaderboard } from "./Leaderboard";
 interface Props {
   mode: "introduction" | "success" | "failed";
   showScore?: boolean;
+  showOnlyScore?: boolean;
   showExitButton: boolean;
   confirmButtonText: string;
   onConfirm: () => void;
@@ -22,6 +23,7 @@ interface Props {
 export const RulesPanel: React.FC<Props> = ({
   mode,
   showScore,
+  showOnlyScore,
   showExitButton,
   confirmButtonText,
   onConfirm,
@@ -62,6 +64,7 @@ export const RulesPanel: React.FC<Props> = ({
           <Mission
             mode={mode}
             showScore={showScore}
+            showOnlyScore={showOnlyScore}
             showExitButton={showExitButton}
             confirmButtonText={confirmButtonText}
             onConfirm={onConfirm}

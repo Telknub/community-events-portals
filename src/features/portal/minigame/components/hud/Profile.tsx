@@ -33,6 +33,7 @@ export {
   getStorageKey,
   loadStoredLoadouts,
   LOADOUT_SLOTS,
+  resolveStoredLoadouts,
   saveStoredLoadouts,
 } from "./loadoutStorage";
 export type {

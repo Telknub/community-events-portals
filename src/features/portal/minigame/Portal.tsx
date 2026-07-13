@@ -36,6 +36,7 @@ const _isIntroduction = (state: PortalMachineState) =>
 const _isLoser = (state: PortalMachineState) => state.matches("loser");
 const _isWinner = (state: PortalMachineState) => state.matches("winner");
 const _isComplete = (state: PortalMachineState) => state.matches("complete");
+const _isTraining = (state: PortalMachineState) => state.context.isTraining;
 const _pendingLevelUpChoice = (state: PortalMachineState) =>
   state.context.pendingLevelUpChoice;
 
@@ -62,6 +63,7 @@ export const Portal: React.FC = () => {
   const isWinner = useSelector(portalService, _isWinner);
   const isLoser = useSelector(portalService, _isLoser);
   const isComplete = useSelector(portalService, _isComplete);
+  const isTraining = useSelector(portalService, _isTraining);
   const pendingLevelUpChoice = useSelector(
     portalService,
     _pendingLevelUpChoice,
@@ -146,7 +148,8 @@ export const Portal: React.FC = () => {
         <Modal show>
           <RulesPanel
             mode={"introduction"}
-            showScore={false}
+            showScore={isTraining}
+            showOnlyScore={isTraining}
             showExitButton={true}
             confirmButtonText={t("continue")}
             onConfirm={() => setShowPreGameProfile(true)}

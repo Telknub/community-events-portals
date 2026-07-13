@@ -503,6 +503,70 @@ describe("portalMachine progression flow", () => {
     service.stop();
   });
 
+  it("records the final training score locally without submitting it", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10,
+        usedWearableBuff: false,
+        isTraining: true,
+      }),
+    ).start("playing");
+
+    service.send("GAME_OVER");
+
+    expect(service.state.matches("introduction")).toBe(true);
+    expect(service.state.context.lastBaseScore).toBe(10);
+    expect(service.state.context.lastScore).toBe(11);
+    expect(service.state.context.lastScoreBonusApplied).toBe(true);
+    expect(submitScore).not.toHaveBeenCalled();
+    expect(submitMinigameScore).not.toHaveBeenCalled();
+
+    service.stop();
+  });
+
+  it("records an early training exit locally without submitting it", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        collected: 10,
+        usedWearableBuff: true,
+        isTraining: true,
+      }),
+    ).start("playing");
+
+    service.send("END_GAME_EARLY");
+
+    expect(service.state.matches("introduction")).toBe(true);
+    expect(service.state.context.lastScore).toBe(10);
+    expect(service.state.context.lastScoreBonusApplied).toBe(false);
+    expect(submitScore).not.toHaveBeenCalled();
+    expect(submitMinigameScore).not.toHaveBeenCalled();
+
+    service.stop();
+  });
+
+  it("clears the displayed training score when the next run starts", () => {
+    const service = interpret(
+      portalMachine.withContext({
+        ...portalMachine.initialState.context,
+        isTraining: true,
+        lastScore: 11,
+        lastBaseScore: 10,
+        lastScoreBonusApplied: true,
+      }),
+    ).start("ready");
+
+    service.send("START");
+
+    expect(service.state.matches("playing")).toBe(true);
+    expect(service.state.context.lastScore).toBe(0);
+    expect(service.state.context.lastBaseScore).toBe(0);
+    expect(service.state.context.lastScoreBonusApplied).toBe(false);
+
+    service.stop();
+  });
+
   it("resets recorded buff usage when retrying", () => {
     const service = interpret(
       portalMachine.withContext({

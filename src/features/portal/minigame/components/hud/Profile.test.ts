@@ -5,6 +5,7 @@ import {
   getStorageKey,
   loadStoredLoadouts,
   LOADOUT_SLOTS,
+  resolveStoredLoadouts,
   type StoredWearableLoadouts,
   type WearableLoadouts,
 } from "./loadoutStorage";
@@ -175,5 +176,29 @@ describe("wearable loadout default equipment synchronization", () => {
     expect(stored.shouldPersist).toBe(true);
     expect(stored.loadouts.III.tool).toBe("Handheld Bunny");
     expect(stored.defaultEquipment).toEqual(fallback);
+  });
+
+  it("resolves parent-provided storage values without requiring subdomain localStorage", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    const stored = resolveStoredLoadouts({
+      storedValue: JSON.stringify({
+        version: 1,
+        defaultEquipment: fallback,
+        loadouts,
+      } satisfies StoredWearableLoadouts),
+      fallback,
+      available: wardrobe,
+    });
+
+    expect(localStorage.getItem(getStorageKey(FARM_ID))).toBeNull();
+    expect(stored.hasStoredLoadouts).toBe(true);
+    expect(stored.shouldPersist).toBe(false);
+    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
   });
 });

@@ -129,12 +129,18 @@ const sanitizeEquipment = ({
   return isValidEquipment(sanitized) ? sanitized : { ...fallback };
 };
 
-export const loadStoredLoadouts = ({
-  farmId,
+const parseStoredValue = (value: unknown) => {
+  if (typeof value !== "string") return value;
+
+  return JSON.parse(value) as unknown;
+};
+
+export const resolveStoredLoadouts = ({
+  storedValue,
   fallback,
   available,
 }: {
-  farmId: number;
+  storedValue: unknown;
   fallback: BumpkinParts;
   available: Wardrobe;
 }): LoadedWearableLoadouts => {
@@ -174,8 +180,7 @@ export const loadStoredLoadouts = ({
   };
 
   try {
-    const raw = localStorage.getItem(getStorageKey(farmId));
-    if (!raw) {
+    if (!storedValue) {
       return {
         version: 1,
         defaultEquipment: { ...fallback },
@@ -185,7 +190,7 @@ export const loadStoredLoadouts = ({
       };
     }
 
-    const parsed = JSON.parse(raw) as unknown;
+    const parsed = parseStoredValue(storedValue);
     const storedLoadouts = getStoredLoadouts(parsed);
     if (!storedLoadouts) {
       return {
@@ -247,6 +252,24 @@ export const loadStoredLoadouts = ({
       shouldPersist: false,
     };
   }
+};
+
+export const loadStoredLoadouts = ({
+  farmId,
+  fallback,
+  available,
+}: {
+  farmId: number;
+  fallback: BumpkinParts;
+  available: Wardrobe;
+}): LoadedWearableLoadouts => {
+  const raw = localStorage.getItem(getStorageKey(farmId));
+
+  return resolveStoredLoadouts({
+    storedValue: raw,
+    fallback,
+    available,
+  });
 };
 
 export const saveStoredLoadouts = ({
