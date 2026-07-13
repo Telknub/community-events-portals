@@ -1,6 +1,7 @@
 import type { BumpkinItem } from "features/game/types/bumpkin";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import type {
+  DropItemType,
   PlayerStatId,
   WeaponId,
   WeaponStatKey,
@@ -15,6 +16,10 @@ export type WearableBuffTarget =
       type: "weaponStat";
       weapon: WeaponId;
       stat: WeaponStatKey;
+    }
+  | {
+      type: "orbStat";
+      stat: DropItemType;
     };
 
 export type WearableBuff = {
@@ -130,6 +135,11 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     value: 1,
     descriptionKey: "wearables.buff.glitchAura",
   },
+  "Underworld Stimpack": {
+    target: { type: "playerStat", stat: "speed" },
+    value: 1,
+    descriptionKey: "festival-of-colors.AbilityDescription",
+  },
   "Slime Wings": {
     target: { type: "weaponStat", weapon: "oil", stat: "statusDurationMs" },
     value: 200,
@@ -235,7 +245,11 @@ export const WEARABLE_BUFFS: Partial<Record<BumpkinItem, WearableBuff>> = {
     descriptionKey: "wearables.buff.redJellyPants",
   },
   "Blue Jelly Shoes": {
-    target: { type: "weaponStat", weapon: "sunflower", stat: "projectileSpeed" },
+    target: {
+      type: "weaponStat",
+      weapon: "sunflower",
+      stat: "projectileSpeed",
+    },
     value: 15,
     descriptionKey: "wearables.buff.blueJellyShoes",
   },
