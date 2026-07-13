@@ -66,6 +66,34 @@ const obstacleConfig: Record<
     hp: Infinity,
     hasHitbox: true,
   },
+  deco_1: {
+    width: 5,
+    height: 3,
+    destructible: true,
+    hp: Infinity,
+    hasHitbox: true,
+  },
+  deco_2: {
+    width: 4,
+    height: 3,
+    destructible: true,
+    hp: Infinity,
+    hasHitbox: true,
+  },
+  deco_3: {
+    width: 7,
+    height: 3,
+    destructible: true,
+    hp: Infinity,
+    hasHitbox: true,
+  },
+  deco_4: {
+    width: 7,
+    height: 6,
+    destructible: true,
+    hp: Infinity,
+    hasHitbox: true,
+  },
 };
 
 export function addStaticObstacle({

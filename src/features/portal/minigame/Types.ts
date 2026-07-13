@@ -1,7 +1,16 @@
 import type Phaser from "phaser";
 
 export type ObstacleName =
-  "rock" | "water" | "tree" | "cloud" | "cloud1" | "tree_stump";
+  | "rock"
+  | "water"
+  | "tree"
+  | "cloud"
+  | "cloud1"
+  | "tree_stump"
+  | "deco_1"
+  | "deco_2"
+  | "deco_3"
+  | "deco_4";
 
 export type Obstacle = { name: ObstacleName; x: number; y: number };
 
@@ -37,7 +46,12 @@ export type LevelUpChoice =
     };
 
 export type DamageType =
-  "physical" | "water" | "explosion" | "light" | "dot" | "summon";
+  | "physical"
+  | "water"
+  | "explosion"
+  | "light"
+  | "dot"
+  | "summon";
 
 export type TargetingMode =
   | "nearest"
@@ -108,7 +122,11 @@ export type WeaponUpgrade = {
 };
 
 export type ProjectileBehavior =
-  "linear" | "exploding" | "bouncing" | "light" | "rolling";
+  | "linear"
+  | "exploding"
+  | "bouncing"
+  | "light"
+  | "rolling";
 
 export type ProjectileConfig = {
   texture: string;
@@ -172,7 +190,11 @@ export type CombatConfig = {
 };
 
 export type DropItemType =
-  "blueOrb" | "greenOrb" | "grayOrb" | "yellowOrb" | "purpleOrb";
+  | "blueOrb"
+  | "greenOrb"
+  | "grayOrb"
+  | "yellowOrb"
+  | "purpleOrb";
 
 export type BossTypes = "boss1" | "boss2" | "boss3";
 export type MobTypes = "mob1" | "mob2" | "mob3" | "mob4" | "mob5";
