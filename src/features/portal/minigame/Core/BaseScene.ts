@@ -96,6 +96,8 @@ export const FACTION_NAME_COLORS: Record<FactionName, string> = {
   nightshades: "#a878ac",
 };
 
+export const ZOOM_TOGGLE_EVENT = "zoom_toggle";
+
 export abstract class BaseScene extends Phaser.Scene {
   abstract sceneId: SceneId;
   eventListener?: (event: EventObject) => void;
@@ -147,6 +149,8 @@ export abstract class BaseScene extends Phaser.Scene {
   currentTick = 0;
 
   zoom = window.innerWidth < 500 ? 3 : 4;
+  baseZoom = this.zoom;
+  isZoomedOut = false;
 
   velocity = WALKING_SPEED;
   isMoving = false;
@@ -186,6 +190,12 @@ export abstract class BaseScene extends Phaser.Scene {
 
   private onAudioMuted = (event: CustomEvent) => {
     this.sound.mute = event.detail;
+  };
+
+  private onZoomToggle = () => {
+    this.isZoomedOut = !this.isZoomedOut;
+    const targetZoom = this.isZoomedOut ? this.baseZoom * 0.75 : this.baseZoom;
+    this.cameras.main.setZoom(targetZoom);
   };
 
   /**
@@ -304,6 +314,7 @@ export abstract class BaseScene extends Phaser.Scene {
       // set audio mute state and listen for changes
       this.sound.mute = getAudioMutedSetting();
       window.addEventListener(AUDIO_MUTED_EVENT as any, this.onAudioMuted);
+      window.addEventListener(ZOOM_TOGGLE_EVENT as any, this.onZoomToggle);
 
       if (this.options.mmo.enabled) {
         this.initialiseMMO();
@@ -682,6 +693,7 @@ export abstract class BaseScene extends Phaser.Scene {
         removeReactionListener();
 
         window.removeEventListener(AUDIO_MUTED_EVENT as any, this.onAudioMuted);
+        window.removeEventListener(ZOOM_TOGGLE_EVENT as any, this.onZoomToggle);
         this.input.off("pointerdown"); // clean up pointerdown event listener
       });
     };
