@@ -21,6 +21,7 @@ import {
 } from "features/game/components/modal/components/BuyGems";
 import { randomID } from "lib/utils/random";
 import { onboardingAnalytics } from "lib/onboardingAnalytics";
+import { mfTrack } from "lib/moonforgeAnalytics";
 import type { AuthMachineState } from "features/auth/lib/authMachine";
 import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
@@ -145,12 +146,15 @@ export const CurrenciesModal: React.FC<Props> = ({
     onboardingAnalytics.logEvent("begin_checkout");
   }, []);
 
-  const onFlowerBuy = async (quote: number) => {
+  const onFlowerBuy = async (
+    quote: number,
+    bundle: number | typeof STARTER_PACK,
+  ) => {
     gameService.send("gems.bought", {
       effect: {
         type: "gems.bought",
         quote,
-        bundle: price?.amount,
+        bundle,
       },
       authToken: token,
     });
@@ -193,6 +197,11 @@ export const CurrenciesModal: React.FC<Props> = ({
         ? STARTER_PACK_GEMS
         : ((price?.amount as number) ?? 0),
       ...(isStarterPack ? { coins: STARTER_PACK_COINS } : {}),
+    });
+    mfTrack("iap_completed", {
+      product_id: isStarterPack ? "starter_pack" : `gems_${price?.amount}`,
+      price: price?.usd ?? 0,
+      currency: "USD",
     });
     onClose();
   };

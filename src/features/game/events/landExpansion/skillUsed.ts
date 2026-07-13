@@ -2,6 +2,9 @@ import {
   type BumpkinRevampSkillName,
   BUMPKIN_REVAMP_SKILL_TREE,
   type BumpkinSkillRevamp,
+  SKILL_RANKS,
+  getSkillLevel,
+  isUpgradeableSkillName,
 } from "features/game/types/bumpkinSkills";
 import { getKeys } from "lib/object";
 import type {
@@ -115,7 +118,15 @@ function useGreenhouseGuru({
   getKeys(greenhousePot).forEach((pot) => {
     const { plant } = greenhousePot[pot];
     if (plant) {
-      plant.plantedAt = 1;
+      // Windowed plants (speed-rate model) are made instantly ready by zeroing
+      // the remaining work — back-dating plantedAt would instead re-price the
+      // grow against past boost windows (mirrors instaGrowFlower). Legacy
+      // plants keep the plantedAt back-date.
+      if (plant.baseDurationMs !== undefined) {
+        plant.baseDurationMs = 0;
+      } else {
+        plant.plantedAt = 1;
+      }
     }
   });
 
@@ -150,7 +161,14 @@ function useGreaseLightning({
   getKeys(oilReserves).forEach((reserve) => {
     const { oil } = oilReserves[reserve];
     if (oil) {
+      // Instant recovery. Legacy: a far-past `drilledAt` makes the fixed recovery
+      // window already elapsed. Windowed (`baseDurationMs` set): also zero the
+      // remaining work so `computeReadyAt` collapses `readyAt` to `drilledAt`
+      // (mirrors instaGrowFlower / Greenhouse Guru).
       oil.drilledAt = 1;
+      if (oil.baseDurationMs !== undefined) {
+        oil.baseDurationMs = 0;
+      }
     }
   });
   return oilReserves;
@@ -232,11 +250,23 @@ function useSaltSurge({
 export function getSkillCooldown({
   cooldown,
   state,
+  skillName,
 }: {
   cooldown: number;
   state: GameState;
+  skillName?: BumpkinRevampSkillName;
 }) {
-  let boostedCooldown = new Decimal(cooldown);
+  // Upgradeable power skills (e.g. Instant Growth) scale their cooldown by rank.
+  let base = cooldown;
+  if (skillName && isUpgradeableSkillName(skillName)) {
+    const effect = SKILL_RANKS[skillName];
+    const level = getSkillLevel(state.bumpkin.skills, skillName);
+    if (effect.kind === "cooldown" && level) {
+      base = effect.ranks[level - 1];
+    }
+  }
+
+  let boostedCooldown = new Decimal(base);
   if (isWearableActive({ name: "Luna's Crescent", game: state })) {
     boostedCooldown = boostedCooldown.mul(0.5);
   }
@@ -275,7 +305,11 @@ export function powerSkillDisabledConditions({
   } & BumpkinSkillRevamp;
   const { cooldown, items } = requirements;
 
-  const boostedCooldown = getSkillCooldown({ cooldown: cooldown ?? 0, state });
+  const boostedCooldown = getSkillCooldown({
+    cooldown: cooldown ?? 0,
+    state,
+    skillName,
+  });
 
   const nextSkillUse = (previousPowerUseAt?.[skillName] ?? 0) + boostedCooldown;
 
@@ -352,7 +386,13 @@ export function powerSkillDisabledConditions({
       }
       const plotsStatus = Object.values(crops).map((plot) => {
         if (!plot.crop) return "empty";
-        return isReadyToHarvest(Date.now(), plot.crop, CROPS[plot.crop.name])
+        return isReadyToHarvest(
+          createdAt,
+          plot.crop,
+          CROPS[plot.crop.name],
+          state,
+          plot.fertiliser,
+        )
           ? "ready"
           : "growing";
       });
@@ -366,7 +406,9 @@ export function powerSkillDisabledConditions({
     }
 
     case "Tree Blitz": {
-      if (Object.values(trees).every((tree) => canChop(tree))) {
+      if (
+        Object.values(trees).every((tree) => canChop(tree, state, createdAt))
+      ) {
         return {
           disabled: true,
           reason: translate("powerSkills.reason.noTreesRecovering"),
@@ -412,7 +454,7 @@ export function powerSkillDisabledConditions({
     case "Grease Lightning": {
       if (
         Object.values(oilReserves).every((reserve) =>
-          canDrillOilReserve(reserve),
+          canDrillOilReserve(reserve, state, createdAt),
         )
       ) {
         return {

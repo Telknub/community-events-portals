@@ -57,6 +57,7 @@ import { Restock } from "./restock/Restock";
 import type { BoostName, TemperateSeasonName } from "features/game/types/game";
 import { secondsToString } from "lib/utils/time";
 import { secondsTillWeekReset } from "features/game/lib/factions";
+import { SpecialEventPanel } from "../SpecialEventPanel";
 
 import springIcon from "assets/icons/spring.webp";
 import summerIcon from "assets/icons/summer.webp";
@@ -75,6 +76,11 @@ import {
 import { isFullMoon } from "features/game/types/calendar";
 import { hasRequiredIslandExpansion } from "features/game/lib/hasRequiredIslandExpansion";
 import { useNow } from "lib/utils/hooks/useNow";
+import {
+  CHAPTER_CROP_WEEK,
+  CHAPTER_CROP_WEEK_SEED,
+  isChapterCropWeekActive,
+} from "features/game/types/chapterCropWeek";
 
 export const SEASON_ICONS: Record<TemperateSeasonName, string> = {
   spring: springIcon,
@@ -94,7 +100,9 @@ export const SeasonalSeeds: React.FC = () => {
   const currentSeasonSeeds = getKeys(SEEDS).filter((seed) =>
     SEASONAL_SEEDS[currentSeason].includes(seed),
   );
+
   const now = useNow();
+  const isCropWeek = isChapterCropWeekActive(now);
 
   const [selectedName, setSelectedName] = useState<SeedName>(
     currentSeasonSeeds[0],
@@ -366,6 +374,7 @@ export const SeasonalSeeds: React.FC = () => {
     ...cropMachineSeeds,
     ...currentSeasonSeeds,
     ...FULL_MOON_SEEDS,
+    ...(isCropWeek ? [CHAPTER_CROP_WEEK_SEED] : []),
   ];
 
   const harvestCount = getHarvestCount();
@@ -384,6 +393,12 @@ export const SeasonalSeeds: React.FC = () => {
             item: selectedName,
             seasons,
             cropMachineSeeds,
+            ...(selectedName === CHAPTER_CROP_WEEK_SEED
+              ? {
+                  from: CHAPTER_CROP_WEEK.startDate,
+                  to: CHAPTER_CROP_WEEK.endDate,
+                }
+              : {}),
           }}
           requirements={{
             coins: price,
@@ -444,12 +459,28 @@ export const SeasonalSeeds: React.FC = () => {
                   }}
                   image={ITEM_DETAILS[SEEDS[name].yield ?? name].image}
                   showOverlay={isSeedLocked(name)}
-                  // secondaryImage={SUNNYSIDE.icons.seedling}
                   count={inventory[name]}
                 />
               ))}
             </div>
           </div>
+          {isCropWeek && (
+            <SpecialEventPanel
+              image={
+                ITEM_DETAILS[
+                  SEEDS[CHAPTER_CROP_WEEK_SEED].yield ?? CHAPTER_CROP_WEEK_SEED
+                ].image
+              }
+              title={t("chapterCropWeek.specialEventCrop")}
+              endDate={CHAPTER_CROP_WEEK.endDate}
+              isSelected={selectedName === CHAPTER_CROP_WEEK_SEED}
+              count={inventory[CHAPTER_CROP_WEEK_SEED]}
+              onSelect={() => {
+                onSeedClick(CHAPTER_CROP_WEEK_SEED);
+                setShowBoosts(false);
+              }}
+            />
+          )}
           {cropMachineSeeds.length > 0 && (
             <div id="CropMachineSeeds">
               <Label

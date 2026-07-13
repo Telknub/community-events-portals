@@ -1,6 +1,7 @@
 import Decimal from "decimal.js-light";
 import { burnCollectible } from "./burnCollectible";
 import { TEST_FARM } from "features/game/lib/constants";
+import { getExpiryCooldown } from "features/game/lib/collectibleBuilt";
 
 describe("burnCollectible", () => {
   it("requires Hourglass exists", () => {
@@ -500,5 +501,79 @@ describe("burnCollectible", () => {
         },
       ],
     });
+  });
+
+  it("records the active window in boostHistory when a windowed booster is burned", () => {
+    const now = Date.now();
+    const cooldown = getExpiryCooldown("Harvest Hourglass", TEST_FARM);
+    // Anchor the window math to the known rebalanced constant (jest runs flag-on),
+    // so an accidental helper misuse in the burn/history path is caught here.
+    expect(cooldown).toBe(9 * 60 * 60 * 1000);
+    const createdAt = now - cooldown - 1000; // just expired
+
+    const state = burnCollectible({
+      state: {
+        ...TEST_FARM,
+        inventory: { "Harvest Hourglass": new Decimal(1) },
+        collectibles: {
+          "Harvest Hourglass": [
+            {
+              coordinates: { x: 0, y: 0 },
+              id: "1",
+              createdAt,
+              readyAt: createdAt,
+            },
+          ],
+        },
+      },
+      action: {
+        id: "1",
+        location: "farm",
+        name: "Harvest Hourglass",
+        type: "collectible.burned",
+      },
+      createdAt: now,
+    });
+
+    // The placed record is gone…
+    expect(state.collectibles["Harvest Hourglass"]).toBeUndefined();
+    // …but its active window is preserved so in-progress crops keep the credit.
+    expect(state.boostHistory?.["Harvest Hourglass"]).toEqual([
+      { from: createdAt, to: createdAt + cooldown },
+    ]);
+  });
+
+  it("records boostHistory for any burned temporary collectible (future-proof)", () => {
+    const now = Date.now();
+    const cooldown = getExpiryCooldown("Gourmet Hourglass", TEST_FARM);
+    const createdAt = now - cooldown - 1000;
+
+    const state = burnCollectible({
+      state: {
+        ...TEST_FARM,
+        inventory: { "Gourmet Hourglass": new Decimal(1) },
+        collectibles: {
+          "Gourmet Hourglass": [
+            {
+              coordinates: { x: 0, y: 0 },
+              id: "1",
+              createdAt,
+              readyAt: createdAt,
+            },
+          ],
+        },
+      },
+      action: {
+        id: "1",
+        location: "farm",
+        name: "Gourmet Hourglass",
+        type: "collectible.burned",
+      },
+      createdAt: now,
+    });
+
+    expect(state.boostHistory?.["Gourmet Hourglass"]).toEqual([
+      { from: createdAt, to: createdAt + cooldown },
+    ]);
   });
 });

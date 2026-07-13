@@ -25,7 +25,7 @@ const usernameFeatureFlag = (game: GameState) => {
 };
 
 const betaFeatureFlag = ({ inventory }: GameState) =>
-  CONFIG.NETWORK === "amoy" || !!inventory["Beta Pass"]?.gt(0);
+  CONFIG.NETWORK === "amoy" || !!inventory?.["Beta Pass"]?.gt(0);
 
 export const testnetFeatureFlag = () => CONFIG.NETWORK === "amoy";
 
@@ -81,8 +81,8 @@ export const TIME_BASED_FEATURE_FLAG_WINDOWS = {
     end: new Date("2026-04-08T00:00:00Z"),
   },
   COLORS_2026_EVENT_FLAG: {
-    start: new Date("2026-07-01T00:00:00Z"),
-    end: new Date("2026-07-11T00:00:00Z"),
+    start: new Date("2026-07-13T00:00:00Z"),
+    end: new Date("2026-07-23T00:00:00Z"),
   },
   RONIN_WAYPOINT_DEPRECATION: {
     start: WAYPOINT_WALLET_ENDDATE,
@@ -169,10 +169,27 @@ const FEATURE_FLAGS = {
   // Saving & re-applying named farm layouts in landscaping mode.
   SAVED_LAYOUTS: betaFeatureFlag,
 
+  // Bulk-fetch resources from all pets at once: the player types how many of
+  // each resource they need, the FE plans the best allocation across all pets,
+  // and one `pets.bulkFetch` event executes it.
+  BULK_PET_FETCH: betaFeatureFlag,
+
+  // Speed-rate (Clash-of-Clans potion) model for time-based boosts — starting
+  // with the Sparrow Shrine on crops. When on, planting stores the new
+  // baseDurationMs + true plantedAt model; when off, boosts stay discount-at-start.
+  SPEED_BOOSTS: usernameFeatureFlag,
+
   // Importing leftover items from the old home into the new interior.
   HOME_ITEM_MIGRATION: betaFeatureFlag,
 
-  SWAMP_ASCENSION: testnetFeatureFlag,
+  SWAMP_ASCENSION: usernameFeatureFlag,
+
+  // Per-rank skill upgrades (spend Ascension Shards + skill points to rank up a
+  // skill). Kept on its own flag so the upgrade UI + `skill.upgraded` event can
+  // be toggled independently of the rest of the ascension system (islands,
+  // expansion, level bands). Skill *effects* still apply off the stored rank
+  // regardless of this flag; only purchasing new ranks is gated here.
+  ASCENSION_SKILLS: testnetFeatureFlag,
 } satisfies Record<string, FeatureFlag>;
 
 export type FeatureName = keyof typeof FEATURE_FLAGS;

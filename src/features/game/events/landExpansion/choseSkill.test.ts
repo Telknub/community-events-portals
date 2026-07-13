@@ -347,5 +347,20 @@ describe("choseSkill", () => {
 
       expect(result).toBe(225);
     });
+
+    it("subtracts skill points spent on rank upgrades", () => {
+      const result = getAvailableBumpkinSkillPoints({
+        ...TEST_FARM,
+        bumpkin: {
+          ...INITIAL_BUMPKIN,
+          experience: LEVEL_EXPERIENCE[10],
+          // Green Thumb (tier 1) at rank 3: base 1 + upgrades 3 * 2 = 7 used.
+          skills: { "Green Thumb": 3 },
+        },
+      });
+
+      // Level 10 earns 10 points; 7 spent => 3 available.
+      expect(result).toBe(3);
+    });
   });
 });

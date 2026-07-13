@@ -6,6 +6,7 @@ import {
 } from "features/game/types/fruits";
 import type { FruitPatch, GameState } from "features/game/types/game";
 import { getFruitPatchTime, getPlantedAt, plantFruit } from "./fruitPlanted";
+import { CONFIG } from "lib/config";
 
 const dateNow = Date.now();
 const GAME_STATE: GameState = {
@@ -35,6 +36,18 @@ const GAME_STATE: GameState = {
   },
 };
 describe("fruitPlanted", () => {
+  // These tests assert the LEGACY back-dated grow time (the discount is baked
+  // into plantedAt at plant time). FE jest runs on amoy where SPEED_BOOSTS is
+  // on, so force the flag off here; the windowed model is covered in its own
+  // describe below.
+  const originalNetwork = CONFIG.NETWORK;
+  beforeEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "mainnet";
+  });
+  afterEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = originalNetwork;
+  });
+
   it("does not plant on non-existent fruit patch", () => {
     expect(() =>
       plantFruit({
@@ -835,6 +848,49 @@ describe("fruitPlanted", () => {
     expect(state.fruitPatches[patchIndex].fruit?.harvestsLeft).toEqual(7);
   });
 
+  it.each([
+    [2, 8],
+    [3, 9],
+  ])(
+    "scales Immortal Pear harvest bonus with Pear Turbocharge rank %i",
+    (rank, expected) => {
+      const patchIndex = "1";
+      const state = plantFruit({
+        state: {
+          ...GAME_STATE,
+          bumpkin: {
+            ...INITIAL_BUMPKIN,
+            skills: { "Pear Turbocharge": rank },
+          },
+          inventory: {
+            "Apple Seed": new Decimal(5),
+            "Immortal Pear": new Decimal(1),
+          },
+          collectibles: {
+            "Immortal Pear": [
+              {
+                coordinates: { x: 0, y: 0 },
+                createdAt: 0,
+                id: "123",
+                readyAt: 0,
+              },
+            ],
+          },
+        },
+        createdAt: dateNow,
+        harvestsLeft: () => 5,
+        action: {
+          type: "fruit.planted",
+          index: patchIndex,
+          seed: "Apple Seed",
+        },
+      });
+      expect(state.fruitPatches[patchIndex].fruit?.harvestsLeft).toEqual(
+        expected,
+      );
+    },
+  );
+
   it("does not accept harvest count above Immortal Pear range with Pear Turbocharge", () => {
     expect(() =>
       plantFruit({
@@ -892,6 +948,17 @@ describe("fruitPlanted", () => {
 });
 
 describe("getFruitTime", () => {
+  // Legacy baked-discount assertions (Orchard Hourglass / Turbofruit Mix are
+  // windowed under SPEED_BOOSTS); force the flag off. Windowed coverage lives in
+  // the "SPEED_BOOSTS speed windows" describe.
+  const originalNetwork = CONFIG.NETWORK;
+  beforeEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "mainnet";
+  });
+  afterEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = originalNetwork;
+  });
+
   it("applies 20% growth time reduction with Turbofruit Mix on the patch", () => {
     const seed = "Apple Seed";
     const { seconds: base } = getFruitPatchTime(seed, TEST_FARM);
@@ -1126,6 +1193,36 @@ describe("getFruitTime", () => {
 
     expect(time).toEqual(plantSeconds * 0.9);
   });
+  it("applies a 15% growth speed boost on Fruit seeds with Catchup skill at rank 2", () => {
+    const seed = "Tomato Seed";
+    const plantSeconds = PATCH_FRUIT_SEEDS[seed].plantSeconds;
+    const { seconds: time } = getFruitPatchTime(seed, {
+      ...TEST_FARM,
+      bumpkin: {
+        ...INITIAL_BUMPKIN,
+        skills: {
+          Catchup: 2,
+        },
+      },
+    });
+
+    expect(time).toEqual(plantSeconds * 0.85);
+  });
+  it("applies a 20% growth speed boost on Fruit seeds with Catchup skill at rank 3", () => {
+    const seed = "Tomato Seed";
+    const plantSeconds = PATCH_FRUIT_SEEDS[seed].plantSeconds;
+    const { seconds: time } = getFruitPatchTime(seed, {
+      ...TEST_FARM,
+      bumpkin: {
+        ...INITIAL_BUMPKIN,
+        skills: {
+          Catchup: 3,
+        },
+      },
+    });
+
+    expect(time).toEqual(plantSeconds * 0.8);
+  });
   it("takes 25% faster to grow Apples with Long Pickings skill, but Oranges take 10% longer to grow", () => {
     const applePlantSeconds = PATCH_FRUIT_SEEDS["Apple Seed"].plantSeconds;
     const { seconds: appleTime } = getFruitPatchTime("Apple Seed", {
@@ -1219,5 +1316,211 @@ describe("getFruitTime", () => {
     expect(bananaTime).toEqual(bananaPlantSeconds * 1.1);
     expect(orangeTime).toEqual(orangePlantSeconds * 0.75);
     expect(blueberryTime).toEqual(blueberryPlantSeconds * 0.75);
+  });
+  it.each([
+    [2, 0.65, 1.125],
+    [3, 0.55, 1.15],
+  ])(
+    "scales Long Pickings buff/debuff at rank %i (Apple buff, Orange debuff)",
+    (rank, buff, debuff) => {
+      const applePlantSeconds = PATCH_FRUIT_SEEDS["Apple Seed"].plantSeconds;
+      const { seconds: appleTime } = getFruitPatchTime("Apple Seed", {
+        ...TEST_FARM,
+        bumpkin: { ...INITIAL_BUMPKIN, skills: { "Long Pickings": rank } },
+      });
+      const orangePlantSeconds = PATCH_FRUIT_SEEDS["Orange Seed"].plantSeconds;
+      const { seconds: orangeTime } = getFruitPatchTime("Orange Seed", {
+        ...TEST_FARM,
+        bumpkin: { ...INITIAL_BUMPKIN, skills: { "Long Pickings": rank } },
+      });
+      expect(appleTime).toEqual(applePlantSeconds * buff);
+      expect(orangeTime).toEqual(orangePlantSeconds * debuff);
+    },
+  );
+  it.each([
+    [2, 0.65, 1.125],
+    [3, 0.55, 1.15],
+  ])(
+    "scales Short Pickings buff/debuff at rank %i (Orange buff, Apple debuff)",
+    (rank, buff, debuff) => {
+      const orangePlantSeconds = PATCH_FRUIT_SEEDS["Orange Seed"].plantSeconds;
+      const { seconds: orangeTime } = getFruitPatchTime("Orange Seed", {
+        ...TEST_FARM,
+        bumpkin: { ...INITIAL_BUMPKIN, skills: { "Short Pickings": rank } },
+      });
+      const applePlantSeconds = PATCH_FRUIT_SEEDS["Apple Seed"].plantSeconds;
+      const { seconds: appleTime } = getFruitPatchTime("Apple Seed", {
+        ...TEST_FARM,
+        bumpkin: { ...INITIAL_BUMPKIN, skills: { "Short Pickings": rank } },
+      });
+      expect(orangeTime).toEqual(orangePlantSeconds * buff);
+      expect(appleTime).toEqual(applePlantSeconds * debuff);
+    },
+  );
+});
+
+describe("plantFruit — SPEED_BOOSTS speed windows", () => {
+  const originalNetwork = CONFIG.NETWORK;
+  beforeEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "amoy";
+  });
+  afterEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = originalNetwork;
+  });
+
+  const applePlantMs = PATCH_FRUIT_SEEDS["Apple Seed"].plantSeconds * 1000;
+  const activePlacement = { id: "1", createdAt: dateNow, readyAt: dateNow };
+
+  it("stores the real plantedAt and a baseDurationMs instead of back-dating", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        inventory: { "Apple Seed": new Decimal(1) },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Apple Seed" },
+    });
+
+    const fruit = state.fruitPatches["1"].fruit;
+    expect(fruit?.plantedAt).toBe(dateNow);
+    expect(fruit?.baseDurationMs).toBe(applePlantMs);
+  });
+
+  it("bakes PERMANENT boosts into baseDurationMs (Fruit Tune Box ×0.8)", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        inventory: {
+          "Apple Seed": new Decimal(1),
+          "Fruit Tune Box": new Decimal(1),
+        },
+        collectibles: {
+          "Fruit Tune Box": [
+            { ...activePlacement, coordinates: { x: 0, y: 0 } },
+          ],
+        },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Apple Seed" },
+    });
+
+    const fruit = state.fruitPatches["1"].fruit;
+    expect(fruit?.plantedAt).toBe(dateNow);
+    expect(fruit?.baseDurationMs).toBe(applePlantMs * 0.8);
+  });
+
+  it("EXCLUDES windowed totems from baseDurationMs and boostsUsedAt", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        inventory: {
+          "Apple Seed": new Decimal(1),
+          "Super Totem": new Decimal(1),
+        },
+        collectibles: {
+          "Super Totem": [{ ...activePlacement, coordinates: { x: 0, y: 0 } }],
+        },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Apple Seed" },
+    });
+
+    const fruit = state.fruitPatches["1"].fruit;
+    // Totem is windowed → not baked; base duration stays the full base time.
+    expect(fruit?.baseDurationMs).toBe(applePlantMs);
+    // ...and not recorded (its contribution is derived over the grow).
+    expect(state.boostsUsedAt?.["Super Totem"]).toBeUndefined();
+  });
+
+  it("EXCLUDES the Orchard Hourglass from baseDurationMs", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        inventory: {
+          "Apple Seed": new Decimal(1),
+          "Orchard Hourglass": new Decimal(1),
+        },
+        collectibles: {
+          "Orchard Hourglass": [
+            { ...activePlacement, coordinates: { x: 0, y: 0 } },
+          ],
+        },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Apple Seed" },
+    });
+
+    expect(state.fruitPatches["1"].fruit?.baseDurationMs).toBe(applePlantMs);
+  });
+
+  it("EXCLUDES the Turbofruit Mix fertiliser from baseDurationMs (windowed)", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        inventory: { "Apple Seed": new Decimal(1) },
+        fruitPatches: {
+          ...GAME_STATE.fruitPatches,
+          1: {
+            ...GAME_STATE.fruitPatches[1],
+            fertiliser: { name: "Turbofruit Mix", fertilisedAt: dateNow },
+          },
+        },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Apple Seed" },
+    });
+
+    // ×0.8 is NOT baked; the 1.25× comes from the fertiliser window at read time.
+    expect(state.fruitPatches["1"].fruit?.baseDurationMs).toBe(applePlantMs);
+  });
+
+  it("bakes a permanent boost while excluding a windowed one (Squirrel Monkey ×0.5 + Super Totem)", () => {
+    const state = plantFruit({
+      state: {
+        ...GAME_STATE,
+        bumpkin: INITIAL_BUMPKIN,
+        season: { season: "spring", startedAt: 0 },
+        inventory: {
+          "Orange Seed": new Decimal(1),
+          "Squirrel Monkey": new Decimal(1),
+          "Super Totem": new Decimal(1),
+        },
+        collectibles: {
+          "Squirrel Monkey": [
+            { id: "1", coordinates: { x: 0, y: 0 }, createdAt: 0, readyAt: 0 },
+          ],
+          "Super Totem": [
+            {
+              id: "2",
+              coordinates: { x: 1, y: 1 },
+              createdAt: dateNow,
+              readyAt: dateNow,
+            },
+          ],
+        },
+      },
+      createdAt: dateNow,
+      action: { type: "fruit.planted", index: "1", seed: "Orange Seed" },
+    });
+
+    const orangeMs = PATCH_FRUIT_SEEDS["Orange Seed"].plantSeconds * 1000;
+    const fruit = state.fruitPatches["1"].fruit;
+    expect(fruit?.plantedAt).toBe(dateNow);
+    expect(fruit?.baseDurationMs).toBe(orangeMs * 0.5);
+  });
+
+  it("getPlantedAt returns the real plantedAt and a baseDurationMs", () => {
+    const { plantedAt, baseDurationMs } = getPlantedAt(
+      "Apple Seed",
+      { ...GAME_STATE, bumpkin: INITIAL_BUMPKIN },
+      dateNow,
+    );
+    expect(plantedAt).toBe(dateNow);
+    expect(baseDurationMs).toBe(applePlantMs);
   });
 });

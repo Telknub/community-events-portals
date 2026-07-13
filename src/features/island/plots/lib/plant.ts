@@ -43,6 +43,7 @@ const HARVEST_PROC_SPRITES: Record<CropName, any> = {
   Onion: parsnipProc,
   Turnip: sunflowerProc,
   Artichoke: cabbageProc,
+  Saltwort: beetrootProc,
 };
 
 export const HARVEST_PROC_ANIMATION = {
@@ -88,6 +89,8 @@ export const IMAGES: Record<CropName, string> = {
   Onion: "onion",
   Turnip: "turnip",
   Artichoke: "artichoke",
+  // Chapter Crop Week event crop (lifecycle art in the images repo)
+  Saltwort: "saltwort",
 };
 
 export const CROP_LIFECYCLE: Record<
@@ -179,7 +182,7 @@ export const CROP_LIFECYCLE: Record<
     }),
     {} as Record<CropName, Lifecycle>,
   ),
-  "Moon Biome": getKeys(IMAGES).reduce(
+  "Galaxy Biome": getKeys(IMAGES).reduce(
     (acc, name) => ({
       ...acc,
       [name]: {
@@ -249,7 +252,7 @@ export const SOIL_IMAGES: Record<LandBiomeName, Record<string, string>> = {
     regular: SUNNYSIDE.soil.volcanoSoil2,
     dry: SUNNYSIDE.soil.volcanoSoilDry,
   },
-  "Moon Biome": {
+  "Galaxy Biome": {
     regular: SUNNYSIDE.soil.volcanoSoil2,
     dry: SUNNYSIDE.soil.volcanoSoilDry,
   },

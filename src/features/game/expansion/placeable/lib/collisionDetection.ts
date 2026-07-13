@@ -30,6 +30,11 @@ import {
 import type { PlaceableLocation } from "features/game/types/collectibles";
 import type { LandscapingPlaceable } from "../landscapingMachine";
 import { PET_NFT_DIMENSIONS } from "features/game/types/pets";
+import {
+  type AOEExtent,
+  SKILL_RANKS,
+  getSkillLevel,
+} from "features/game/types/bumpkinSkills";
 import { getKeys, getObjectEntries } from "lib/object";
 import {
   INTERIOR_CANVAS,
@@ -322,7 +327,7 @@ export const HOME_BOUNDS: Record<IslandType, BoundingBox> = {
     x: -10,
     y: -10,
   },
-  moon: {
+  galaxy: {
     height: 20,
     width: 20,
     x: -10,
@@ -881,6 +886,11 @@ export function detectCollision({
 
 export type AOEItemName =
   | "Basic Scarecrow"
+  // Dedicated cooldown-tracking slot for the Chonky Scarecrow yield boost.
+  // Kept separate from "Basic Scarecrow" (whose slot stores the growth-time
+  // AOE's next-available timestamp) so the two mechanics don't clobber each
+  // other. Never passed to isWithinAOE — only used as a game.aoe key.
+  | "Chonky Scarecrow"
   | "Emerald Turtle"
   | "Tin Turtle"
   | "Sir Goldensnout"
@@ -924,32 +934,38 @@ export function isWithinAOE(
     return Math.abs(dx) <= distance && Math.abs(dy) <= distance;
   };
 
-  const hasChonkyScarecrow = skills["Chonky Scarecrow"];
-  const hasHorrorMike = skills["Horror Mike"];
-  const hasLauriesGains = skills["Laurie's Gains"];
-
-  const boostedDistance = () => {
+  // Base (no skill) footprint reproduces the original 3x3 rectangle. The rank
+  // skill (Chonky Scarecrow / Horror Mike / Laurie's Gains) widens it per rank.
+  const BASE_AOE: AOEExtent = { xLeft: 1, xRight: 1, depth: 3 };
+  const aoeExtent = (): AOEExtent => {
+    let rankSkill: "Chonky Scarecrow" | "Horror Mike" | "Laurie's Gains";
     switch (AOEItemName) {
       case "Basic Scarecrow":
-        return hasChonkyScarecrow ? 2 : 0;
+        rankSkill = "Chonky Scarecrow";
+        break;
       case "Scary Mike":
-        return hasHorrorMike ? 2 : 0;
+        rankSkill = "Horror Mike";
+        break;
       case "Laurie the Chuckle Crow":
-        return hasLauriesGains ? 2 : 0;
+        rankSkill = "Laurie's Gains";
+        break;
       default:
-        return 0;
+        return BASE_AOE;
     }
+    const level = getSkillLevel(skills, rankSkill);
+    return level ? SKILL_RANKS[rankSkill].ranks[level - 1] : BASE_AOE;
   };
 
   switch (AOEItemName) {
     case "Basic Scarecrow":
     case "Scary Mike":
     case "Laurie the Chuckle Crow": {
+      const e = aoeExtent();
       return isWithinRectangle(
-        { x: x - 1 - boostedDistance(), y: y - height, height, width },
+        { x: x - e.xLeft, y: y - height, height, width },
         {
-          x: x + 1 + boostedDistance(),
-          y: y - height - 2 - boostedDistance() * 2,
+          x: x + e.xRight,
+          y: y - height - (e.depth - 1),
           height,
           width,
         },

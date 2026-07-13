@@ -16,6 +16,12 @@ import type { Moderation } from "features/game/lib/gameMachine";
 import { MAX_PLAYERS } from "./lib/availableRooms";
 import type { NPCName } from "lib/npcs";
 import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import { mfScreen, mfSetScene } from "lib/moonforgeAnalytics";
+
+function trackSceneChange(sceneId: string): void {
+  mfScreen(sceneId);
+  mfSetScene(sceneId);
+}
 
 export type Scenes = {
   plaza: Room<PlazaRoomState> | undefined;
@@ -508,6 +514,7 @@ export const mmoMachine = createMachine<MMOContext, MMOEvent, MMOState>({
               x: event.playerCoordinates.x,
               y: event.playerCoordinates.y,
             }),
+          (_, event) => trackSceneChange(event.sceneId),
         ],
         // If going into or leaving stream scene, we need to reload the server
         target: "connecting",
@@ -526,6 +533,7 @@ export const mmoMachine = createMachine<MMOContext, MMOEvent, MMOState>({
               x: event.playerCoordinates.x,
               y: event.playerCoordinates.y,
             }),
+          (_, event) => trackSceneChange(event.sceneId),
         ],
         // TODO: If going into or leaving stream scene, we need to reload the server
         target: "joined",

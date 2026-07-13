@@ -45,6 +45,7 @@ import { useVisiting } from "lib/utils/visitUtils";
 import { RenewCollectible } from "features/game/components/RenewCollectible";
 import Decimal from "decimal.js-light";
 import { getChestItems } from "features/island/hud/components/inventory/utils/inventory";
+import { getExpiryCooldown } from "features/game/lib/collectibleBuilt";
 
 export type HourglassType =
   | "Gourmet Hourglass"
@@ -59,7 +60,6 @@ type HourglassDetail = {
   fullImage: string;
   halfImage: string;
   doneImage: string;
-  boostMillis: number;
 };
 
 const HOURGLASS_DETAILS: Record<HourglassType, HourglassDetail> = {
@@ -67,43 +67,36 @@ const HOURGLASS_DETAILS: Record<HourglassType, HourglassDetail> = {
     fullImage: gourmetHourglassFull,
     halfImage: gourmetHourglassHalf,
     doneImage: gourmetHourglassDone,
-    boostMillis: 4 * 60 * 60 * 1000,
   },
   "Harvest Hourglass": {
     fullImage: harvestHourglassFull,
     halfImage: harvestHourglassHalf,
     doneImage: harvestHourglassDone,
-    boostMillis: 6 * 60 * 60 * 1000,
   },
   "Timber Hourglass": {
     fullImage: timberHourglassFull,
     halfImage: timberHourglassHalf,
     doneImage: timberHourglassDone,
-    boostMillis: 4 * 60 * 60 * 1000,
   },
   "Orchard Hourglass": {
     fullImage: orchardHourglassFull,
     halfImage: orchardHourglassHalf,
     doneImage: orchardHourglassDone,
-    boostMillis: 6 * 60 * 60 * 1000,
   },
   "Blossom Hourglass": {
     fullImage: blossomHourglassFull,
     halfImage: blossomHourglassHalf,
     doneImage: blossomHourglassDone,
-    boostMillis: 4 * 60 * 60 * 1000,
   },
   "Fisher's Hourglass": {
     fullImage: fisherHourglassFull,
     halfImage: fisherHourglassHalf,
     doneImage: fisherHourglassDone,
-    boostMillis: 4 * 60 * 60 * 1000,
   },
   "Ore Hourglass": {
     fullImage: oreHourglassFull,
     halfImage: oreHourglassHalf,
     doneImage: oreHourglassDone,
-    boostMillis: 3 * 60 * 60 * 1000,
   },
 };
 
@@ -126,9 +119,10 @@ export const Hourglass: React.FC<HourglassProps> = ({
   const [showRenewModal, setShowRenewModal] = useState(false);
   const chestItems = getChestItems(gameState);
 
-  const expiresAt = createdAt + HOURGLASS_DETAILS[hourglass].boostMillis;
+  const boostMillis = getExpiryCooldown(hourglass, gameState);
+  const expiresAt = createdAt + boostMillis;
   const { totalSeconds: secondsToExpire } = useCountdown(expiresAt);
-  const durationSeconds = HOURGLASS_DETAILS[hourglass].boostMillis / 1000;
+  const durationSeconds = boostMillis / 1000;
   const percentage = 100 - (secondsToExpire / durationSeconds) * 100;
   const hasExpired = secondsToExpire <= 0;
   const hasReplacement = (chestItems[hourglass] ?? new Decimal(0)).gt(0);

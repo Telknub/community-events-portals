@@ -50,6 +50,8 @@ type TradeableHeaderProps = {
   reload: () => void;
   limitedPurchasesLeft: number;
   display: TradeableDisplay;
+  /** When true, buying & listing are blocked (e.g. Saltwort without event access). */
+  disabled?: boolean;
 };
 
 const _balance = (state: MachineState) => state.context.state.balance;
@@ -64,6 +66,7 @@ export const TradeableHeader: React.FC<TradeableHeaderProps> = ({
   onListClick,
   reload,
   display,
+  disabled,
 }) => {
   const { gameService } = useContext(Context);
   const balance = useSelector(gameService, _balance);
@@ -272,7 +275,7 @@ export const TradeableHeader: React.FC<TradeableHeaderProps> = ({
                 {showBuyNow && (
                   <Button
                     onClick={() => setShowPurchaseModal(true)}
-                    disabled={!canBuy}
+                    disabled={!canBuy || disabled}
                     className={classNames("mr-1 w-full sm:w-auto", {
                       "animate-pulsate": isTutorialBuy,
                     })}
@@ -283,6 +286,7 @@ export const TradeableHeader: React.FC<TradeableHeaderProps> = ({
                 {tradeable?.isActive && !vipIsRequired && !isTutorialItem && (
                   <Button
                     disabled={
+                      disabled ||
                       !availableCount ||
                       // Already has one listed?
 
@@ -312,7 +316,7 @@ export const TradeableHeader: React.FC<TradeableHeaderProps> = ({
             {showBuyNow && (
               <Button
                 onClick={() => setShowPurchaseModal(true)}
-                disabled={!canBuy}
+                disabled={!canBuy || disabled}
                 className={classNames("mr-1 w-full sm:w-auto", {
                   "animate-pulsate": isTutorialBuy,
                 })}
@@ -324,6 +328,7 @@ export const TradeableHeader: React.FC<TradeableHeaderProps> = ({
               <Button
                 onClick={onListClick}
                 disabled={
+                  disabled ||
                   !availableCount ||
                   (!hasTradeReputation &&
                     getRemainingTrades({

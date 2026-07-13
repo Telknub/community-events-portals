@@ -24,6 +24,7 @@ import {
   type PetShopItemName,
 } from "features/game/types/petShop";
 import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import { mfTrack } from "lib/moonforgeAnalytics";
 
 type CraftableCollectibleItem =
   | HeliosBlacksmithItem
@@ -229,6 +230,8 @@ export function craftCollectible({
         boughtAt: createdAt,
       };
     }
+
+    mfTrack("item_crafted", { item_id: action.name, cost_coins: price });
 
     return stateCopy;
   });

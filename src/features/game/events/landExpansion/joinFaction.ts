@@ -6,6 +6,7 @@ import type {
   GameState,
 } from "features/game/types/game";
 import { produce } from "immer";
+import { mfTrack } from "lib/moonforgeAnalytics";
 
 export const FACTIONS: FactionName[] = [
   "bumpkins",
@@ -92,6 +93,8 @@ export function joinFaction({
     stateCopy.inventory[banner] = (
       stateCopy.inventory[banner] ?? new Decimal(0)
     ).add(1);
+
+    mfTrack("faction_joined", { faction_id: action.faction });
 
     return stateCopy;
   });

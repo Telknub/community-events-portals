@@ -14,7 +14,6 @@ import {
 import {
   type GreenHouseFruitName,
   PATCH_FRUIT,
-  PATCH_FRUIT_SEEDS,
   type PatchFruitName,
 } from "features/game/types/fruits";
 import type {
@@ -28,14 +27,14 @@ import { isWearableActive } from "features/game/lib/wearables";
 import { isGreenhouseFruit } from "./plantGreenhouse";
 import { FACTION_ITEMS } from "features/game/lib/factions";
 import { produce } from "immer";
-import {
-  getActiveCalendarEvent,
-  getActiveGuardian,
-} from "features/game/types/calendar";
+import { getActiveCalendarEvent } from "features/game/types/calendar";
+import { getActiveGuardian } from "features/game/lib/getActiveGuardian";
 import { getFruitfulBlendBuff } from "./fertiliseFruitPatch";
 import { updateBoostUsed } from "features/game/types/updateBoostUsed";
 import { prngChance } from "lib/prng";
 import { KNOWN_IDS } from "features/game/types";
+import { isFruitReadyToHarvest } from "./fruitPatchReadiness";
+import { getSkillLevel, SKILL_RANKS } from "features/game/types/bumpkinSkills";
 
 export type HarvestFruitAction = {
   type: "fruit.harvested";
@@ -49,7 +48,7 @@ type Options = {
   farmId: number;
 };
 
-export { isFruitReadyToHarvest } from "./fruitPatchReadiness";
+export { isFruitReadyToHarvest };
 
 type FruitYield = {
   name: GreenHouseFruitName | PatchFruitName;
@@ -94,10 +93,17 @@ export function getFruitYield({
     const criticalDrop = (criticalHitName: CriticalHitName, chance: number) =>
       prngChance({ ...prngArgs, itemId, chance, criticalHitName });
 
-    // Generous Orchard: 20% chance of +1 patch fruit
+    // Generous Orchard: 20%/30%/50% chance of +1 patch fruit (scales with rank)
+    const generousOrchardLevel = getSkillLevel(
+      bumpkin.skills,
+      "Generous Orchard",
+    );
     if (
-      bumpkin.skills["Generous Orchard"] &&
-      criticalDrop("Generous Orchard", 20) &&
+      generousOrchardLevel &&
+      criticalDrop(
+        "Generous Orchard",
+        SKILL_RANKS["Generous Orchard"].ranks[generousOrchardLevel - 1],
+      ) &&
       isFruit(name)
     ) {
       amount += 1;
@@ -119,13 +125,17 @@ export function getFruitYield({
   }
 
   if (isFruit(name) && isCollectibleBuilt({ name: "Macaw", game })) {
-    if (bumpkin.skills["Loyal Macaw"]) {
-      amount += 0.2;
-      boostsUsed.push({ name: "Loyal Macaw", value: "+0.2" });
+    // Loyal Macaw multiplies Macaw's base +0.1 yield by 2x/3x/4x (scales with rank)
+    const loyalMacawLevel = getSkillLevel(bumpkin.skills, "Loyal Macaw");
+    if (loyalMacawLevel) {
+      // Loyal Macaw subsumes the base Macaw yield, so only its entry is recorded.
+      const value = SKILL_RANKS["Loyal Macaw"].ranks[loyalMacawLevel - 1];
+      amount += value;
+      boostsUsed.push({ name: "Loyal Macaw", value: `+${value}` });
     } else {
       amount += 0.1;
+      boostsUsed.push({ name: "Macaw", value: "+0.1" });
     }
-    boostsUsed.push({ name: "Macaw", value: "+0.1" });
   }
 
   if (isFruit(name) && isWearableActive({ name: "Camel Onesie", game })) {
@@ -144,9 +154,11 @@ export function getFruitYield({
     boostsUsed.push({ name: "Fruit Picker Apron", value: "+0.1" });
   }
 
-  if (isFruit(name) && bumpkin.skills["Fruitful Fumble"]) {
-    amount += 0.1;
-    boostsUsed.push({ name: "Fruitful Fumble", value: "+0.1" });
+  const fruitfulFumbleLevel = getSkillLevel(bumpkin.skills, "Fruitful Fumble");
+  if (isFruit(name) && fruitfulFumbleLevel) {
+    const value = SKILL_RANKS["Fruitful Fumble"].ranks[fruitfulFumbleLevel - 1];
+    amount += value;
+    boostsUsed.push({ name: "Fruitful Fumble", value: `+${value}` });
   }
 
   //Faction Quiver
@@ -230,13 +242,17 @@ export function getFruitYield({
     boostsUsed.push({ name: "Grape Pants", value: "+0.2" });
   }
 
-  if (bumpkin.skills["Zesty Vibes"] && !isGreenhouseFruit(name)) {
+  const zestyVibesLevel = getSkillLevel(bumpkin.skills, "Zesty Vibes");
+  if (zestyVibesLevel && !isGreenhouseFruit(name)) {
+    const { buff, debuff } = SKILL_RANKS["Zesty Vibes"];
     if (name === "Tomato" || name === "Lemon") {
-      amount += 1;
-      boostsUsed.push({ name: "Zesty Vibes", value: "+1" });
+      const up = buff[zestyVibesLevel - 1];
+      amount += up;
+      boostsUsed.push({ name: "Zesty Vibes", value: `+${up}` });
     } else {
-      amount -= 0.25;
-      boostsUsed.push({ name: "Zesty Vibes", value: "-0.25" });
+      const down = debuff[zestyVibesLevel - 1];
+      amount -= down;
+      boostsUsed.push({ name: "Zesty Vibes", value: `-${down}` });
     }
   }
 
@@ -289,17 +305,24 @@ export function harvestFruit({
       throw new Error("Nothing was planted");
     }
 
-    const { name, plantedAt, harvestsLeft, harvestedAt } = patch.fruit;
+    const { name, harvestsLeft, harvestedAt } = patch.fruit;
 
     const { seed } = PATCH_FRUIT[name];
-    const { plantSeconds } = PATCH_FRUIT_SEEDS[seed];
 
-    if (createdAt - plantedAt < plantSeconds * 1000) {
-      throw new Error("Not ready");
-    }
-
-    if (createdAt - harvestedAt < plantSeconds * 1000) {
-      throw new Error("Fruit is still replenishing");
+    // Windowed readyAt keys off the active phase (harvestedAt || plantedAt); the
+    // original grow throws "Not ready", a post-harvest replenish throws "still
+    // replenishing" — same split as the legacy two-check gate.
+    if (
+      !isFruitReadyToHarvest(
+        createdAt,
+        patch.fruit,
+        stateCopy,
+        patch.fertiliser,
+      )
+    ) {
+      throw new Error(
+        harvestedAt ? "Fruit is still replenishing" : "Not ready",
+      );
     }
 
     if (!harvestsLeft) {
@@ -321,13 +344,36 @@ export function harvestFruit({
       stateCopy.inventory[name]?.add(amount) ?? new Decimal(amount);
 
     patch.fruit.harvestsLeft = patch.fruit.harvestsLeft - 1;
-    // Patch fertiliser persists across harvests (not consumed here). Passing it into
-    // getPlantedAt applies Turbofruit Mix (×0.8) to replenishment timing for every
-    // remaining harvest, same lifecycle intent as Fruitful Blend on yield.
-    const { plantedAt: newPlantedAt, boostsUsed: fruitPlantedBoostsUsed } =
-      getPlantedAt(seed, stateCopy, createdAt, patch.fertiliser?.name);
+    // A fruit already on the windowed model (baseDurationMs set) stays windowed
+    // for its remaining harvests even if SPEED_BOOSTS is later rolled back —
+    // otherwise the read path (which keys off baseDurationMs) would keep windowed
+    // timing while the write silently reverted it to legacy mid-life. Patch
+    // fertiliser persists across harvests; passing it into getPlantedAt applies
+    // Turbofruit Mix to replenishment timing for every remaining harvest.
+    const forceWindowed = patch.fruit.baseDurationMs !== undefined;
+    const {
+      plantedAt: newPlantedAt,
+      baseDurationMs: newBaseDurationMs,
+      boostsUsed: fruitPlantedBoostsUsed,
+    } = getPlantedAt(
+      seed,
+      stateCopy,
+      createdAt,
+      patch.fertiliser?.name,
+      forceWindowed,
+    );
     delete patch.fruit.amount;
+    // New replenish phase starts with a fresh progress bar (no banked work yet).
+    delete patch.fruit.boostedTime;
     patch.fruit.harvestedAt = newPlantedAt;
+    // Windowed replenish stores the real harvestedAt + a permanent-boost-only
+    // base recovery; a legacy (never-windowed) fruit under flag-off back-dates
+    // harvestedAt instead, so clear any baseDurationMs.
+    if (newBaseDurationMs !== undefined) {
+      patch.fruit.baseDurationMs = newBaseDurationMs;
+    } else {
+      delete patch.fruit.baseDurationMs;
+    }
 
     const activityName: FarmActivityName = `${name} Harvested`;
 

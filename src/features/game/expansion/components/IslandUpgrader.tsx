@@ -23,6 +23,7 @@ import {
 } from "features/game/events/landExpansion/upgradeFarm";
 import {
   getAscensionLevel,
+  getMaxBumpkinLevel,
   LEVELS_PER_ASCENSION,
 } from "features/game/lib/level";
 import type { CollectibleName } from "features/game/types/craftables";
@@ -51,7 +52,7 @@ export const UPGRADE_RAFTS: Record<IslandType, string | null> = {
   swamp: SUNNYSIDE.land.volcanoRaft,
   spooky: SUNNYSIDE.land.volcanoRaft,
   crystal: SUNNYSIDE.land.volcanoRaft,
-  moon: SUNNYSIDE.land.volcanoRaft,
+  galaxy: SUNNYSIDE.land.volcanoRaft,
   marble: SUNNYSIDE.land.volcanoRaft,
 };
 
@@ -64,7 +65,7 @@ const UPGRADE_PREVIEW: Record<IslandType, string | null> = {
   // Ascension islands (spooky onward) reuse the swamp value for now.
   spooky: SUNNYSIDE.announcement.volcanoPrestige,
   crystal: SUNNYSIDE.announcement.volcanoPrestige,
-  moon: SUNNYSIDE.announcement.volcanoPrestige,
+  galaxy: SUNNYSIDE.announcement.volcanoPrestige,
   marble: SUNNYSIDE.announcement.volcanoPrestige,
 };
 
@@ -77,7 +78,7 @@ const UPGRADE_MESSAGES: Record<IslandType, string | null> = {
   // Ascension islands (spooky onward) reuse the swamp value for now.
   spooky: translate("islandupgrade.welcomeVolcanoIsland"),
   crystal: translate("islandupgrade.welcomeVolcanoIsland"),
-  moon: translate("islandupgrade.welcomeVolcanoIsland"),
+  galaxy: translate("islandupgrade.welcomeVolcanoIsland"),
   marble: translate("islandupgrade.welcomeVolcanoIsland"),
 };
 
@@ -90,7 +91,7 @@ const UPGRADE_DESCRIPTIONS: Record<IslandType, string | null> = {
   // Ascension islands (spooky onward) reuse the swamp value for now.
   spooky: translate("islandupgrade.volcanoResourcesDescription"),
   crystal: translate("islandupgrade.volcanoResourcesDescription"),
-  moon: translate("islandupgrade.volcanoResourcesDescription"),
+  galaxy: translate("islandupgrade.volcanoResourcesDescription"),
   marble: translate("islandupgrade.volcanoResourcesDescription"),
 };
 
@@ -142,6 +143,10 @@ const IslandUpgraderModal: React.FC<{
     getAscensionLevel({
       experience: bumpkin.experience ?? 0,
       ascensionLevel: island.ascensionLevel ?? 0,
+      // Mirror the server gate: the pre-ascension cap drops to 150 under
+      // SWAMP_ASCENSION, so without this a maxed level-150 player would be
+      // measured against the legacy 200 cap and never show as ready.
+      maxLevel: getMaxBumpkinLevel(gameState.context.state),
     }).isReadyToAscend;
 
   if (showConfirmation) {

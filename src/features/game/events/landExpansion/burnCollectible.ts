@@ -6,11 +6,12 @@ import Decimal from "decimal.js-light";
 import { produce } from "immer";
 import { PET_SHRINES } from "features/game/types/pets";
 import {
-  EXPIRY_COOLDOWNS,
+  getExpiryCooldown,
   type TemporaryCollectibleName,
 } from "features/game/lib/collectibleBuilt";
 import { isPetCollectible } from "./placeCollectible";
 import { getKeys } from "lib/object";
+import { appendBoostHistory } from "features/game/lib/boostWindows";
 
 export type BurnCollectibleAction = {
   type: "collectible.burned";
@@ -92,11 +93,24 @@ export function burnCollectible({
       throw new Error("Collectible does not exist");
     }
 
-    const cooldown = EXPIRY_COOLDOWNS[action.name as TemporaryCollectibleName];
+    const cooldown = getExpiryCooldown(
+      action.name as TemporaryCollectibleName,
+      stateCopy,
+    );
 
     if ((collectibleToRemove.createdAt ?? 0) + cooldown > createdAt) {
       throw new Error("Collectible is still active");
     }
+
+    // Preserve this booster's active window before its record is deleted, so any
+    // in-progress timer it boosted keeps the earned credit (see boostWindows).
+    const burnedCreatedAt = collectibleToRemove.createdAt ?? 0;
+    appendBoostHistory(
+      stateCopy,
+      action.name as TemporaryCollectibleName,
+      { from: burnedCreatedAt, to: burnedCreatedAt + cooldown },
+      createdAt,
+    );
 
     collectibleGroup = collectibleGroup.filter(
       (collectible) => collectible.id !== collectibleToRemove.id,

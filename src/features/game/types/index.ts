@@ -1254,7 +1254,7 @@ export const KNOWN_IDS: Record<InventoryItemName, number> = {
   // Ascension biomes (spooky onward)
   "Spooky Biome": 2405,
   "Crystal Biome": 2406,
-  "Moon Biome": 2407,
+  "Galaxy Biome": 2407,
   "Marble Age Biome": 2408,
 
   // Dolls
@@ -1561,6 +1561,10 @@ export const KNOWN_IDS: Record<InventoryItemName, number> = {
   "Salt Doll": 3023,
   "Jacuzzi Bear": 3024,
   "Design Trophy": 3026,
+  // Chapter Crop Week (limited-time event)
+  Saltwort: 3027,
+  "Saltwort Seed": 3028,
+  Saltbite: 3029,
 };
 
 // The reverse of above

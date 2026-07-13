@@ -777,6 +777,38 @@ export const OPEN_SEA_COLLECTIBLES: Record<InventoryItemName, Metadata> = {
       { trait_type: "Tradable", value: "No" },
     ],
   },
+  "Saltwort Seed": {
+    name: "Saltwort Seed",
+    description:
+      "A briny seed available only during Chapter Crop Week.\n\nYou can buy saltwort seeds in game at the market during the event.",
+    decimals: 18,
+    external_url: "https://docs.sunflower-land.com/getting-started/about",
+    attributes: [
+      { trait_type: "Purpose", value: "Seed" },
+      { trait_type: "Tradable", value: "No" },
+    ],
+  },
+  Saltwort: {
+    name: "Saltwort",
+    description: "A briny crop harvested during Chapter Crop Week.",
+    decimals: 18,
+    external_url: "https://docs.sunflower-land.com/getting-started/about",
+    attributes: [
+      { trait_type: "Purpose", value: "Crop" },
+      { trait_type: "Tradable", value: "Yes" },
+    ],
+  },
+  Saltbite: {
+    name: "Saltbite",
+    description:
+      "A savory dish cooked at the Fire Pit during Chapter Crop Week.",
+    decimals: 18,
+    external_url: "https://docs.sunflower-land.com/getting-started/about",
+    attributes: [
+      { trait_type: "Purpose", value: "Consumable" },
+      { trait_type: "Tradable", value: "No" },
+    ],
+  },
   "Apple Seed": {
     name: "Apple Seed",
     description:
@@ -12959,15 +12991,16 @@ export const OPEN_SEA_COLLECTIBLES: Record<InventoryItemName, Metadata> = {
     external_url: "https://docs.sunflower-land.com/getting-started/about",
     name: "Crystal Biome",
   },
-  "Moon Biome": {
-    description: "A moon biome that provides a moon income and a moon life.",
+  "Galaxy Biome": {
+    description:
+      "A galaxy biome that provides a galaxy income and a galaxy life.",
     decimals: 0,
     attributes: [
       { trait_type: "Purpose", value: "Decoration" },
       { trait_type: "Tradable", value: "Yes" },
     ],
     external_url: "https://docs.sunflower-land.com/getting-started/about",
-    name: "Moon Biome",
+    name: "Galaxy Biome",
   },
   "Marble Age Biome": {
     description:

@@ -32,6 +32,10 @@
     "transform": {
       "^.+\\.(js|jsx|ts|tsx)$": "esbuild-runner/jest"
     },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/.claude/worktrees/"
+    ],
     "setupFiles": [
       "<rootDir>/test/env.ts",
       "<rootDir>/test/setup.ts"
@@ -63,7 +67,6 @@
     "@tanstack/react-query": "^5.90.16",
     "@use-gesture/react": "^10.2.26",
     "@walletconnect/ethereum-provider": "^2.21.1",
-    "@walletconnect/modal": "^2.5.4",
     "@xstate/react": "^3.0.1",
     "aws-amplify": "^6.13.1",
     "bad-words": "^3.0.4",
@@ -74,7 +77,6 @@
     "colyseus.js": "^0.15.0",
     "decimal.js-light": "^2.5.1",
     "ethers": "5.7.2",
-    "events": "^3.3.0",
     "firebase": "^9.19.1",
     "fsl-authorization": "^1.1.0",
     "gameanalytics": "^4.4.5",
@@ -126,20 +128,15 @@
     "@types/canvas-confetti": "^1.6.4",
     "@types/howler": "^2.2.6",
     "@types/jest": "^29.5.12",
-    "@types/lodash.camelcase": "^4.3.9",
     "@types/lodash.clonedeep": "^4.5.7",
     "@types/lodash.debounce": "^4.0.7",
     "@types/lodash.isequal": "^4.5.8",
-    "@types/lodash.memoize": "^4.1.9",
-    "@types/lodash.shuffle": "^4.2.7",
     "@types/node": "^22.7.0",
     "@types/pubsub-js": "^1.8.6",
     "@types/qrcode.react": "^1.0.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/react-google-recaptcha": "^2.1.5",
     "@types/react-window": "^1.8.8",
-    "@types/string-similarity": "^4.0.0",
     "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
     "@typescript-eslint/parser": "^8.59.0",
@@ -175,7 +172,8 @@
     "workbox-precaching": "^7.0.0",
     "workbox-routing": "^7.0.0",
     "workbox-strategies": "^7.0.0",
-    "workbox-window": "^7.0.0"
+    "workbox-window": "^7.0.0",
+    "wrangler": "^4.107.0"
   },
   "resolutions": {
     "async": "^2.6.4",

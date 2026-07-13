@@ -11,6 +11,7 @@ import { getAuctionResults } from "features/game/actions/getAuctionResults";
 import type { BumpkinItem } from "../types/bumpkin";
 import { CONFIG } from "lib/config";
 import { loadAuctions } from "features/retreat/components/auctioneer/actions/loadAuctions";
+import { mfTrack } from "lib/moonforgeAnalytics";
 
 export type AuctionBase = {
   auctionId: string;
@@ -357,6 +358,11 @@ export const createAuctioneerMachine = ({
               });
 
               onUpdate(game);
+
+              mfTrack("auction_bid", {
+                item_id: auctionId,
+                bid_amount: tickets,
+              });
 
               return {
                 bid: game.auctioneer.bid,

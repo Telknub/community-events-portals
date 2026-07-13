@@ -18,6 +18,10 @@ import type { SeedName } from "features/game/types/seeds";
 import type { CropSeedName } from "features/game/types/crops";
 import { SEASONAL_SEEDS, SEEDS } from "features/game/types/seeds";
 import type { CropName } from "features/game/types/crops";
+import {
+  CHAPTER_CROP_WEEK_SEED,
+  isChapterCropWeekActive,
+} from "features/game/types/chapterCropWeek";
 import { Box } from "components/ui/Box";
 import { Decimal } from "decimal.js-light";
 import type {
@@ -40,7 +44,7 @@ import {
   GREENHOUSE_COMPOST,
   type GreenhouseCompostName,
 } from "features/game/types/composters";
-import { getReadyAt as getGreenhouseReadyAt } from "features/game/events/landExpansion/harvestGreenHouse";
+import { isGreenhouseReady } from "features/game/events/landExpansion/greenhouseReadiness";
 import { useCountdown } from "lib/utils/hooks/useCountdown";
 import { useNow } from "lib/utils/hooks/useNow";
 import { useVisiting } from "lib/utils/visitUtils";
@@ -398,7 +402,13 @@ const PlantSection: React.FC<{
     (seed) => SEEDS[seed].plantingSpot === "Crop Plot",
   ) as CropSeedName[];
 
-  const availableSeeds = seasonalSeeds.reduce(
+  // Include the limited-time Chapter Crop Week seed (Saltwort) while the event
+  // is active, even though it is not part of the current season.
+  const plantableSeeds: CropSeedName[] = isChapterCropWeekActive(now)
+    ? [...seasonalSeeds, CHAPTER_CROP_WEEK_SEED as CropSeedName]
+    : seasonalSeeds;
+
+  const availableSeeds = plantableSeeds.reduce(
     (acc, seed) => {
       const amount = state.inventory[seed] ?? new Decimal(0);
       if (amount.greaterThan(0)) {
@@ -522,14 +532,7 @@ const getEligibleGreenhousePotIds = (
   return Object.entries(state.greenhouse.pots)
     .filter(([, pot]) => {
       if (!pot || pot.fertiliser) return false;
-      if (
-        pot.plant &&
-        now >=
-          getGreenhouseReadyAt({
-            plant: pot.plant.name,
-            createdAt: pot.plant.plantedAt,
-          })
-      ) {
+      if (isGreenhouseReady(now, pot, state)) {
         return false;
       }
       return true;

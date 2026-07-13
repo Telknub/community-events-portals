@@ -766,6 +766,13 @@ export type Wood = {
   reward?: Omit<Reward, "sfl">;
   criticalHit?: CriticalHit;
   amount?: number;
+  /**
+   * Unboosted-by-windowed-collectibles recovery duration (ms), with all
+   * permanent (discount-at-start) boosts already folded in. Present only on
+   * trees chopped under the speed-rate model; its presence selects
+   * `computeReadyAt` over the legacy back-dated `choppedAt` readiness check.
+   */
+  baseDurationMs?: number;
 };
 
 export type CriticalHitName =
@@ -784,6 +791,13 @@ export type PlantedCrop = {
   reward?: Omit<Reward, "sfl">;
   amount?: number;
   boostedTime?: number;
+  /**
+   * Unboosted-by-windowed-collectibles grow duration (ms), with all other
+   * (discount-at-start) boosts already folded in. Present only on crops planted
+   * under the speed-rate model; its presence selects `computeReadyAt` over the
+   * legacy back-dated `plantedAt`/`boostedTime` readiness check.
+   */
+  baseDurationMs?: number;
 };
 
 export type PlantedFruit = {
@@ -793,6 +807,24 @@ export type PlantedFruit = {
   harvestedAt: number;
   criticalHit?: CriticalHit;
   amount?: number;
+  /**
+   * Work (ms) banked when the patch was lifted mid-grow/replenish (windowed
+   * fruit freeze accrued WORK, not wall-clock progress, while the patch sits in
+   * inventory). Display-only: the patch UI folds it into the progress bar;
+   * readiness ignores it — the banked work is already subtracted from
+   * `baseDurationMs`. Reset when a new phase begins (harvest → replenish).
+   */
+  boostedTime?: number;
+  /**
+   * Unboosted-by-windowed-collectibles grow/replenish duration (ms), with all
+   * permanent (discount-at-start) boosts already folded in. Present only on
+   * fruit planted/harvested under the speed-rate model; its presence — NOT the
+   * `SPEED_BOOSTS` flag — selects `computeReadyAt` (over the legacy back-dated
+   * `plantedAt`/`harvestedAt` readiness check), so a fruit planted while the flag
+   * was on keeps windowed timing on rollback and retains its baked permanent
+   * boosts. Applies to whichever phase is active (`harvestedAt || plantedAt`).
+   */
+  baseDurationMs?: number;
 };
 
 type OptionalCoordinates = {
@@ -822,6 +854,13 @@ export type Stone = {
   criticalHit?: CriticalHit;
   amount?: number;
   boostedTime?: number;
+  /**
+   * Unboosted-by-windowed-collectibles recovery duration (ms), with all
+   * permanent (discount-at-start) boosts already folded in. Present only on
+   * rocks mined under the speed-rate model; its presence selects
+   * `computeReadyAt` over the legacy back-dated `minedAt` readiness check.
+   */
+  baseDurationMs?: number;
 };
 
 export type FiniteResource = {
@@ -839,6 +878,20 @@ export type Rock = {
 
 export type Oil = {
   drilledAt: number;
+  /**
+   * Unboosted-by-windowed-collectibles recovery duration (ms), with all
+   * permanent (discount-at-start) boosts already folded in. Present only on
+   * reserves drilled under the speed-rate model; its presence selects
+   * `computeReadyAt` over the legacy back-dated `drilledAt` readiness check.
+   * Oil has no progress-fill bar (countdown only), so — like `Wood` — it
+   * carries no `boostedTime`.
+   *
+   * Lifecycle: each drill rebuilds the timer, so a flag-off re-drill CLEARS this
+   * and reverts the reserve to legacy — mirrors the stone/tree resource nodes
+   * (`rock.stone` rebuild / `delete tree.wood.baseDurationMs`). The read path stays
+   * windowed on the marker's presence until that next drill.
+   */
+  baseDurationMs?: number;
 };
 
 export type OilReserve = {
@@ -865,6 +918,23 @@ export type GreenhousePlant = {
   plantedAt: number;
   criticalHit?: CriticalHit;
   amount?: number;
+  /**
+   * Work (ms) banked when the Greenhouse building was moved mid-grow (windowed
+   * plants freeze accrued WORK, not wall-clock progress, while the building
+   * sits in inventory). Display-only: the pot UI folds it into the progress
+   * bar; readiness ignores it — the banked work is already subtracted from
+   * `baseDurationMs`.
+   */
+  boostedTime?: number;
+  /**
+   * Unboosted-by-windowed-collectibles grow duration (ms), with all permanent
+   * (discount-at-start) boosts already folded in. Present only on plants sown
+   * under the speed-rate model; its presence — NOT the `SPEED_BOOSTS` flag —
+   * selects `computeReadyAt` (over the legacy back-dated `plantedAt` readiness
+   * check), so a plant sown while the flag was on keeps windowed timing on
+   * rollback and retains its baked permanent boosts.
+   */
+  baseDurationMs?: number;
 };
 
 export type GreenhousePot = {
@@ -887,7 +957,10 @@ export type BuildingProduct = {
    */
   amount?: number;
   boost?: Partial<Record<InventoryItemName, number>>;
-  skills?: Partial<Record<BumpkinRevampSkillName, boolean>>;
+  // The rank of a skill applied when the recipe was cooked, so per-rank effects
+  // (e.g. Double Nom's +food) collect at the rank paid for. Legacy recipes store
+  // `true` (treated as rank 1); new recipes store the numeric rank.
+  skills?: Partial<Record<BumpkinRevampSkillName, boolean | number>>;
   timeRemaining?: number;
   startedAt?: number;
   requirements?: Inventory;
@@ -1622,7 +1695,7 @@ export const ASCENSION_ISLANDS = [
   "swamp",
   "spooky",
   "crystal",
-  "moon",
+  "galaxy",
   "marble",
 ] as const;
 export type AscensionIslandType = (typeof ASCENSION_ISLANDS)[number];
@@ -1717,6 +1790,23 @@ export type PlantedFlower = {
   reward?: Reward;
   criticalHit?: CriticalHit;
   amount?: number;
+  /**
+   * Work (ms) banked when the flower bed was lifted mid-grow (windowed flowers
+   * freeze accrued WORK, not wall-clock progress, while the bed sits in
+   * inventory). Display-only: the bed UI folds it into the progress bar;
+   * readiness ignores it — the banked work is already subtracted from
+   * `baseDurationMs`. Flowers are one-shot, so it never needs resetting.
+   */
+  boostedTime?: number;
+  /**
+   * Unboosted-by-windowed-collectibles grow duration (ms), with all permanent
+   * (discount-at-start) boosts already folded in. Present only on flowers planted
+   * under the speed-rate model; its presence — NOT the `SPEED_BOOSTS` flag —
+   * selects `computeReadyAt` (over the legacy back-dated `plantedAt` readiness
+   * check), so a flower planted while the flag was on keeps windowed timing on
+   * rollback and retains its baked permanent boosts.
+   */
+  baseDurationMs?: number;
 };
 
 export type FlowerBed = {
@@ -1957,6 +2047,15 @@ export type SpecialBoostName =
 
 export type BoostUsedAt = Partial<Record<BoostName, number>>;
 
+/**
+ * A finalised [from, to] interval during which a temporary boost collectible was
+ * active. Stored in `GameState.boostHistory` so the boost's contribution to
+ * in-progress timers survives the placed record being burned (deleted) or
+ * renewed (createdAt reset). Activity-agnostic — the per-activity speed is
+ * applied when the window is read.
+ */
+export type BoostHistoryWindow = { from: number; to: number };
+
 type ClutterCoordinates = {
   type: ClutterName;
 } & Coordinates;
@@ -2084,6 +2183,7 @@ export interface GameState {
   stock: Inventory;
   stockExpiry: StockExpiry;
   boostsUsedAt?: BoostUsedAt;
+  boostHistory?: Partial<Record<CollectibleName, BoostHistoryWindow[]>>;
 
   // When an item is burnt, what the prize was
   mysteryPrizes: Partial<Record<InventoryItemName, Reveal[]>>;

@@ -12,6 +12,7 @@ import gemBundle04 from "assets/icons/gem_bundles/gem_bundle_04.webp";
 import gemBundle05 from "assets/icons/gem_bundles/gem_bundle_05.webp";
 import { Button } from "components/ui/Button";
 import { ButtonPanel } from "components/ui/Panel";
+import { NumberInput } from "components/ui/NumberInput";
 import classNames from "classnames";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { PIXEL_SCALE } from "features/game/lib/constants";
@@ -22,8 +23,10 @@ import { useSelector } from "@xstate/react";
 import type { MachineState } from "features/game/lib/gameMachine";
 import { ITEM_DETAILS } from "features/game/types/images";
 import flowerIcon from "assets/icons/flower_token.webp";
+import levelUpIcon from "assets/icons/level_up.png";
 import Decimal from "decimal.js-light";
 import { secondsToString } from "lib/utils/time";
+import { getFlowerGemPriceMultiplier } from "features/game/lib/flowerGemDiscount";
 
 export const STARTER_PACK = "STARTER_PACK" as const;
 export const STARTER_PACK_GEMS = 300;
@@ -35,6 +38,8 @@ export interface Price {
   usd: number;
   image?: string;
   img_width?: number;
+  /** Kept as a pricing anchor for custom amounts, but hidden from the grid */
+  hidden?: boolean;
 }
 
 const PRICES: Price[] = [
@@ -42,10 +47,47 @@ const PRICES: Price[] = [
   { amount: 650, usd: 6.49, image: gemBundle01, img_width: 14 },
   { amount: 1350, usd: 12.99, image: gemBundle02, img_width: 16 },
   { amount: 2800, usd: 25.99, image: gemBundle03, img_width: 20 },
-  { amount: 7400, usd: 64.99, image: gemBundle04, img_width: 21 },
+  { amount: 7400, usd: 64.99, image: gemBundle04, img_width: 21, hidden: true },
   { amount: 15500, usd: 129.99, image: gemBundle05, img_width: 27 },
   { amount: 200000, usd: 1299.99 },
 ];
+
+/** Tiles shown in the grid (7,400 is hidden but still anchors custom pricing) */
+const DISPLAYED_PRICES = PRICES.filter((price) => !price.hidden);
+
+/** Numeric bundles used to anchor custom amounts, sorted ascending */
+const ANCHOR_BUNDLES = PRICES.filter(
+  (price): price is Price & { amount: number } =>
+    typeof price.amount === "number",
+).sort((a, b) => a.amount - b.amount);
+
+export const CUSTOM_GEMS_MIN = 10;
+export const CUSTOM_GEMS_MAX = ANCHOR_BUNDLES[ANCHOR_BUNDLES.length - 1].amount; // whale pack size (200,000)
+
+/** Largest bundle whose amount is at or below `amount` (the pricing anchor). */
+function getAnchorBundle(amount: number): Price & { amount: number } {
+  return (
+    [...ANCHOR_BUNDLES].reverse().find((bundle) => bundle.amount <= amount) ??
+    ANCHOR_BUNDLES[0]
+  );
+}
+
+/** Smallest bundle strictly larger than `amount`, or undefined if none. */
+function getNextBundle(
+  amount: number,
+): (Price & { amount: number }) | undefined {
+  return ANCHOR_BUNDLES.find((bundle) => bundle.amount > amount);
+}
+
+/**
+ * Anchor a custom gem amount to the nearest bundle at or below it and return the
+ * full (pre-discount) USD price, using that bundle's per-gem rate.
+ */
+export function getCustomGemsUSD(amount: number): number {
+  const anchor = getAnchorBundle(amount);
+  const usdPerGem = anchor.usd / anchor.amount;
+  return amount * usdPerGem;
+}
 
 const STARTER_PACK_AVAILABLE_SECONDS = 7 * 24 * 60 * 60; // First 7 days
 /** Exported for StarterOfferModal time remaining display */
@@ -74,7 +116,7 @@ interface Props {
     usd: number;
     amount: number | typeof STARTER_PACK;
   }) => void;
-  onFlowerBuy: (quote: number) => void;
+  onFlowerBuy: (quote: number, bundle: number | typeof STARTER_PACK) => void;
   onCreditCardBuy: () => void;
   onHideBuyBBLabel: (hide: boolean) => void;
   onBack?: () => void;
@@ -97,21 +139,25 @@ export const BuyGems: React.FC<Props> = ({
   );
 
   const [showFlowerConfirm, setShowFlowerConfirm] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
+  const [customAmount, setCustomAmount] = useState(0);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [showCustomConfirm, setShowCustomConfirm] = useState(false);
   const { t } = useAppTranslation();
 
   useEffect(() => {
-    if (showFlowerConfirm) {
+    if (showFlowerConfirm || showCustom) {
       onHideBuyBBLabel(true);
     } else {
       onHideBuyBBLabel(false);
     }
-  }, [showFlowerConfirm, onHideBuyBBLabel]);
+  }, [showFlowerConfirm, showCustom, onHideBuyBBLabel]);
 
   if (!!price && showFlowerConfirm) {
     const flowerPrice =
       gameService.getSnapshot().context.prices.sfl?.usd ?? 0.0;
 
-    const flowerUSD = price.usd * 0.7;
+    const flowerUSD = price.usd * getFlowerGemPriceMultiplier();
 
     // 4 Decimal places
     const flowerQuote = new Decimal(flowerUSD / flowerPrice).toFixed(4);
@@ -173,7 +219,7 @@ export const BuyGems: React.FC<Props> = ({
             <p className="text-sm">{t("usd")}</p>
             <div className="flex items-center space-x-2">
               <span className="line-through">{`$${price.usd}`}</span>
-              <span>{`$${(price.usd * 0.7).toFixed(2)} x`}</span>
+              <span>{`$${flowerUSD.toFixed(2)} x`}</span>
               <img src={usdcIcon} className="w-6" />
             </div>
           </div>
@@ -194,10 +240,290 @@ export const BuyGems: React.FC<Props> = ({
 
         <Button
           disabled={!hasFlower}
-          onClick={() => onFlowerBuy(Number(flowerQuote))}
+          onClick={() => onFlowerBuy(Number(flowerQuote), price.amount)}
           className="relative mt-0"
         >
           {!hasFlower && (
+            <Label type="danger" className="absolute -top-4 right-0">
+              {t("error.insufficientFlower")}
+            </Label>
+          )}
+          {t("confirm")}
+        </Button>
+      </>
+    );
+  }
+
+  if (showCustom) {
+    const flowerPrice =
+      gameService.getSnapshot().context.prices.sfl?.usd ?? 0.0;
+
+    const amount = Math.floor(customAmount);
+    const inRange = amount >= CUSTOM_GEMS_MIN && amount <= CUSTOM_GEMS_MAX;
+
+    // Anchor down to the nearest bundle and apply the FLOWER discount
+    const usd = inRange ? getCustomGemsUSD(amount) : 0;
+    const flowerUSD = usd * getFlowerGemPriceMultiplier();
+    const usdPerGem = inRange ? flowerUSD / amount : 0;
+    const flowerQuote =
+      inRange && flowerPrice > 0
+        ? new Decimal(flowerUSD / flowerPrice).toFixed(4)
+        : "0.0000";
+
+    const hasFlower = gameService
+      .getSnapshot()
+      .context.state.balance.gte(flowerQuote);
+
+    const canConfirm = inRange && flowerPrice > 0 && hasFlower;
+
+    // Nudge the player towards the next bundle. The FLOWER discount is a flat
+    // multiplier, so we compare pre-discount USD (the inequality is identical).
+    const anchorBundle = inRange ? getAnchorBundle(amount) : undefined;
+    const nextBundle = inRange ? getNextBundle(amount) : undefined;
+    // Buying the next bundle whole is strictly cheaper AND gives more gems.
+    const isCheaperToBuyMore = !!nextBundle && usd > nextBundle.usd;
+    // Otherwise, how much cheaper per-gem the next bundle is (soft upsell).
+    const nextBundleDiscount =
+      nextBundle && amount > 0
+        ? Math.round(
+            (1 - nextBundle.usd / nextBundle.amount / (usd / amount)) * 100,
+          )
+        : 0;
+    // Only surface the discount upsell once they're in the top 20% of the
+    // current tier (i.e. close to the next bundle).
+    const isNearNextBundle =
+      !!anchorBundle &&
+      !!nextBundle &&
+      nextBundle.amount > anchorBundle.amount &&
+      (amount - anchorBundle.amount) /
+        (nextBundle.amount - anchorBundle.amount) >=
+        0.8;
+
+    const resetCustom = () => {
+      setShowCustom(false);
+      setCustomAmount(0);
+      setShowUpgradePrompt(false);
+      setShowCustomConfirm(false);
+    };
+
+    // Final confirmation: review what they'll pay and receive before buying.
+    if (showCustomConfirm) {
+      return (
+        <>
+          <div className="flex items-center justify-between flex-wrap">
+            <div className="flex items-center mr-2">
+              <div className="py-2">
+                <img
+                  src={SUNNYSIDE.icons.arrow_left}
+                  className="h-6 w-6 ml-2 cursor-pointer"
+                  onClick={() => setShowCustomConfirm(false)}
+                />
+              </div>
+              <Label
+                icon={ITEM_DETAILS.Gem.image}
+                type="default"
+                className="ml-2"
+              >
+                {t("transaction.buy.gems")}
+              </Label>
+            </div>
+            <Label type="warning">{`1 FLOWER = $${flowerPrice.toFixed(4)}`}</Label>
+          </div>
+
+          <div className="p-1">
+            <div className="flex justify-between mb-1">
+              <p className="text-sm">{t("gems")}</p>
+              <div className="flex items-center space-x-2">
+                <span>{`${amount} x`}</span>
+                <img src={ITEM_DETAILS.Gem.image} className="w-6" />
+              </div>
+            </div>
+
+            <div className="flex justify-between mb-1">
+              <p className="text-sm">{t("usd")}</p>
+              <div className="flex items-center space-x-2">
+                <span className="line-through">{`$${usd.toFixed(2)}`}</span>
+                <span>{`$${flowerUSD.toFixed(2)} x`}</span>
+                <img src={usdcIcon} className="w-6" />
+              </div>
+            </div>
+
+            <div
+              className="flex justify-between my-2 pt-2"
+              style={{ borderTop: "1px solid #ead4aa" }}
+            >
+              <p className="text-sm">{`FLOWER`}</p>
+              <div className="flex items-center space-x-2">
+                <span>
+                  {flowerQuote} {`x`}{" "}
+                </span>
+                <img src={flowerIcon} className="w-6" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex space-x-1">
+            <Button onClick={() => setShowCustomConfirm(false)}>
+              {t("back")}
+            </Button>
+            <Button
+              disabled={!canConfirm}
+              onClick={() => onFlowerBuy(Number(flowerQuote), amount)}
+              className="relative"
+            >
+              {inRange && flowerPrice > 0 && !hasFlower && (
+                <Label type="danger" className="absolute -top-4 right-0">
+                  {t("error.insufficientFlower")}
+                </Label>
+              )}
+              {t("confirm")}
+            </Button>
+          </div>
+        </>
+      );
+    }
+
+    // Intercept "Confirm" when buying the next pack whole is strictly cheaper —
+    // prompt them to upgrade instead of paying more for fewer gems.
+    if (showUpgradePrompt && nextBundle) {
+      return (
+        <>
+          <div className="flex items-center mr-2">
+            <div className="py-2">
+              <img
+                src={SUNNYSIDE.icons.arrow_left}
+                className="h-6 w-6 ml-2 cursor-pointer"
+                onClick={() => setShowUpgradePrompt(false)}
+              />
+            </div>
+            <Label icon={levelUpIcon} type="vibrant" className="ml-2">
+              {t("transaction.upgradePack")}
+            </Label>
+          </div>
+          <div className="flex flex-col items-center p-2 text-center">
+            <img src={ITEM_DETAILS.Gem.image} className="w-12 my-2" />
+            <p className="text-sm mb-1">
+              {t("transaction.upgradePrompt", { amount: nextBundle.amount })}
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setCustomAmount(nextBundle.amount);
+              setShowUpgradePrompt(false);
+            }}
+          >
+            {t("transaction.upgradePack")}
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="flex items-center justify-between flex-wrap">
+          <div className="flex items-center mr-2">
+            <div className="py-2">
+              <img
+                src={SUNNYSIDE.icons.arrow_left}
+                className="h-6 w-6 ml-2 cursor-pointer"
+                onClick={resetCustom}
+              />
+            </div>
+            <Label
+              icon={ITEM_DETAILS.Gem.image}
+              type="default"
+              className="ml-2"
+            >
+              {t("transaction.flowerPurchase")}
+            </Label>
+          </div>
+          <Label type="warning">{`1 FLOWER = $${flowerPrice.toFixed(4)}`}</Label>
+        </div>
+
+        <div className="p-1">
+          <p className="text-xs mb-1">
+            {t("transaction.enterGemAmount", {
+              min: CUSTOM_GEMS_MIN,
+              max: CUSTOM_GEMS_MAX,
+            })}
+          </p>
+          <NumberInput
+            value={customAmount}
+            maxDecimalPlaces={0}
+            isOutOfRange={amount > 0 && !inRange}
+            icon={ITEM_DETAILS.Gem.image}
+            onValueChange={(value) => setCustomAmount(value.toNumber())}
+          />
+
+          <div className="flex justify-between mt-3 mb-1">
+            <p className="text-sm">{t("gems")}</p>
+            <div className="flex items-center space-x-2">
+              <span>{`${amount} x`}</span>
+              <img src={ITEM_DETAILS.Gem.image} className="w-6" />
+            </div>
+          </div>
+
+          <div className="flex justify-between mb-1">
+            <p className="text-sm">{t("transaction.pricePerGem")}</p>
+            <div className="flex items-center space-x-2">
+              <span>{`$${usdPerGem.toFixed(4)}`}</span>
+              <img src={ITEM_DETAILS.Gem.image} className="w-6" />
+            </div>
+          </div>
+
+          <div className="flex justify-between mb-1">
+            <p className="text-sm">{t("usd")}</p>
+            <div className="flex items-center space-x-2">
+              <span className="line-through">{`$${usd.toFixed(2)}`}</span>
+              <span>{`$${flowerUSD.toFixed(2)} x`}</span>
+              <img src={usdcIcon} className="w-6" />
+            </div>
+          </div>
+
+          <div
+            className="flex justify-between my-2 pt-2"
+            style={{ borderTop: "1px solid #ead4aa" }}
+          >
+            <p className="text-sm">{`FLOWER`}</p>
+            <div className="flex items-center space-x-2">
+              <span>
+                {flowerQuote} {`x`}{" "}
+              </span>
+              <img src={flowerIcon} className="w-6" />
+            </div>
+          </div>
+
+          {nextBundle &&
+          !isCheaperToBuyMore &&
+          nextBundleDiscount > 0 &&
+          isNearNextBundle ? (
+            // Next pack isn't cheaper overall, but has a better per-gem rate.
+            <p className="text-xxs italic mt-2">
+              {t("transaction.nextPackDiscount", {
+                amount: nextBundle.amount,
+                discount: nextBundleDiscount,
+              })}
+            </p>
+          ) : (
+            <p className="text-xxs italic mt-2">
+              {t("transaction.bulkDiscount")}
+            </p>
+          )}
+        </div>
+
+        <Button
+          disabled={!canConfirm}
+          onClick={() => {
+            // If the next pack is strictly cheaper, nudge them to upgrade first.
+            if (nextBundle && isCheaperToBuyMore) {
+              setShowUpgradePrompt(true);
+            } else {
+              setShowCustomConfirm(true);
+            }
+          }}
+          className="relative mt-0"
+        >
+          {inRange && flowerPrice > 0 && !hasFlower && (
             <Label type="danger" className="absolute -top-4 right-0">
               {t("error.insufficientFlower")}
             </Label>
@@ -414,7 +740,7 @@ export const BuyGems: React.FC<Props> = ({
         )}
 
         <div className="grid grid-cols-3 gap-1 gap-y-2  sm:text-sm sm:gap-2">
-          {PRICES.map((price, index) => {
+          {DISPLAYED_PRICES.map((price, index) => {
             // Compare price to base package (PRICES only has numeric amounts)
             const amount = typeof price.amount === "number" ? price.amount : 0;
             const gemsPerDollar =
@@ -434,7 +760,7 @@ export const BuyGems: React.FC<Props> = ({
                   </Label>
                 )}
 
-                {index === PRICES.length - 1 && (
+                {index === DISPLAYED_PRICES.length - 1 && (
                   <img
                     src={whaleIcon}
                     className="h-6 absolute -left-4 -top-4"
@@ -467,6 +793,21 @@ export const BuyGems: React.FC<Props> = ({
             );
           })}
         </div>
+
+        <ButtonPanel
+          onClick={() => setShowCustom(true)}
+          className="w-full mt-3 relative cursor-pointer hover:bg-brown-300 flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <SquareIcon icon={ITEM_DETAILS.Gem.image} width={10} />
+            <span className="ml-2 text-sm">
+              {t("transaction.enterCustomAmount")}
+            </span>
+          </div>
+          <Label type="warning" icon={flowerIcon}>
+            {`FLOWER`}
+          </Label>
+        </ButtonPanel>
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState, type JSX } from "react";
+import React, { useContext, useMemo, useRef, useState, type JSX } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import type { Reward, CropPlot } from "features/game/types/game";
@@ -26,6 +26,10 @@ import {
   selectVerified,
 } from "features/game/lib/gameMachine";
 import { isSeasonedPlayer } from "features/game/lib/seasonedPlayer";
+import {
+  getCropFertiliserWindows,
+  getCropPlotBoostWindows,
+} from "features/game/lib/boostWindows";
 import { ZoomContext } from "components/ZoomProvider";
 import { CROP_COMPOST } from "features/game/types/composters";
 import { gameAnalytics } from "lib/gameAnalytics";
@@ -35,6 +39,7 @@ import {
   SEASONAL_SEEDS,
   type SeedName,
 } from "features/game/types/seeds";
+import { CHAPTER_CROP_WEEK_SEED } from "features/game/types/chapterCropWeek";
 import { ModalContext } from "features/game/components/modal/ModalProvider";
 import { getKeys } from "lib/object";
 import { Transition } from "@headlessui/react";
@@ -126,10 +131,23 @@ export const Plot: React.FC<Props> = ({ id }) => {
   const now = useNow({ live: true });
   const isSeasoned = isSeasonedPlayer({ game: state, verified, now });
 
+  // Union the plot's own Rapid Root / Sproutroot Surprise fertiliser window
+  // (per-plot, keyed off fertilisedAt) with the game-global crop boost windows,
+  // so the countdown ticks at the fertiliser's boosted rate too. Memoised so the
+  // per-tick `useNow` re-renders don't reallocate the array (it only depends on
+  // `state` and `fertiliser`, not `now`).
+  const cropBoostWindows = useMemo(
+    () => [
+      ...getCropPlotBoostWindows(state),
+      ...getCropFertiliserWindows(fertiliser),
+    ],
+    [state, fertiliser],
+  );
+
   // Calculate expected reward for UI preview (captcha gate for non-seasoned players)
   const expectedReward =
     crop?.reward ??
-    (crop && isReadyToHarvest(now, crop, CROPS[crop.name])
+    (crop && isReadyToHarvest(now, crop, CROPS[crop.name], state, fertiliser)
       ? getReward({
           crop: crop.name,
           skills: state.bumpkin?.skills ?? {},
@@ -211,7 +229,8 @@ export const Plot: React.FC<Props> = ({ id }) => {
 
   const onClick = (seed: SeedName = selectedItem as SeedName) => {
     const readyToHarvest =
-      !!crop && isReadyToHarvest(now, crop, CROPS[crop.name]);
+      !!crop &&
+      isReadyToHarvest(now, crop, CROPS[crop.name], state, fertiliser);
     const wantsToPlant = !crop && seed && isCropSeed(seed);
 
     // small buffer to prevent accidental double clicks
@@ -260,7 +279,11 @@ export const Plot: React.FC<Props> = ({ id }) => {
 
     // plant
     if (!crop) {
-      if (isCropSeed(seed) && !SEASONAL_SEEDS[season.season].includes(seed)) {
+      if (
+        isCropSeed(seed) &&
+        seed !== CHAPTER_CROP_WEEK_SEED &&
+        !SEASONAL_SEEDS[season.season].includes(seed)
+      ) {
         setShowSeasonalSeed(true);
       }
 
@@ -356,6 +379,8 @@ export const Plot: React.FC<Props> = ({ id }) => {
           procAnimation={procAnimation}
           touchCount={touchCount}
           showTimers={showTimers}
+          boostWindows={cropBoostWindows}
+          now={now}
         />
       </div>
       {reward && (

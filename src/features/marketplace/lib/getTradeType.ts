@@ -186,6 +186,10 @@ export const ITEM_TRADE_TYPES: {
     Onion: "instant",
     Turnip: "instant",
     Artichoke: "instant",
+    // Chapter Crop Week (limited-time event)
+    "Saltwort Seed": "instant",
+    Saltwort: "instant",
+    Saltbite: "instant",
 
     "Thermal Stone": "instant",
     "Protective Pesticide": "instant",
@@ -1280,7 +1284,7 @@ export const ITEM_TRADE_TYPES: {
     // Ascension biomes (spooky onward)
     "Spooky Biome": "instant",
     "Crystal Biome": "instant",
-    "Moon Biome": "instant",
+    "Galaxy Biome": "instant",
     "Marble Age Biome": "instant",
     Bracelet: "instant",
     Coprolite: "instant",

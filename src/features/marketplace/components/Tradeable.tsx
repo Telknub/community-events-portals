@@ -25,7 +25,12 @@ import { MyListings } from "./profile/MyListings";
 import { MyOffers } from "./profile/MyOffers";
 import { TradeableListings } from "./TradeableListings";
 import { InnerPanel } from "components/ui/Panel";
+import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
+import {
+  CHAPTER_CROP_WEEK_CROP,
+  isChapterCropWeekActive,
+} from "features/game/types/chapterCropWeek";
 import { TradeableStats } from "./TradeableStats";
 import { getKeys } from "lib/object";
 import { tradeToId } from "../lib/offers";
@@ -217,6 +222,38 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
   const marketPrice = getMarketPrice({ tradeable });
 
   const isStoneBeetle = collection === "collectibles" && Number(id) === 2129;
+
+  // Chapter Crop Week crop (Saltwort) trading is only available while the event
+  // is active. Everyone else sees a "Coming Soon" page instead of the details.
+  const isChapterCropWeekLocked =
+    display.name === CHAPTER_CROP_WEEK_CROP && !isChapterCropWeekActive();
+
+  if (isChapterCropWeekLocked) {
+    return (
+      <div className="flex flex-col w-full sm:w-1/3 mr-1 mb-1">
+        <InnerPanel
+          className="mb-1 z-10 sticky top-0 cursor-pointer"
+          onClick={onBack}
+        >
+          <div className="flex items-center w-fit">
+            <img src={SUNNYSIDE.icons.arrow_left} className="h-6 mr-2 mt-1" />
+            <p className="capitalize underline">
+              {display.translatedName ?? display.name}
+            </p>
+          </div>
+        </InnerPanel>
+        <InnerPanel className="p-4 flex flex-col items-center justify-center gap-2">
+          <Label type="vibrant" icon={SUNNYSIDE.icons.stopwatch}>
+            {t("coming.soon")}
+          </Label>
+          <p className="text-xs text-center">
+            {t("chapterCropWeek.comingSoon")}
+          </p>
+        </InnerPanel>
+      </div>
+    );
+  }
+
   const favoriteItem =
     collection === "economies"
       ? undefined
@@ -276,6 +313,7 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
           onBack={onBack}
           reload={reload}
           onListClick={() => setShowListItem(true)}
+          disabled={isChapterCropWeekLocked}
         />
 
         {!isMobile && (
@@ -304,6 +342,7 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
             setShowListItem(false);
           }}
           reload={reload}
+          disabled={isChapterCropWeekLocked}
         />
 
         {!isStoneBeetle && (
@@ -316,6 +355,7 @@ export const Tradeable: React.FC<{ hideLimited?: boolean }> = ({
             display={display}
             farmId={farmId}
             reload={reload}
+            disabled={isChapterCropWeekLocked}
           />
         )}
 

@@ -1,0 +1,107 @@
+import { MoonForgeAnalytics, MoonForgeErrorTracker } from "lib/moonforge";
+import {
+  mfIdentify,
+  mfScreen,
+  mfSetScene,
+  mfTrack,
+} from "./moonforgeAnalytics";
+
+const TEST_GAME_ID = "00000000-0000-4000-8000-000000000000";
+
+describe("moonforgeAnalytics", () => {
+  let fetchMock: jest.Mock;
+
+  beforeEach(() => {
+    fetchMock = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ cache: "token" }),
+    }));
+    (globalThis as { fetch?: unknown }).fetch = fetchMock;
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    jest.spyOn(console, "log").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe("before the SDK is initialised", () => {
+    it("no-ops without throwing and sends nothing", () => {
+      expect(() => {
+        mfTrack("crop_harvested", { crop_type: "Sunflower" });
+        mfScreen("PlazaScene");
+        mfIdentify("account1");
+        mfSetScene("PlazaScene");
+      }).not.toThrow();
+
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("after the SDK is initialised", () => {
+    beforeAll(() => {
+      MoonForgeAnalytics.init({
+        gameId: TEST_GAME_ID,
+        autoTrackSession: false,
+      });
+    });
+
+    it("mfTrack posts the event envelope to the collector", () => {
+      mfTrack("crop_harvested", { crop_type: "Sunflower", amount: 1 });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(String(url)).toBe("https://collector.moonforge.co/api/send");
+
+      const body = JSON.parse((init as { body: string }).body);
+      expect(body.type).toBe("event");
+      expect(body.payload.game).toBe(TEST_GAME_ID);
+      expect(body.payload.name).toBe("crop_harvested");
+      expect(body.payload.data).toMatchObject({
+        crop_type: "Sunflower",
+        amount: 1,
+      });
+    });
+
+    it("sends unix-second timestamps (collector rejects milliseconds)", () => {
+      mfTrack("crop_harvested", { crop_type: "Sunflower" });
+
+      const body = JSON.parse(
+        (fetchMock.mock.calls[0][1] as { body: string }).body,
+      );
+      expect(body.payload.timestamp).toBeGreaterThan(1e9);
+      expect(body.payload.timestamp).toBeLessThan(1e11);
+    });
+
+    it("mfScreen posts a screen_view with the scene name", () => {
+      mfScreen("BeachScene");
+
+      const body = JSON.parse(
+        (fetchMock.mock.calls[0][1] as { body: string }).body,
+      );
+      expect(body.payload.name).toBe("screen_view");
+      expect(body.payload.data.screen_name).toBe("BeachScene");
+    });
+
+    it("mfSetScene tags the error tracker's game state", () => {
+      mfSetScene("KingdomScene");
+
+      expect(MoonForgeErrorTracker.getGameState()).toMatchObject({
+        sceneName: "KingdomScene",
+      });
+    });
+
+    it("never throws into game code even if the SDK throws", () => {
+      const spy = jest
+        .spyOn(MoonForgeAnalytics, "trackEvent")
+        .mockImplementation(() => {
+          throw new Error("boom");
+        });
+
+      expect(() => mfTrack("crop_harvested")).not.toThrow();
+
+      spy.mockRestore();
+    });
+  });
+});

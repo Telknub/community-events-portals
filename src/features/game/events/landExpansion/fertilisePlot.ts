@@ -2,7 +2,7 @@ import Decimal from "decimal.js-light";
 import type { GameState } from "../../types/game";
 import type { CropCompostName } from "features/game/types/composters";
 import { CROPS, type Crop, isBasicCrop } from "features/game/types/crops";
-import { isReadyToHarvest } from "./harvest";
+import { getCropReadyAt, isReadyToHarvest } from "./harvest";
 import { trackFarmActivity } from "features/game/types/farmActivity";
 import { produce } from "immer";
 import {
@@ -82,15 +82,21 @@ export function applyFertiliserToPlot({
     (fertiliser === "Rapid Root" || fertiliser === "Sproutroot Surprise") &&
     cropDetails
   ) {
-    const { newPlantedAt, timeReduction } = getPlantedAt(
-      fertiliser,
-      crop.plantedAt,
-      createdAt,
-      cropDetails,
-    );
+    // Speed-rate model: the fertiliser is a live 2× window from `fertilisedAt`
+    // (recorded on `plot.fertiliser` above), so a windowed crop needs no mutation
+    // — its readyAt is derived live via getCropFertiliserWindows. Only legacy
+    // crops back-date plantedAt.
+    if (crop.baseDurationMs === undefined) {
+      const { newPlantedAt, timeReduction } = getPlantedAt(
+        fertiliser,
+        crop.plantedAt,
+        createdAt,
+        cropDetails,
+      );
 
-    crop.plantedAt = newPlantedAt;
-    crop.boostedTime = (crop.boostedTime ?? 0) + timeReduction;
+      crop.plantedAt = newPlantedAt;
+      crop.boostedTime = (crop.boostedTime ?? 0) + timeReduction;
+    }
 
     if (
       isCollectibleOnFarm({ name: "Basic Scarecrow", game }) &&
@@ -135,7 +141,7 @@ export function applyFertiliserToPlot({
           "Basic Scarecrow",
           { dx, dy },
           createdAt,
-          crop.plantedAt + cropDetails.harvestSeconds * 1000 - createdAt,
+          getCropReadyAt(crop, cropDetails, game, plot.fertiliser) - createdAt,
         );
       }
     }
@@ -182,7 +188,10 @@ export function fertilisePlot({
     const crop = plot.crop;
     if (crop) {
       const cropDetails = crop && CROPS[crop.name];
-      if (cropDetails && isReadyToHarvest(createdAt, crop, cropDetails)) {
+      if (
+        cropDetails &&
+        isReadyToHarvest(createdAt, crop, cropDetails, stateCopy)
+      ) {
         throw new Error(FERTILISE_CROP_ERRORS.READY_TO_HARVEST);
       }
     }

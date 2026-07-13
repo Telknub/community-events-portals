@@ -36,6 +36,7 @@ import {
   CROP_MACHINE_PLOTS,
 } from "features/game/events/landExpansion/supplyCropMachine";
 import { useActiveBuff } from "features/game/types/buffs";
+import { useNow } from "lib/utils/hooks/useNow";
 
 /**
  * The props for the details for items.
@@ -168,6 +169,12 @@ export const SeedRequirements: React.FC<Props> = ({
   showBoosts,
 }) => {
   const { t } = useAppTranslation();
+  // Only tick live when a countdown is actually shown (Chapter Crop Week seed);
+  // otherwise the whole panel (incl. boosts) needlessly re-renders every second.
+  const now = useNow({
+    live: !!details.from,
+    autoEndAt: details.to?.getTime(),
+  });
   const { isActive: isPowerHourActive, remainingTime: powerHourRemainingTime } =
     useActiveBuff({
       buff: "Power hour",
@@ -387,13 +394,28 @@ export const SeedRequirements: React.FC<Props> = ({
       <div className="flex flex-col h-full px-1 py-0">
         {getStock()}
         {details.from && (
-          <Label
-            icon={SUNNYSIDE.icons.stopwatch}
-            type="warning"
-            className="my-1 mx-auto whitespace-nowrap"
-          >
-            {formatDateRange(details.from, details.to as Date)}
-          </Label>
+          <div className="flex flex-col items-center gap-1 my-1">
+            <Label
+              icon={SUNNYSIDE.icons.stopwatch}
+              type="vibrant"
+              className="mx-auto whitespace-nowrap"
+            >
+              {formatDateRange(details.from, details.to as Date)}
+            </Label>
+            {details.to &&
+              details.to.getTime() > now &&
+              details.from.getTime() <= now && (
+                <Label
+                  icon={SUNNYSIDE.icons.stopwatch}
+                  type="transparent"
+                  className="mx-auto whitespace-nowrap"
+                >
+                  {`${secondsToString((details.to.getTime() - now) / 1000, {
+                    length: "short",
+                  })} ${t("time.left")}`}
+                </Label>
+              )}
+          </div>
         )}
         {getItemDetail()}
         {limit && (

@@ -246,12 +246,13 @@ jobs:
         run: yarn install
 
       - name: Build
-        run: yarn build
+        run: yarn build --base=/play/ --outDir dist/play
         env:
           NODE_OPTIONS: --max-old-space-size=6144
           CI: false
 
           VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_API2_URL: ${{ secrets.API2_URL }}
           VITE_DONATION_ADDRESS: ${{ secrets.DONATION_ADDRESS }}
           VITE_ROOM_URL: ${{ secrets.ROOM_URL }}
           VITE_NETWORK: mainnet
@@ -299,6 +300,7 @@ jobs:
           VITE_DEPOSIT_V2_CONTRACT: "0xADA793Caf7166CeC21F6bdF2e63241951ABB83d7"
           VITE_PET_CONTRACT: "0x7033222D18a2e827b88bc569938F7A974F813747"
           VITE_META_PIXEL_ID: "3391375114350678"
+          VITE_MOONFORGE_GAME_ID: "a1c35b7b-049b-4662-8a6c-2b0476080671"
 
           VITE_ALCHEMY_RPC: ${{ secrets.ALCHEMY_RPC }}
           VITE_ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
@@ -323,7 +325,7 @@ jobs:
 
       - name: Write version metadata
         run: |
-          cat <<EOF > dist/version.json
+          cat <<EOF > dist/play/version.json
           {
             "releaseVersion": "${{ steps.get_version.outputs.VERSION }}",
             "clientVersion": "${{ steps.date.outputs.date }}"
@@ -337,11 +339,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
-      - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./dist/ s3://sunflower-land.com/play --delete
+      # - name: Deploy static site to S3 bucket
+      #   run: aws s3 sync ./dist/ s3://sunflower-land.com/play --delete
 
-      - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./dist/ s3://www.sunflower-land.com/play --delete
+      # - name: Deploy static site to S3 bucket
+      #   run: aws s3 sync ./dist/ s3://www.sunflower-land.com/play --delete
+
+      - name: Deploy static site to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name sunflower-land-mainnet
 
       - name: Github Releases To Discord
         uses: SethCohen/github-releases-to-discord@v1.13.1
@@ -355,11 +364,11 @@ jobs:
           footer_icon_url: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
           footer_timestamp: true
 
-      - name: Invalidate CloudFront
-        uses: chetan/invalidate-cloudfront-action@v2
-        env:
-          DISTRIBUTION: ${{ secrets.CF_DISTRIBUTION }}
-          PATHS: "/play/*"
-          AWS_REGION: "us-east-1"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # - name: Invalidate CloudFront
+      #   uses: chetan/invalidate-cloudfront-action@v2
+      #   env:
+      #     DISTRIBUTION: ${{ secrets.CF_DISTRIBUTION }}
+      #     PATHS: "/play/*"
+      #     AWS_REGION: "us-east-1"
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

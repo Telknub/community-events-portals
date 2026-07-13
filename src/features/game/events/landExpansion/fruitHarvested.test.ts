@@ -5,7 +5,8 @@ import {
   TEST_FARM,
 } from "features/game/lib/constants";
 import { prngChance } from "lib/prng";
-import { PATCH_FRUIT, PATCH_FRUIT_SEEDS } from "features/game/types/fruits";
+import { PATCH_FRUIT_SEEDS } from "features/game/types/fruits";
+import { CONFIG } from "lib/config";
 import type { GameState, FruitPatch } from "features/game/types/game";
 import { KNOWN_IDS } from "features/game/types";
 import {
@@ -42,6 +43,17 @@ const GAME_STATE: GameState = {
 describe("fruitHarvested", () => {
   const dateNow = Date.now();
 
+  // Legacy back-dated grow assertions; FE jest runs on amoy where SPEED_BOOSTS
+  // is on, so force the flag off here. Windowed coverage lives in its own
+  // describe below.
+  const originalNetwork = CONFIG.NETWORK;
+  beforeEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "mainnet";
+  });
+  afterEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = originalNetwork;
+  });
+
   describe("isFruitReadyToHarvest", () => {
     const appleSeed = PATCH_FRUIT_SEEDS["Apple Seed"];
 
@@ -55,7 +67,7 @@ describe("fruitHarvested", () => {
             harvestsLeft: 3,
             harvestedAt: 0,
           },
-          PATCH_FRUIT.Apple,
+          TEST_FARM,
         ),
       ).toBeFalsy();
     });
@@ -70,7 +82,7 @@ describe("fruitHarvested", () => {
             harvestsLeft: 2,
             harvestedAt: appleSeed.plantSeconds,
           },
-          PATCH_FRUIT.Apple,
+          TEST_FARM,
         ),
       ).toBeFalsy();
     });
@@ -85,7 +97,7 @@ describe("fruitHarvested", () => {
             harvestsLeft: 3,
             harvestedAt: 0,
           },
-          PATCH_FRUIT.Apple,
+          TEST_FARM,
         ),
       ).toBeFalsy();
     });
@@ -100,7 +112,7 @@ describe("fruitHarvested", () => {
             harvestsLeft: 2,
             harvestedAt: appleSeed.plantSeconds,
           },
-          PATCH_FRUIT.Apple,
+          TEST_FARM,
         ),
       ).toBeFalsy();
     });
@@ -882,6 +894,36 @@ describe("fruitHarvested", () => {
 
       expect(amount).toEqual(1.1);
     });
+    it("gives +0.15 basic fruit yield with Fruitful Fumble skill at rank 2", () => {
+      const { amount } = getFruitYield({
+        prngArgs: { counter: 0, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Fruitful Fumble": 2 },
+          },
+        },
+        name: "Blueberry",
+      });
+
+      expect(amount).toEqual(1.15);
+    });
+    it("gives +0.2 basic fruit yield with Fruitful Fumble skill at rank 3", () => {
+      const { amount } = getFruitYield({
+        prngArgs: { counter: 0, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Fruitful Fumble": 3 },
+          },
+        },
+        name: "Blueberry",
+      });
+
+      expect(amount).toEqual(1.2);
+    });
     it("give +0.1 fruit yield when macaw is placed", () => {
       const { amount } = getFruitYield({
         prngArgs: { counter: 0, farmId },
@@ -928,6 +970,41 @@ describe("fruitHarvested", () => {
 
       expect(amount).toEqual(1.2);
     });
+    it.each([
+      [2, 1.25, "+0.25"],
+      [3, 1.3, "+0.3"],
+    ])(
+      "scales Loyal Macaw with Macaw placed at rank %i",
+      (rank, expected, boostValue) => {
+        const { amount, boostsUsed } = getFruitYield({
+          prngArgs: { counter: 0, farmId },
+          game: {
+            ...INITIAL_FARM,
+            bumpkin: {
+              ...INITIAL_FARM.bumpkin,
+              skills: { "Loyal Macaw": rank },
+            },
+            collectibles: {
+              Macaw: [
+                {
+                  coordinates: { x: 1, y: 1 },
+                  createdAt: 0,
+                  id: "123",
+                  readyAt: 0,
+                },
+              ],
+            },
+          },
+          name: "Apple",
+        });
+
+        expect(amount).toEqual(expected);
+        // Drift-free display value, and no double-counted base Macaw entry.
+        expect(boostsUsed).toEqual([
+          { name: "Loyal Macaw", value: boostValue },
+        ]);
+      },
+    );
     it("gives +0.2 fruit yield when Fruitful Bounty is claimed and Fruitful Blend is applied", () => {
       const { amount } = getFruitYield({
         prngArgs: { counter: 0, farmId },
@@ -1005,6 +1082,34 @@ describe("fruitHarvested", () => {
       });
       expect(amount).toEqual(0.75);
     });
+    it("gives +1.5 Lemon yield when Zesty Vibes skill at rank 2", () => {
+      const { amount } = getFruitYield({
+        prngArgs: { counter: 0, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Zesty Vibes": 2 },
+          },
+        },
+        name: "Lemon",
+      });
+      expect(amount).toEqual(2.5);
+    });
+    it("gives -0.4 fruit yield for other fruit when Zesty Vibes skill at rank 2", () => {
+      const { amount } = getFruitYield({
+        prngArgs: { counter: 0, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Zesty Vibes": 2 },
+          },
+        },
+        name: "Apple",
+      });
+      expect(amount).toEqual(0.6);
+    });
     it("gives +1 fruit yield when Generous Orchard triggers (prng 20%)", () => {
       const itemId = KNOWN_IDS["Apple"];
       let triggerCounter: number | null = null;
@@ -1036,6 +1141,56 @@ describe("fruitHarvested", () => {
       });
       expect(amount).toEqual(2);
     });
+    it("scales Generous Orchard trigger chance with rank (50% at rank 3)", () => {
+      const itemId = KNOWN_IDS["Apple"];
+      // A counter that triggers under a 50% chance (rank 3) but NOT a 20% chance
+      // (rank 1) — proves the rank drives the prng chance argument.
+      let counter: number | null = null;
+      for (let c = 0; c < 1000; c++) {
+        const args = { farmId, itemId, counter: c } as const;
+        const at50 = prngChance({
+          ...args,
+          chance: 50,
+          criticalHitName: "Generous Orchard",
+        });
+        const at20 = prngChance({
+          ...args,
+          chance: 20,
+          criticalHitName: "Generous Orchard",
+        });
+        if (at50 && !at20) {
+          counter = c;
+          break;
+        }
+      }
+      expect(counter).not.toBeNull();
+
+      const rank1 = getFruitYield({
+        prngArgs: { counter: counter!, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Generous Orchard": 1 },
+          },
+        },
+        name: "Apple",
+      });
+      expect(rank1.amount).toEqual(1);
+
+      const rank3 = getFruitYield({
+        prngArgs: { counter: counter!, farmId },
+        game: {
+          ...TEST_FARM,
+          bumpkin: {
+            ...TEST_FARM.bumpkin,
+            skills: { "Generous Orchard": 3 },
+          },
+        },
+        name: "Apple",
+      });
+      expect(rank3.amount).toEqual(2);
+    });
     it("gives +0.25 fruit yield when faction wings equipped", () => {
       const { amount } = getFruitYield({
         prngArgs: { counter: 0, farmId },
@@ -1058,5 +1213,197 @@ describe("fruitHarvested", () => {
       });
       expect(amount).toEqual(1.25);
     });
+  });
+});
+
+describe("harvestFruit — SPEED_BOOSTS speed windows", () => {
+  const originalNetwork = CONFIG.NETWORK;
+  beforeEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "amoy";
+  });
+  afterEach(() => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = originalNetwork;
+  });
+
+  const appleMs = PATCH_FRUIT_SEEDS["Apple Seed"].plantSeconds * 1000;
+
+  const withApplePatch = (
+    fruit: Partial<GameState["fruitPatches"][string]["fruit"]>,
+    extra?: Partial<GameState>,
+  ): GameState => ({
+    ...GAME_STATE,
+    fruitPatches: {
+      0: {
+        createdAt: dateNow,
+        x: -2,
+        y: 0,
+        fruit: {
+          name: "Apple",
+          plantedAt: dateNow - appleMs,
+          harvestedAt: 0,
+          harvestsLeft: 3,
+          baseDurationMs: appleMs,
+          ...fruit,
+        },
+      },
+    },
+    ...extra,
+  });
+
+  it("replenishes with a real harvestedAt and a fresh baseDurationMs", () => {
+    const state = harvestFruit({
+      state: withApplePatch({}),
+      action: { type: "fruit.harvested", index: "0" },
+      createdAt: dateNow,
+      farmId: 1,
+    });
+
+    const fruit = state.fruitPatches[0].fruit;
+    expect(fruit?.harvestsLeft).toBe(2);
+    expect(fruit?.harvestedAt).toBe(dateNow);
+    expect(fruit?.baseDurationMs).toBe(appleMs);
+  });
+
+  it("is not harvestable at 1× when only half the base duration has elapsed", () => {
+    expect(() =>
+      harvestFruit({
+        state: withApplePatch({ plantedAt: dateNow - appleMs / 2 }),
+        action: { type: "fruit.harvested", index: "0" },
+        createdAt: dateNow,
+        farmId: 1,
+      }),
+    ).toThrow("Not ready");
+  });
+
+  it("a 2× totem window makes the same half-elapsed fruit harvestable", () => {
+    const plantedAt = dateNow - appleMs / 2;
+    const state = harvestFruit({
+      state: withApplePatch(
+        { plantedAt },
+        {
+          collectibles: {
+            "Super Totem": [
+              {
+                id: "1",
+                coordinates: { x: 5, y: 5 },
+                createdAt: plantedAt,
+                readyAt: plantedAt,
+              },
+            ],
+          },
+        },
+      ),
+      action: { type: "fruit.harvested", index: "0" },
+      createdAt: dateNow,
+      farmId: 1,
+    });
+
+    // Work = elapsed(appleMs/2) × 2 = appleMs → ready; harvest consumed one.
+    expect(state.fruitPatches[0].fruit?.harvestsLeft).toBe(2);
+  });
+
+  it("a Turbofruit Mix fertiliser window speeds replenishment readiness", () => {
+    // Only 80% of the base duration has elapsed → not ready at 1×, but the
+    // 1.25× Turbofruit window over the whole grow completes the work.
+    const plantedAt = dateNow - appleMs * 0.8;
+    const state = harvestFruit({
+      state: withApplePatch(
+        { plantedAt },
+        {
+          fruitPatches: {
+            0: {
+              createdAt: dateNow,
+              x: -2,
+              y: 0,
+              fertiliser: { name: "Turbofruit Mix", fertilisedAt: plantedAt },
+              fruit: {
+                name: "Apple",
+                plantedAt,
+                harvestedAt: 0,
+                harvestsLeft: 3,
+                baseDurationMs: appleMs,
+              },
+            },
+          },
+        },
+      ),
+      action: { type: "fruit.harvested", index: "0" },
+      createdAt: dateNow,
+      farmId: 1,
+    });
+
+    expect(state.fruitPatches[0].fruit?.harvestsLeft).toBe(2);
+  });
+
+  it("without the Turbofruit fertiliser the same 80%-elapsed fruit is NOT ready", () => {
+    expect(() =>
+      harvestFruit({
+        state: withApplePatch({ plantedAt: dateNow - appleMs * 0.8 }),
+        action: { type: "fruit.harvested", index: "0" },
+        createdAt: dateNow,
+        farmId: 1,
+      }),
+    ).toThrow("Not ready");
+  });
+
+  it("is harvestable exactly at the windowed readyAt boundary", () => {
+    // Elapsed exactly baseDurationMs at 1× → readyAt boundary (>=).
+    const state = harvestFruit({
+      state: withApplePatch({ plantedAt: dateNow - appleMs }),
+      action: { type: "fruit.harvested", index: "0" },
+      createdAt: dateNow,
+      farmId: 1,
+    });
+    expect(state.fruitPatches[0].fruit?.harvestsLeft).toBe(2);
+  });
+
+  it("keys off baseDurationMs even on mainnet (permanent per-fruit marker)", () => {
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "mainnet";
+    const plantedAt = dateNow - appleMs / 2;
+    // Read path ignores the flag: a baseDurationMs fruit under a 2× totem is
+    // ready even with SPEED_BOOSTS off.
+    const ready = isFruitReadyToHarvest(
+      dateNow,
+      {
+        name: "Apple",
+        plantedAt,
+        harvestedAt: 0,
+        harvestsLeft: 3,
+        baseDurationMs: appleMs,
+      },
+      {
+        ...GAME_STATE,
+        collectibles: {
+          "Super Totem": [
+            {
+              id: "1",
+              coordinates: { x: 5, y: 5 },
+              createdAt: plantedAt,
+              readyAt: plantedAt,
+            },
+          ],
+        },
+      },
+    );
+    expect(ready).toBe(true);
+  });
+
+  it("keeps baseDurationMs on a flag-off replenish (windowed fruit stays windowed)", () => {
+    // Flag rolled back after the fruit was planted windowed: harvesting it must
+    // NOT silently revert it to legacy timing — the marker persists so remaining
+    // harvests stay on the windowed model.
+    (CONFIG as { NETWORK: "mainnet" | "amoy" }).NETWORK = "mainnet";
+    const state = harvestFruit({
+      state: withApplePatch({ plantedAt: dateNow - appleMs }),
+      action: { type: "fruit.harvested", index: "0" },
+      createdAt: dateNow,
+      farmId: 1,
+    });
+
+    const fruit = state.fruitPatches[0].fruit;
+    expect(fruit?.harvestsLeft).toBe(2);
+    expect(fruit?.baseDurationMs).toBe(appleMs);
+    // Real harvestedAt (not back-dated) — windowed replenish.
+    expect(fruit?.harvestedAt).toBe(dateNow);
   });
 });

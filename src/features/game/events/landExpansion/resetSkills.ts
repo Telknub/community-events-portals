@@ -3,6 +3,12 @@ import type { GameState } from "features/game/types/game";
 import { produce } from "immer";
 import Decimal from "decimal.js-light";
 import { populateSaltFarm } from "features/game/types/salt";
+import {
+  type BumpkinRevampSkillName,
+  type BumpkinSkillRevamp,
+  BUMPKIN_REVAMP_SKILL_TREE,
+  getSkillUpgradeCost,
+} from "features/game/types/bumpkinSkills";
 
 export type PaymentType = "gems" | "free" | "ticket";
 
@@ -124,7 +130,33 @@ export function resetSkills({
       bumpkin.paidSkillResets = paidSkillResets + 1;
     }
 
+    // Refund Ascension Shards spent on skill upgrades. Rank is stored as the
+    // skill value, so compute the refund before wiping skills. Skill points are
+    // refunded implicitly once skills are cleared.
+    let refundShards = 0;
+    for (const skill of getKeys(skills)) {
+      const skillData: BumpkinSkillRevamp =
+        BUMPKIN_REVAMP_SKILL_TREE[skill as BumpkinRevampSkillName];
+      const level = skills[skill] ?? 1;
+      if (skillData?.upgrade) {
+        // Cap to maxLevel so malformed/imported ranks can't over-refund.
+        const refundableRanks = Math.max(
+          0,
+          Math.min(level, skillData.upgrade.maxLevel) - 1,
+        );
+        refundShards +=
+          getSkillUpgradeCost(skillData.requirements.tier).shards *
+          refundableRanks;
+      }
+    }
+
     bumpkin.skills = {};
+
+    if (refundShards > 0) {
+      game.inventory["Ascension Shard"] = (
+        game.inventory["Ascension Shard"] ?? new Decimal(0)
+      ).add(refundShards);
+    }
 
     populateSaltFarm({
       gameBefore: state,

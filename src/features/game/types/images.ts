@@ -392,6 +392,7 @@ import bananaBlast from "assets/food/banana_blast.png";
 import beetrootBlaze from "assets/food/beetroot_blaze.png";
 import shroomSyrup from "assets/food/shroom_syrup.png";
 import rapidRoast from "assets/food/rapid_roast.png";
+import saltSnack from "assets/food/salt_snack.png";
 import theLot from "assets/food/the_lot.webp";
 import antipasto from "assets/food/antipasto.webp";
 import carrotJuice from "assets/food/carrot_juice.webp";
@@ -1438,6 +1439,11 @@ export const ITEM_DETAILS: Items = {
     description: translate("description.barley"),
     translatedName: translate("crop.barley"),
   },
+  Saltwort: {
+    image: CROP_LIFECYCLE["Basic Biome"].Saltwort.crop,
+    description: translate("description.saltwort"),
+    translatedName: translate("crop.saltwort"),
+  },
   Rhubarb: {
     image: CROP_LIFECYCLE["Basic Biome"].Rhubarb.crop,
     description: translate("description.rhubarb"),
@@ -1554,6 +1560,11 @@ export const ITEM_DETAILS: Items = {
     image: CROP_LIFECYCLE["Basic Biome"].Barley.seed,
     description: translate("description.barley"),
     translatedName: translate("seed.barley"),
+  },
+  "Saltwort Seed": {
+    image: CROP_LIFECYCLE["Basic Biome"].Saltwort.seed,
+    description: translate("description.saltwort"),
+    translatedName: translate("seed.saltwort"),
   },
   "Rhubarb Seed": {
     image: CROP_LIFECYCLE["Basic Biome"].Rhubarb.seed,
@@ -5364,6 +5375,11 @@ export const ITEM_DETAILS: Items = {
     description: CONSUMABLES["Rapid Roast"].description,
     translatedName: translate("food.rapidRoast"),
   },
+  Saltbite: {
+    image: saltSnack,
+    description: CONSUMABLES["Saltbite"].description,
+    translatedName: translate("food.saltbite"),
+  },
   "Shroom Syrup": {
     image: shroomSyrup,
     description: CONSUMABLES["Shroom Syrup"].description,
@@ -6851,7 +6867,7 @@ export const ITEM_DETAILS: Items = {
     image: volcanoBiome,
     description: "A swamp biome that provides a swamp income and a swamp life.",
   },
-  "Moon Biome": {
+  "Galaxy Biome": {
     image: volcanoBiome,
     description: "A swamp biome that provides a swamp income and a swamp life.",
   },

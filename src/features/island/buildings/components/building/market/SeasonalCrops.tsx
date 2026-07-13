@@ -32,6 +32,13 @@ import type { MachineState } from "features/game/lib/gameMachine";
 import { useSelector } from "@xstate/react";
 import { isExoticCrop } from "features/game/types/crops";
 import { getCountAndType } from "features/island/hud/components/inventory/utils/inventory";
+import {
+  CHAPTER_CROP_WEEK,
+  CHAPTER_CROP_WEEK_CROP,
+  isChapterCropWeekActive,
+} from "features/game/types/chapterCropWeek";
+import { useNow } from "lib/utils/hooks/useNow";
+import { SpecialEventPanel } from "../SpecialEventPanel";
 
 const _state = (state: MachineState) => state.context.state;
 
@@ -48,6 +55,12 @@ export const SeasonalCrops: React.FC = () => {
   const { t } = useAppTranslation();
 
   const state = useSelector(gameService, _state);
+
+  const now = useNow({
+    live: true,
+    autoEndAt: CHAPTER_CROP_WEEK.endDate.getTime(),
+  });
+  const isCropWeek = isChapterCropWeekActive(now);
 
   const { island, season } = state;
   const { type: islandType } = island;
@@ -225,6 +238,16 @@ export const SeasonalCrops: React.FC = () => {
                   );
                 })}
             </div>
+            {isCropWeek && (
+              <SpecialEventPanel
+                image={ITEM_DETAILS[CHAPTER_CROP_WEEK_CROP].image}
+                title={t("chapterCropWeek.specialEventCrop")}
+                endDate={CHAPTER_CROP_WEEK.endDate}
+                isSelected={selected.name === CHAPTER_CROP_WEEK_CROP}
+                count={getCountAndType(state, CHAPTER_CROP_WEEK_CROP).count}
+                onSelect={() => setSelected(crops[CHAPTER_CROP_WEEK_CROP])}
+              />
+            )}
             <div className="flex">
               <Label
                 className="mr-3 ml-2 mb-1 capitalize"
@@ -237,6 +260,7 @@ export const SeasonalCrops: React.FC = () => {
             <div className="flex flex-wrap mb-2">
               {getKeys(crops)
                 .filter((name) => !seasonal.includes(name))
+                .filter((name) => name !== CHAPTER_CROP_WEEK_CROP)
                 .filter((name) => !!crops[name].sellPrice)
                 .map((name) => {
                   const { count } = getCountAndType(state, name);

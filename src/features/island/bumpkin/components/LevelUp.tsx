@@ -9,10 +9,11 @@ import {
   XIcon,
 } from "react-share";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "components/ui/Button";
 import type { Equipped } from "features/game/types/bumpkin";
 import { onboardingAnalytics } from "lib/onboardingAnalytics";
+import { mfTrack } from "lib/moonforgeAnalytics";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { Label } from "components/ui/Label";
 import { getKeys } from "lib/object";
@@ -166,6 +167,12 @@ export const LevelUp: React.FC<Props> = ({
   ascension,
 }) => {
   const { t } = useAppTranslation();
+
+  useEffect(() => {
+    mfTrack("bumpkin_leveled_up", { new_level: level });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const shareMessage = ascension
     ? `Just reached level ${level} of Ascension ${ascension} in Sunflower Land! So proud of my progress in this game. 🌻🚀 \n\n https://www.sunflower-land.com \n\n #SunflowerLand #LevelUp`
     : `Just reached level ${level} in Sunflower Land! So proud of my progress in this game. 🌻🚀 \n\n https://www.sunflower-land.com \n\n #SunflowerLand #LevelUp`;

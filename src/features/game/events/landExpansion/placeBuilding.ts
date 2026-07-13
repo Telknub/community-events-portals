@@ -10,8 +10,14 @@ import type {
 import { produce } from "immer";
 import type { ComposterName } from "features/game/types/composters";
 import { createInitialAgingShed } from "features/game/lib/agingShed";
+import {
+  getGreenhouseBoostWindows,
+  getGreenhouseGlowWindows,
+  pauseWindowedTimer,
+} from "features/game/lib/boostWindows";
 import { getReadyAt } from "./startComposter";
 import type { Coordinates } from "features/game/expansion/components/MapPlacement";
+import { mfTrack } from "lib/moonforgeAnalytics";
 
 export enum PLACE_BUILDING_ERRORS {
   NO_BUMPKIN = "You do not have a Bumpkin!",
@@ -122,9 +128,21 @@ export function placeBuilding({
         const { greenhouse } = stateCopy;
         Object.values(greenhouse.pots).forEach((pot) => {
           if (pot.plant && existingBuilding.removedAt) {
-            const existingProgress =
-              existingBuilding.removedAt - pot.plant.plantedAt;
-            pot.plant.plantedAt = createdAt - existingProgress;
+            const { plant } = pot;
+            // Pause growth across the move (windowed banking or legacy back-date).
+            // trackProgress banks the pre-move work into boostedTime for the
+            // growth bar. (Mirrors placePlot's lift-banking for windowed crops.)
+            plant.plantedAt = pauseWindowedTimer({
+              timer: plant,
+              startedAt: plant.plantedAt,
+              removedAt: existingBuilding.removedAt,
+              createdAt,
+              windows: [
+                ...getGreenhouseBoostWindows(stateCopy, plant.name),
+                ...getGreenhouseGlowWindows(pot.fertiliser),
+              ],
+              trackProgress: true,
+            });
           }
         });
       }
@@ -222,6 +240,8 @@ export function placeBuilding({
 
       delete existingBuilding.removedAt;
 
+      mfTrack("building_placed", { building_type: action.name });
+
       return stateCopy;
     }
 
@@ -231,6 +251,8 @@ export function placeBuilding({
       coordinates: action.coordinates,
       readyAt: createdAt,
     };
+
+    mfTrack("building_placed", { building_type: action.name });
 
     return {
       ...stateCopy,

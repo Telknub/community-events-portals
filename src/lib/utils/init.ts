@@ -4,6 +4,30 @@ import { sdk } from "@farcaster/miniapp-sdk";
 
 import { initialiseFont } from "./fonts";
 import { initMetaPixel } from "lib/analytics/meta";
+import { MoonForgeAnalytics } from "lib/moonforge";
+import { MOONFORGE_GAME_ID } from "lib/moonforgeAnalytics";
+
+let moonForgeInitialised = false;
+
+function initMoonForge() {
+  if (moonForgeInitialised) return;
+
+  // Not configured (e.g. local dev without VITE_MOONFORGE_GAME_ID) — skip,
+  // matching how the other analytics integrations behave without their keys.
+  if (!MOONFORGE_GAME_ID) return;
+
+  moonForgeInitialised = true;
+
+  try {
+    MoonForgeAnalytics.init({
+      gameId: MOONFORGE_GAME_ID,
+      trackNetworkErrors: true,
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(`MoonForge analytics error: `, e);
+  }
+}
 
 export async function initialise() {
   /**
@@ -19,6 +43,7 @@ export async function initialise() {
 
   initialiseFont();
   initMetaPixel();
+  initMoonForge();
 
   await sdk.actions.ready();
 }

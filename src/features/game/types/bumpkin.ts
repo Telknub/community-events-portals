@@ -1878,6 +1878,18 @@ export const BUMPKIN_ITEM_PART: Record<BumpkinItem, keyof Wallet> = {
   "Clam Shell Hat": "hat",
   "Shrimp Onesie": "onesie",
   "Brasil Jersey": "shirt",
+  "Rainbow Wings": "wings",
+  "Butterfly Aura": "aura",
+  "Slime Wall Background": "background",
+  "Green Slime Hair": "hair",
+  "Blue Slime Shirt": "shirt",
+  "Slime Splattered Shirt": "shirt",
+  "Yellow Slime Puppet": "tool",
+  "Blue Jelly Shoes": "shoes",
+  "Sad Slime Slippers": "shoes",
+  "Sad Slime Hat": "hat",
+  "Sad Slime Pants": "pants",
+  "Red Jelly Pants": "pants",
 };
 
 /**Copied from BE just for hoarding checks */

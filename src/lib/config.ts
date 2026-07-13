@@ -7,6 +7,7 @@ const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS as string;
 const POLYGON_CHAIN_ID = NETWORK === "mainnet" ? 137 : 80002;
 
 const API_URL = import.meta.env.VITE_API_URL;
+const API2_URL = import.meta.env.VITE_API2_URL;
 const ROOM_URL = import.meta.env.VITE_ROOM_URL;
 
 const WISHING_WELL_CONTRACT = import.meta.env.VITE_WISHING_WELL_CONTRACT;
@@ -78,6 +79,7 @@ const GAME_ANALYTICS_APP_ID = import.meta.env
   .VITE_GAME_ANALYTICS_APP_ID as string;
 const GAME_ANALYTICS_PUB_KEY = import.meta.env
   .VITE_GAME_ANALYTICS_PUB_KEY as string;
+const MOONFORGE_GAME_ID = import.meta.env.VITE_MOONFORGE_GAME_ID as string;
 const PORTAL_APP = import.meta.env.VITE_PORTAL_APP as string;
 const PORTAL_GAME_URL = import.meta.env.VITE_PORTAL_GAME_URL as string;
 
@@ -113,6 +115,7 @@ export const CONFIG = {
   PORTAL_DONATION_ADDRESS,
   TREASURY_ADDRESS,
   API_URL,
+  API2_URL,
   DISCORD_REDIRECT,
 
   WISHING_WELL_CONTRACT,
@@ -168,6 +171,7 @@ export const CONFIG = {
   CHRISTMAS_EVENT_DONATION,
   GAME_ANALYTICS_APP_ID,
   GAME_ANALYTICS_PUB_KEY,
+  MOONFORGE_GAME_ID,
   PORTAL_APP,
   PORTAL_GAME_URL,
   SEQUENCE_ACCESS_KEY,
