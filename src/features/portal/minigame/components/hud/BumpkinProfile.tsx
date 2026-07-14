@@ -21,7 +21,6 @@ import {
   type BumpkinItem,
   type BumpkinPart,
 } from "features/game/types/bumpkin";
-import { availableWardrobe } from "features/game/events/landExpansion/equip";
 import type { GameState } from "features/game/types/game";
 import { INITIAL_EQUIPMENT } from "features/game/lib/constants";
 import { InnerPanel } from "components/ui/Panel";
@@ -311,7 +310,7 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
     const stored = loadStoredLoadouts({
       farmId,
       fallback: bumpkinEquipment,
-      available: availableWardrobe(gameState as GameState),
+      wardrobe: gameState.wardrobe,
     });
     const loadouts = enforceWearableInventory({
       defaultEquipment: stored.defaultEquipment,
@@ -393,6 +392,9 @@ export const BumpkinProfile: React.FC<BumpkinProfileProps> = ({
 
     const part = BUMPKIN_ITEM_PART[name];
     const isEquipped = equipped[part] === name;
+    const ownsWearable = (gameState?.wardrobe[name] ?? 0) > 0;
+    if (!isEquipped && !ownsWearable) return;
+
     if (!isEquipped && (availableWearableCounts[name] ?? 0) <= 0) return;
 
     const outfit = {

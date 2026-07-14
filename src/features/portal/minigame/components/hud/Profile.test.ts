@@ -11,11 +11,6 @@ import {
   type WearableLoadouts,
 } from "./loadoutStorage";
 import type { Wardrobe } from "features/game/types/game";
-import {
-  getSharedCookieDomain,
-  getWearableLoadoutCookieName,
-  saveCookieStoredLoadouts,
-} from "./wearableLoadoutCookieStorage";
 
 const FARM_ID = 123;
 
@@ -32,12 +27,6 @@ const makeLoadouts = (equipment: BumpkinParts): WearableLoadouts => ({
 describe("wearable loadout default equipment synchronization", () => {
   beforeEach(() => {
     localStorage.clear();
-    document.cookie.split(";").forEach((cookie) => {
-      const name = cookie.split("=")[0]?.trim();
-      if (!name) return;
-
-      document.cookie = `${name}=; Max-Age=0; Path=/`;
-    });
   });
 
   it("keeps minigame wearables and refreshes or removes other parts", () => {
@@ -95,7 +84,7 @@ describe("wearable loadout default equipment synchronization", () => {
     const stored = loadStoredLoadouts({
       farmId: FARM_ID,
       fallback,
-      available: wardrobe,
+      wardrobe,
     });
 
     expect(stored.hasStoredLoadouts).toBe(false);
@@ -124,13 +113,67 @@ describe("wearable loadout default equipment synchronization", () => {
     const stored = loadStoredLoadouts({
       farmId: FARM_ID,
       fallback,
-      available: wardrobe,
+      wardrobe,
     });
 
     expect(stored.hasStoredLoadouts).toBe(true);
     expect(stored.shouldPersist).toBe(false);
     expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
     expect(stored.loadouts.I).toEqual(fallback);
+  });
+
+  it("keeps owned wearables even when they are unavailable because farm hands use them", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    localStorage.setItem(
+      getStorageKey(FARM_ID),
+      JSON.stringify({
+        version: 1,
+        defaultEquipment: fallback,
+        loadouts,
+      } satisfies StoredWearableLoadouts),
+    );
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      wardrobe: {
+        "Handheld Bunny": 1,
+      } as Wardrobe,
+    });
+
+    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
+  });
+
+  it("removes saved minigame wearables that are no longer owned", () => {
+    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
+    const loadouts = makeLoadouts(fallback);
+    loadouts.II = {
+      ...fallback,
+      tool: "Handheld Bunny",
+    } as BumpkinParts;
+
+    localStorage.setItem(
+      getStorageKey(FARM_ID),
+      JSON.stringify({
+        version: 1,
+        defaultEquipment: fallback,
+        loadouts,
+      } satisfies StoredWearableLoadouts),
+    );
+
+    const stored = loadStoredLoadouts({
+      farmId: FARM_ID,
+      fallback,
+      wardrobe: {} as Wardrobe,
+    });
+
+    expect(stored.loadouts.II.tool).not.toBe("Handheld Bunny");
   });
 
   it("refreshes base equipment changes while preserving minigame buff wearables", () => {
@@ -157,7 +200,7 @@ describe("wearable loadout default equipment synchronization", () => {
     const stored = loadStoredLoadouts({
       farmId: FARM_ID,
       fallback: currentDefault,
-      available: wardrobe,
+      wardrobe,
     });
 
     expect(stored.hasStoredLoadouts).toBe(true);
@@ -181,7 +224,7 @@ describe("wearable loadout default equipment synchronization", () => {
     const stored = loadStoredLoadouts({
       farmId: FARM_ID,
       fallback,
-      available: wardrobe,
+      wardrobe,
     });
 
     expect(stored.hasStoredLoadouts).toBe(true);
@@ -205,7 +248,7 @@ describe("wearable loadout default equipment synchronization", () => {
         loadouts,
       } satisfies StoredWearableLoadouts),
       fallback,
-      available: wardrobe,
+      wardrobe,
     });
 
     expect(localStorage.getItem(getStorageKey(FARM_ID))).toBeNull();
@@ -214,71 +257,7 @@ describe("wearable loadout default equipment synchronization", () => {
     expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
   });
 
-  it("loads shared cookie loadouts before subdomain localStorage", () => {
-    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
-    const cookieLoadouts = makeLoadouts(fallback);
-    cookieLoadouts.II = {
-      ...fallback,
-      tool: "Handheld Bunny",
-    } as BumpkinParts;
-    const localLoadouts = makeLoadouts(fallback);
-    localLoadouts.III = {
-      ...fallback,
-      tool: "Handheld Bunny",
-    } as BumpkinParts;
-
-    saveCookieStoredLoadouts({
-      farmId: FARM_ID,
-      defaultEquipment: fallback,
-      loadouts: cookieLoadouts,
-    });
-    localStorage.setItem(
-      getStorageKey(FARM_ID),
-      JSON.stringify({
-        version: 1,
-        defaultEquipment: fallback,
-        loadouts: localLoadouts,
-      } satisfies StoredWearableLoadouts),
-    );
-
-    const stored = loadStoredLoadouts({
-      farmId: FARM_ID,
-      fallback,
-      available: wardrobe,
-    });
-
-    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
-    expect(stored.loadouts.III.tool).toBe(fallback.tool);
-  });
-
-  it("migrates existing subdomain localStorage loadouts into the shared cookie", () => {
-    const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
-    const loadouts = makeLoadouts(fallback);
-    loadouts.II = {
-      ...fallback,
-      tool: "Handheld Bunny",
-    } as BumpkinParts;
-
-    localStorage.setItem(
-      getStorageKey(FARM_ID),
-      JSON.stringify({
-        version: 1,
-        defaultEquipment: fallback,
-        loadouts,
-      } satisfies StoredWearableLoadouts),
-    );
-
-    const stored = loadStoredLoadouts({
-      farmId: FARM_ID,
-      fallback,
-      available: wardrobe,
-    });
-
-    expect(stored.loadouts.II.tool).toBe("Handheld Bunny");
-    expect(document.cookie).toContain(getWearableLoadoutCookieName(FARM_ID));
-  });
-
-  it("saves loadouts to localStorage and the shared cookie", () => {
+  it("saves loadouts to localStorage", () => {
     const fallback = { ...INITIAL_EQUIPMENT } as BumpkinParts;
     const loadouts = makeLoadouts(fallback);
     loadouts.I = {
@@ -293,13 +272,5 @@ describe("wearable loadout default equipment synchronization", () => {
     });
 
     expect(localStorage.getItem(getStorageKey(FARM_ID))).toBeTruthy();
-    expect(document.cookie).toContain(getWearableLoadoutCookieName(FARM_ID));
-  });
-
-  it("uses a host-only cookie outside sunflower-land.com hosts", () => {
-    expect(getSharedCookieDomain("localhost")).toBeUndefined();
-    expect(getSharedCookieDomain("halloween.sunflower-land.com")).toBe(
-      ".sunflower-land.com",
-    );
   });
 });

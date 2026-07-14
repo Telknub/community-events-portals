@@ -249,7 +249,6 @@ export const Portal: React.FC<Props> = ({
     gameService.send("minigame.prizeClaimed", {
       id: portalName,
     });
-    console.log("entrooo");
 
     onClose();
   };

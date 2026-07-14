@@ -8,10 +8,6 @@ import type { Wardrobe } from "features/game/types/game";
 import type { BumpkinParts } from "lib/utils/tokenUriBuilder";
 import { PORTAL_NAME } from "../../constants/PortalConstants";
 import { reconcileLoadoutWithDefaultEquipment } from "./loadoutUtils";
-import {
-  loadCookieStoredLoadouts,
-  saveCookieStoredLoadouts,
-} from "./wearableLoadoutCookieStorage";
 
 export type WearableLoadoutSlot = "I" | "II" | "III";
 export type WearableLoadouts = Record<WearableLoadoutSlot, BumpkinParts>;
@@ -52,16 +48,16 @@ const isValidEquipment = (value: unknown): value is BumpkinParts => {
 };
 
 const getAllowedItems = ({
-  available,
+  wardrobe,
   defaultEquipment,
 }: {
-  available: Wardrobe;
+  wardrobe: Wardrobe;
   defaultEquipment: BumpkinParts;
 }) => {
   return new Set([
     ...Object.values(defaultEquipment),
     ...Object.values(INITIAL_EQUIPMENT),
-    ...Object.entries(available)
+    ...Object.entries(wardrobe)
       .filter(([, amount]) => amount > 0)
       .map(([name]) => name as BumpkinItem),
   ]);
@@ -142,11 +138,11 @@ const parseStoredValue = (value: unknown) => {
 export const resolveStoredLoadouts = ({
   storedValue,
   fallback,
-  available,
+  wardrobe,
 }: {
   storedValue: unknown;
   fallback: BumpkinParts;
-  available: Wardrobe;
+  wardrobe: Wardrobe;
 }): LoadedWearableLoadouts => {
   const defaults = getDefaultLoadouts(fallback);
 
@@ -208,7 +204,7 @@ export const resolveStoredLoadouts = ({
 
     const storedDefaultEquipment = getStoredDefaultEquipment(parsed);
     const allowedItems = getAllowedItems({
-      available,
+      wardrobe,
       defaultEquipment: fallback,
     });
     let shouldPersist = !isStoredV1(parsed);
@@ -261,37 +257,18 @@ export const resolveStoredLoadouts = ({
 export const loadStoredLoadouts = ({
   farmId,
   fallback,
-  available,
+  wardrobe,
 }: {
   farmId: number;
   fallback: BumpkinParts;
-  available: Wardrobe;
+  wardrobe: Wardrobe;
 }): LoadedWearableLoadouts => {
-  const cookieStored = loadCookieStoredLoadouts({ farmId, fallback });
-  if (cookieStored) {
-    return resolveStoredLoadouts({
-      storedValue: cookieStored,
-      fallback,
-      available,
-    });
-  }
-
   const raw = localStorage.getItem(getStorageKey(farmId));
-  const localStored = resolveStoredLoadouts({
+  return resolveStoredLoadouts({
     storedValue: raw,
     fallback,
-    available,
+    wardrobe,
   });
-
-  if (raw && localStored.hasStoredLoadouts) {
-    saveCookieStoredLoadouts({
-      farmId,
-      defaultEquipment: localStored.defaultEquipment,
-      loadouts: localStored.loadouts,
-    });
-  }
-
-  return localStored;
 };
 
 export const saveStoredLoadouts = ({
@@ -303,8 +280,6 @@ export const saveStoredLoadouts = ({
   defaultEquipment: BumpkinParts;
   loadouts: WearableLoadouts;
 }) => {
-  saveCookieStoredLoadouts({ farmId, defaultEquipment, loadouts });
-
   localStorage.setItem(
     getStorageKey(farmId),
     JSON.stringify({
