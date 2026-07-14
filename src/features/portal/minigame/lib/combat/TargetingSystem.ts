@@ -52,9 +52,13 @@ export class TargetingSystem {
     return this.enemies;
   }
 
-  public nearest(origin: Vector, candidates?: EnemyLike[]) {
+  public nearest(
+    origin: Vector,
+    candidates?: EnemyLike[],
+    excluded?: ReadonlySet<EnemyLike>,
+  ) {
     if (candidates) {
-      return this.nearestFromCandidates(origin, candidates);
+      return this.nearestFromCandidates(origin, candidates, excluded);
     }
 
     if (this.entries.length === 0) return undefined;
@@ -73,7 +77,7 @@ export class TargetingSystem {
 
     for (let ring = 0; ring <= maxRing; ring++) {
       if (ring === 0) {
-        this.scanCellForNearest(origin, originCellX, originCellY);
+        this.scanCellForNearest(origin, originCellX, originCellY, excluded);
       } else {
         const minX = originCellX - ring;
         const maxX = originCellX + ring;
@@ -81,13 +85,13 @@ export class TargetingSystem {
         const maxY = originCellY + ring;
 
         for (let cellX = minX; cellX <= maxX; cellX++) {
-          this.scanCellForNearest(origin, cellX, minY);
-          this.scanCellForNearest(origin, cellX, maxY);
+          this.scanCellForNearest(origin, cellX, minY, excluded);
+          this.scanCellForNearest(origin, cellX, maxY, excluded);
         }
 
         for (let cellY = minY + 1; cellY < maxY; cellY++) {
-          this.scanCellForNearest(origin, minX, cellY);
-          this.scanCellForNearest(origin, maxX, cellY);
+          this.scanCellForNearest(origin, minX, cellY, excluded);
+          this.scanCellForNearest(origin, maxX, cellY, excluded);
         }
       }
 
@@ -253,12 +257,18 @@ export class TargetingSystem {
     this.coneResult.length = 0;
   }
 
-  private nearestFromCandidates(origin: Vector, candidates: EnemyLike[]) {
+  private nearestFromCandidates(
+    origin: Vector,
+    candidates: EnemyLike[],
+    excluded?: ReadonlySet<EnemyLike>,
+  ) {
     let nearestEnemy: EnemyLike | undefined;
     let nearestDistanceSq = Infinity;
 
     for (let index = 0; index < candidates.length; index++) {
       const enemy = candidates[index];
+      if (excluded?.has(enemy)) continue;
+
       const entry = this.entriesByEnemy.get(enemy);
       const center = entry ?? enemyCenter(enemy);
       const dx = center.x - origin.x;
@@ -274,12 +284,19 @@ export class TargetingSystem {
     return nearestEnemy;
   }
 
-  private scanCellForNearest(origin: Vector, cellX: number, cellY: number) {
+  private scanCellForNearest(
+    origin: Vector,
+    cellX: number,
+    cellY: number,
+    excluded?: ReadonlySet<EnemyLike>,
+  ) {
     const bucket = this.grid.get(this.cellKey(cellX, cellY));
     if (!bucket) return;
 
     for (let index = 0; index < bucket.length; index++) {
       const entry = bucket[index];
+      if (excluded?.has(entry.enemy)) continue;
+
       const dx = entry.x - origin.x;
       const dy = entry.y - origin.y;
       const distanceSq = dx * dx + dy * dy;

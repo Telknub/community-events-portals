@@ -140,13 +140,13 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
     texture: "weapon_watering_can_projectile",
     behavior: "linearProjectile",
     damageType: "water",
-    targeting: "movementVector",
+    targeting: "nearest",
     projectile: PROJECTILE_CONFIGS.waterDrop,
     baseStats: {
       ...BASE_WEAPON_STATS,
       damage: 5,
       cooldownMs: 650,
-      projectileSpeed: 250,
+      projectileSpeed: 150,
       durationMs: 900,
     },
   },
@@ -226,7 +226,7 @@ export const WEAPON_CONFIGS: Record<WeaponId, WeaponConfig> = {
     texture: "weapon_horizontal_pumpkin",
     behavior: "rollingProjectile",
     damageType: "physical",
-    targeting: "movementVector",
+    targeting: "random",
     projectile: PROJECTILE_CONFIGS.pumpkin,
     baseStats: {
       ...BASE_WEAPON_STATS,
@@ -297,15 +297,15 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 7,
       modifiers: [
         { stat: "orbitalCount", operation: "add", value: 1 },
-        { stat: "hitCooldownMs", operation: "multiply", value: 0.8 },
+        { stat: "hitCooldownMs", operation: "multiply", value: 0.9 },
       ],
     },
     {
       level: 8,
       modifiers: [
         { stat: "orbitalCount", operation: "add", value: 1 },
-        { stat: "angularSpeed", operation: "multiply", value: 1.2 },
-        { stat: "damage", operation: "add", value: 4 },
+        { stat: "angularSpeed", operation: "multiply", value: 1.1 },
+        { stat: "damage", operation: "add", value: 3 },
       ],
     },
   ],
@@ -356,7 +356,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 8,
       modifiers: [
         { stat: "projectileCount", operation: "set", value: 2 },
-        { stat: "damage", operation: "add", value: 6 },
+        { stat: "damage", operation: "add", value: 10 },
         { stat: "range", operation: "add", value: 10 },
       ],
     },
@@ -366,7 +366,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 2,
       modifiers: [
         { stat: "cooldownMs", operation: "multiply", value: 0.85 },
-        { stat: "projectileSpeed", operation: "add", value: 20 },
+        { stat: "projectileSpeed", operation: "add", value: 10 },
       ],
     },
     {
@@ -387,7 +387,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 5,
       modifiers: [
         { stat: "damage", operation: "add", value: 3 },
-        { stat: "projectileSpeed", operation: "add", value: 30 },
+        { stat: "projectileSpeed", operation: "add", value: 20 },
       ],
     },
     {
@@ -400,15 +400,15 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 7,
       modifiers: [
-        { stat: "pierce", operation: "add", value: 5 },
-        { stat: "cooldownMs", operation: "multiply", value: 0.7 },
+        { stat: "pierce", operation: "add", value: 3 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.9 },
       ],
     },
     {
       level: 8,
       modifiers: [
         { stat: "projectileCount", operation: "add", value: 1 },
-        { stat: "damage", operation: "add", value: 6 },
+        { stat: "damage", operation: "add", value: 5 },
         { stat: "pierce", operation: "add", value: 5 },
       ],
     },
@@ -543,7 +543,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 5,
       modifiers: [
         { stat: "damage", operation: "add", value: 4 },
-        { stat: "cooldownMs", operation: "multiply", value: 0.8 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.9 },
       ],
     },
     {
@@ -564,8 +564,8 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 8,
       modifiers: [
         { stat: "orbitalCount", operation: "add", value: 1 },
-        { stat: "cooldownMs", operation: "multiply", value: 0.8 },
-        { stat: "damage", operation: "add", value: 11 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.9 },
+        { stat: "damage", operation: "add", value: 9 },
       ],
     },
   ],
@@ -647,7 +647,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       level: 5,
       modifiers: [
         { stat: "projectileSpeed", operation: "add", value: 20 },
-        { stat: "durationMs", operation: "add", value: 300 },
+        { stat: "durationMs", operation: "add", value: 200 },
       ],
     },
     {
@@ -660,7 +660,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 7,
       modifiers: [
-        { stat: "cooldownMs", operation: "multiply", value: 0.85 },
+        { stat: "cooldownMs", operation: "multiply", value: 0.8 },
         { stat: "size", operation: "add", value: 0.3 },
       ],
     },
@@ -669,7 +669,7 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
       modifiers: [
         { stat: "size", operation: "add", value: 0.5 },
         { stat: "pierce", operation: "add", value: 8 },
-        { stat: "damage", operation: "add", value: 8 },
+        { stat: "damage", operation: "add", value: 15 },
       ],
     },
   ],
@@ -712,14 +712,14 @@ export const WEAPON_UPGRADES: Record<WeaponId, WeaponUpgrade[]> = {
     {
       level: 7,
       modifiers: [
-        { stat: "damage", operation: "add", value: 3 },
+        { stat: "damage", operation: "add", value: 2 },
         { stat: "cooldownMs", operation: "multiply", value: 0.85 },
       ],
     },
     {
       level: 8,
       modifiers: [
-        { stat: "projectileCount", operation: "add", value: 3 },
+        { stat: "projectileCount", operation: "add", value: 2 },
         { stat: "homingSpeed", operation: "add", value: 40 },
         { stat: "damage", operation: "add", value: 3 },
       ],

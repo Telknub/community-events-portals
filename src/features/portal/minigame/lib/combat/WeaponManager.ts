@@ -40,6 +40,17 @@ const WEAPON_CORN_EXPLOSION_ANIMATION_KEY = "weapon_corn_explosion_active";
 const WEAPON_OIL_ANIMATION_KEY = "weapon_oil_active";
 const WEAPON_CORN_EXPLOSION_ANIMATION_MS = 625;
 
+const PUMPKIN_DIRECTIONS: readonly Vector[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+  { x: Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: -Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: Math.SQRT1_2, y: -Math.SQRT1_2 },
+  { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
+];
+
 type RuntimeWeapon = {
   id: WeaponId;
   level: WeaponLevel;
@@ -76,6 +87,7 @@ export class WeaponManager {
   private readonly statusEffectSystem = new StatusEffectSystem();
   private readonly targetingSystem: TargetingSystem;
   private readonly activeWeapons = new Map<WeaponId, RuntimeWeapon>();
+  private readonly wateringCanSelectedTargets = new Set<EnemyLike>();
   private lastAimVector: Vector = { ...FALLBACK_AIM_VECTOR };
   private nextAreaCollisionCheckAt = 0;
   private isShutDown = false;
@@ -277,15 +289,43 @@ export class WeaponManager {
   }
 
   private fireWateringCan(weapon: RuntimeWeapon, time: number) {
-    this.fireProjectilesFromPlayer({
-      weapon,
-      time,
-      projectile: weapon.config.projectile,
-      behavior: "linear",
-      direction: this.lastAimVector,
-    });
+    const projectileCount = Math.max(1, Math.round(weapon.stats.projectileCount));
+    const selectedTargets = this.wateringCanSelectedTargets;
+    selectedTargets.clear();
 
-    return true;
+    let fired = false;
+
+    for (let index = 0; index < projectileCount; index++) {
+      const target = this.targetingSystem.nearest(
+        this.props.player,
+        undefined,
+        selectedTargets,
+      );
+
+      const direction = target
+        ? normalizeVector({
+            x: target.x - this.props.player.x,
+            y: target.y - this.props.player.y,
+          })
+        : this.lastAimVector;
+
+      if (target) {
+        selectedTargets.add(target);
+      }
+
+      this.fireProjectile({
+        weapon,
+        time,
+        projectile: weapon.config.projectile,
+        behavior: "linear",
+        x: this.props.player.x,
+        y: this.props.player.y,
+        direction,
+      });
+      fired = true;
+    }
+
+    return fired;
   }
 
   private fireCorn(weapon: RuntimeWeapon, time: number) {
@@ -386,6 +426,11 @@ export class WeaponManager {
   }
 
   private firePumpkin(weapon: RuntimeWeapon, time: number) {
+    const direction =
+      PUMPKIN_DIRECTIONS[
+        Math.floor(Math.random() * PUMPKIN_DIRECTIONS.length)
+      ];
+
     this.fireProjectile({
       weapon,
       time,
@@ -393,7 +438,7 @@ export class WeaponManager {
       behavior: "rolling",
       x: this.props.player.x,
       y: this.props.player.y,
-      direction: this.lastAimVector,
+      direction,
       rolling: true,
     });
 
