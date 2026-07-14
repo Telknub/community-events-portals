@@ -57,6 +57,7 @@ import { hasVipAccess } from "features/game/lib/vipAccess";
 import { playerModalManager } from "features/social/lib/playerModalManager";
 import { rewardModalManager } from "features/social/lib/rewardModalManager";
 import { WALKING_SPEED } from "../constants";
+import { getIsZoomedOutSetting } from "../components/hud/UseCameraZoom";
 
 export type NPCBumpkin = {
   x: number;
@@ -150,7 +151,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
   zoom = window.innerWidth < 500 ? 3 : 4;
   baseZoom = this.zoom;
-  isZoomedOut = false;
+  isZoomedOut = getIsZoomedOutSetting();
 
   velocity = WALKING_SPEED;
   isMoving = false;
@@ -196,6 +197,21 @@ export abstract class BaseScene extends Phaser.Scene {
     this.isZoomedOut = !this.isZoomedOut;
     const targetZoom = this.isZoomedOut ? this.baseZoom * 0.75 : this.baseZoom;
     this.cameras.main.setZoom(targetZoom);
+    this.repositionJoystick(targetZoom);
+  };
+
+  private repositionJoystick = (currentZoom: number) => {
+    if (!this.joystick) return;
+
+    const { centerX, centerY, height } = this.cameras.main;
+    const yOffset = this.isZoomedOut ? 47 : 35;
+
+    this.joystick.x = centerX;
+    this.joystick.y = centerY - yOffset + height / currentZoom / 2;
+
+    const compensation = this.baseZoom / currentZoom;
+    (this.joystick.base as Phaser.GameObjects.Arc).setScale(compensation);
+    (this.joystick.thumb as Phaser.GameObjects.Arc).setScale(compensation);
   };
 
   /**
@@ -1203,14 +1219,16 @@ export abstract class BaseScene extends Phaser.Scene {
     server.state.players.forEach((player, sessionId) => {
       if (this.playerEntities[sessionId]) {
         const nameTag = this.playerEntities[sessionId].getByName("nameTag") as
-          Phaser.GameObjects.Text | undefined;
+          | Phaser.GameObjects.Text
+          | undefined;
 
         if (nameTag && player.username && nameTag.text !== player.username) {
           nameTag.setText(player.username);
         }
       } else if (sessionId === server.sessionId) {
         const nameTag = this.currentPlayer?.getByName("nameTag") as
-          Phaser.GameObjects.Text | undefined;
+          | Phaser.GameObjects.Text
+          | undefined;
 
         if (nameTag && player.username && nameTag.text !== player.username) {
           nameTag.setText(player.username);
@@ -1221,7 +1239,8 @@ export abstract class BaseScene extends Phaser.Scene {
 
   checkAndUpdateNameColor(entity: BumpkinContainer, color: string) {
     const nameTag = entity.getByName("nameTag") as
-      Phaser.GameObjects.Text | undefined;
+      | Phaser.GameObjects.Text
+      | undefined;
 
     if (nameTag && nameTag.style.color !== color) {
       nameTag.setColor(color);
