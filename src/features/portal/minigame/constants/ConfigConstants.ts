@@ -153,6 +153,7 @@ export const BANNED_FARM_IDS: number[] = [
   7267084005403912,
   3789239050013145, //NQN
   3055473214040933, //AYBB
+  1000420311790931, //BobbyBrown
 ];
 
 export const PASSIVE_ABILITY_ITEM: BumpkinWings = "Underworld Stimpack";
