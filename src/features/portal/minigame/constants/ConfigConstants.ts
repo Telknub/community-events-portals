@@ -143,6 +143,7 @@ export const ATTEMPTS_PURCHASED_BY_MISTAKE: {
   { id: 2380436778641857, attempts: 2 },
   { id: 4110160515424496, attempts: 2 },
   { id: 181180, attempts: 2 },
+  { id: 5766703848843272, attempts: 2 },
 
   // { id: {FarmId}, attempts: "unlimited" },
 ];
@@ -154,6 +155,7 @@ export const BANNED_FARM_IDS: number[] = [
   3789239050013145, //NQN
   3055473214040933, //AYBB
   1000420311790931, //BobbyBrown
+  2753043650305331, //DJXXX
 ];
 
 export const PASSIVE_ABILITY_ITEM: BumpkinWings = "Underworld Stimpack";
