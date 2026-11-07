@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { SUDOKU_DIFFICULTY, SNOW, PORTAL_SOUNDS, PuzzleDifficulty } from "../../Constants";
+import {
+  SUDOKU_DIFFICULTY,
+  SNOW,
+  PORTAL_SOUNDS,
+  PuzzleDifficulty,
+} from "../../Constants";
 import redRibbon from "public/world/portal/images/bow.webp";
 import ball from "public/world/portal/images/SudokuBall.webp";
 import present from "public/world/portal/images/SudokuPresent.webp";
@@ -120,9 +125,9 @@ export const SudokuPuzzle: React.FC<Props> = ({
   onComplete,
   difficulty,
   seconds,
-  onReset
+  onReset,
 }) => {
-  const { puzzle: initialPuzzle, solution } = React.useMemo(
+  const { puzzle: initialPuzzle } = React.useMemo(
     () => generateSudokuPuzzle(difficulty),
     [difficulty], // <-- FIXED
   );
@@ -136,7 +141,30 @@ export const SudokuPuzzle: React.FC<Props> = ({
     col: number;
   } | null>(null);
 
+  function getConflicts(grid: PuzzleGrid): Set<string> {
+    const conflicts = new Set<string>();
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const item = grid[r][c];
+        if (!item) continue;
+        for (let r2 = 0; r2 < 4; r2++) {
+          for (let c2 = 0; c2 < 4; c2++) {
+            if (r === r2 && c === c2) continue;
+            const sameBox =
+              Math.floor(r / 2) === Math.floor(r2 / 2) &&
+              Math.floor(c / 2) === Math.floor(c2 / 2);
+            if ((r === r2 || c === c2 || sameBox) && grid[r2][c2] === item) {
+              conflicts.add(`${r}-${c}`);
+            }
+          }
+        }
+      }
+    }
+    return conflicts;
+  }
+
   const [isSolved, setIsSolved] = useState(false);
+  const conflicts = React.useMemo(() => getConflicts(puzzle), [puzzle]);
 
   const handleItemSelect = (item: ItemID) => {
     if (selectedCell) {
@@ -149,7 +177,7 @@ export const SudokuPuzzle: React.FC<Props> = ({
       setPuzzle(newPuzzle);
       PORTAL_SOUNDS.click.play();
 
-      if (isPuzzleSolved(newPuzzle, solution)) {
+      if (isPuzzleSolved(newPuzzle)) {
         setIsSolved(true);
         onComplete();
         SNOW();
@@ -158,10 +186,35 @@ export const SudokuPuzzle: React.FC<Props> = ({
     }
   };
 
-  function isPuzzleSolved(puzzle: PuzzleGrid, solution: SolutionGrid): boolean {
-    return puzzle.every((row, r) =>
-      row.every((cell, c) => cell === solution[r][c]),
-    );
+  // A group (row, column or 2x2 box) is valid if it has all 4 different items
+  function isGroupValid(cells: (ItemID | null)[]): boolean {
+    return cells.every((c) => c !== null) && new Set(cells).size === 4;
+  }
+
+  // Accepts ANY valid completed grid, not just the generated solution
+  function isPuzzleSolved(grid: PuzzleGrid): boolean {
+    for (let i = 0; i < 4; i++) {
+      const rowCells = grid[i];
+      const colCells = grid.map((row) => row[i]);
+
+      const boxRow = Math.floor(i / 2) * 2;
+      const boxCol = (i % 2) * 2;
+      const boxCells = [
+        grid[boxRow][boxCol],
+        grid[boxRow][boxCol + 1],
+        grid[boxRow + 1][boxCol],
+        grid[boxRow + 1][boxCol + 1],
+      ];
+
+      if (
+        !isGroupValid(rowCells) ||
+        !isGroupValid(colCells) ||
+        !isGroupValid(boxCells)
+      ) {
+        return false;
+      }
+    }
+    return true;
   }
 
   const isCellChangeable = (row: number, col: number) =>
@@ -180,7 +233,11 @@ export const SudokuPuzzle: React.FC<Props> = ({
               "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
           }}
         >
-          <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
+          <StatusBar
+            seconds={seconds}
+            difficulty={difficulty}
+            onReset={onReset}
+          />
           <div className="bg-[#a22633] py-6 px-4 md:p-6">
             {selectedCell && !isSolved && (
               <div className="flex justify-center shadow-lg pb-6">
@@ -232,24 +289,26 @@ export const SudokuPuzzle: React.FC<Props> = ({
 
             {/* Sudoku Grid */}
             <div className="flex flex-row justify-center items-center w-full h-full">
-              <div>
+              <div className="relative">
                 <div className="grid grid-cols-4 gap-0 md:gap-2">
                   {puzzle.map((row, r) =>
                     row.map((cell, c) => (
                       <div
                         key={`${r}-${c}`}
                         className={`
-                          relative flex justify-center items-center
-                          ${selectedCell?.row === r && selectedCell?.col === c
-                            ? "ring-2 ring-[#265c42] ring-offset-2"
-                            : ""
-                          }
-                          ${!isCellChangeable(r, c)
-                            ? "opacity-80"
-                            : "cursor-pointer hover:img-highlight"
-                          }
-                          w-20 h-20 md:w-24 md:h-24
-                        `}
+              relative flex justify-center items-center
+              ${
+                selectedCell?.row === r && selectedCell?.col === c
+                  ? "ring-2 ring-[#265c42] ring-offset-2 z-30"
+                  : ""
+              }
+              ${
+                !isCellChangeable(r, c)
+                  ? "opacity-80"
+                  : "cursor-pointer hover:img-highlight"
+              }
+              w-20 h-20 md:w-24 md:h-24
+            `}
                         onClick={() =>
                           !isSolved &&
                           isCellChangeable(r, c) &&
@@ -260,6 +319,9 @@ export const SudokuPuzzle: React.FC<Props> = ({
                           src={green_border}
                           className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                         />
+                        {conflicts.has(`${r}-${c}`) && (
+                          <div className="absolute inset-2 bg-red-600/50 pointer-events-none z-[5]" />
+                        )}
                         {cell && (
                           <img
                             src={ITEM_IMAGES[cell]}
@@ -270,6 +332,10 @@ export const SudokuPuzzle: React.FC<Props> = ({
                     )),
                   )}
                 </div>
+
+                {/* Cross divider between the 2x2 boxes */}
+                <div className="absolute top-0 left-1/2 h-full w-1 md:w-1.5 -translate-x-1/2 rounded-full bg-[#265c42] pointer-events-none z-20" />
+                <div className="absolute left-0 top-1/2 w-full h-1 md:h-1.5 -translate-y-1/2 rounded-full bg-[#265c42] pointer-events-none z-20" />
               </div>
             </div>
           </div>
