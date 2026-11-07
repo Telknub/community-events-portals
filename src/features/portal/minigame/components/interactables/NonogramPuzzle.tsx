@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Cell,
   SNOW,
@@ -19,7 +19,10 @@ interface Props {
 
 //  Choose pattern by difficulty
 function choosePattern(difficulty: PuzzleDifficulty) {
-  const pool = NONOGRAM_PUZZLE_DIFFICULTY[difficulty] as Record<string, Cell[][]>;
+  const pool = NONOGRAM_PUZZLE_DIFFICULTY[difficulty] as Record<
+    string,
+    Cell[][]
+  >;
 
   const keys = Object.keys(pool);
   const randomKey = keys[Math.floor(Math.random() * keys.length)];
@@ -43,8 +46,10 @@ const getClues = (lines: Cell[][]): number[][] => {
   });
 };
 
+const makeEmptyBoard = (size: number): boolean[][] =>
+  Array.from({ length: size }, () => Array(size).fill(false));
+
 export const NonogramPuzzle: React.FC<Props> = ({
-  onClose,
   onComplete,
   difficulty,
   seconds,
@@ -52,7 +57,6 @@ export const NonogramPuzzle: React.FC<Props> = ({
 }) => {
   /* Load random pattern whenever difficulty changes */
   const PATTERN = React.useMemo(() => choosePattern(difficulty), [difficulty]);
-
   const SIZE = PATTERN.length;
 
   /* Clues are derived from pattern */
@@ -63,42 +67,50 @@ export const NonogramPuzzle: React.FC<Props> = ({
   );
 
   /* Player board state */
-  const [board, setBoard] = useState<boolean[][]>(
-    Array.from({ length: SIZE }, () => Array(SIZE).fill(false)),
+  const [board, setBoard] = useState<boolean[][]>(() => makeEmptyBoard(SIZE));
+
+  /* Reset the board whenever a new pattern is chosen.
+     Done during render (not in an effect) so the board is never rendered
+     with the wrong size, even for a single frame. */
+  const [prevPattern, setPrevPattern] = useState(PATTERN);
+  if (prevPattern !== PATTERN) {
+    setPrevPattern(PATTERN);
+    setBoard(makeEmptyBoard(SIZE));
+  }
+
+  const solved = React.useMemo(
+    () =>
+      board.length === SIZE &&
+      board.every((row, r) =>
+        row.every((cell, c) => cell === (PATTERN[r][c] === 1)),
+      ),
+    [board, PATTERN, SIZE],
   );
-  const [solved, markSolved] = useState(false);
+
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  /* Win side effects: these talk to external systems, which is what effects are for */
+  useEffect(() => {
+    if (solved) {
+      SNOW();
+      onCompleteRef.current();
+      PORTAL_SOUNDS.win.play();
+    }
+  }, [solved]);
 
   /* Toggle cell */
   const toggleCell = (r: number, c: number) => {
     if (solved) return;
-
+    PORTAL_SOUNDS.click.play();
     setBoard((prev) => {
       const next = prev.map((row) => [...row]);
       next[r][c] = !next[r][c];
-      PORTAL_SOUNDS.click.play();
       return next;
     });
   };
-
-  /* Check solved state */
-  const checkSolved = (board: boolean[][]): boolean =>
-    board.every((row, r) =>
-      row.every((cell, c) => cell === (PATTERN[r][c] === 1)),
-    );
-
-  useEffect(() => {
-    if (checkSolved(board)) {
-      markSolved(true);
-    }
-  }, [board, PATTERN]);
-
-  useEffect(() => {
-    if (solved) {
-      SNOW();
-      onComplete();
-      PORTAL_SOUNDS.win.play();
-    }
-  }, [solved]);
 
   return (
     <>
@@ -114,74 +126,68 @@ export const NonogramPuzzle: React.FC<Props> = ({
                 "repeating-linear-gradient(45deg, #3e8948 0 15px, #ffffff 5px 25px, #a22633 10px 35px)",
             }}
           >
-            <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
+            <StatusBar
+              seconds={seconds}
+              difficulty={difficulty}
+              onReset={onReset}
+            />
 
             <div className="bg-white p-0 md:p-6 border-[1rem] border-[#265c42] border-double">
-              {/* Column Clues */}
-              <div className="flex ml-[65px] sm:ml-[40px] md:ml-[80px]">
-                {colClues.map((clue, i) => (
+              <div
+                className="
+                  grid
+                  [--cell:40px] sm:[--cell:50px] md:[--cell:70px]
+                  text-base sm:text-2xl md:text-[3.5rem] font-bold leading-none
+                "
+                style={{
+                  // first column = row clues (auto width), then SIZE cells
+                  gridTemplateColumns: `auto repeat(${SIZE}, var(--cell))`,
+                  // first row = column clues (auto height), then SIZE cells
+                  gridTemplateRows: `auto repeat(${SIZE}, var(--cell))`,
+                }}
+              >
+                {/* Top-left empty corner */}
+                <div />
+
+                {/* Column clues: stacked, bottom-aligned, centered over each column */}
+                {colClues.map((clue, c) => (
                   <div
-                    key={i}
-                    className="flex flex-col items-center
-                      w-[40px] sm:w-[50px] md:w-[70px]
-                      text-base sm:text-2xl md:text-[3.5rem] font-bold"
+                    key={`col-${c}`}
+                    className="flex flex-col items-center justify-end pb-2 gap-1"
                   >
                     {clue.map((num, j) => (
-                      <div className="my-2" key={j}>
-                        {num}
-                      </div>
+                      <div key={j}>{num}</div>
                     ))}
                   </div>
                 ))}
-              </div>
 
-              {/* Rows */}
-              <div className="flex flex-col items-center">
+                {/* Each row: row clue + cells */}
                 {PATTERN.map((_, r) => (
-                  <div key={r} className="flex items-center justify-center">
-                    {/* Row Clues */}
-                    <div
-                      className="
-                        w-[60px] sm:w-[40px] md:w-[80px]
-                        pr-1 sm:pr-2
-                        text-base sm:text-2xl md:text-[3.5rem]
-                        text-right font-bold
-                      "
-                    >
+                  <React.Fragment key={`row-${r}`}>
+                    {/* Row clues: right-aligned, vertically centered on the row */}
+                    <div className="flex items-center justify-end gap-2 pr-3 whitespace-nowrap">
                       {rowClues[r].map((num, i) => (
-                        <span key={i} className="mx-1">
-                          {num}
-                        </span>
+                        <span key={i}>{num}</span>
                       ))}
                     </div>
 
-                    {/* Grid */}
-                    <div className={`grid grid-cols-${SIZE}`}>
-                      {PATTERN[r].map((_, c) => {
-                        const isFilled = board[r][c];
-                        return (
-                          <div
-                            key={c}
-                            onClick={() => toggleCell(r, c)}
-                            className={`
-                              border-2 sm:border-3 md:border-4 border-[#3e8948]
-                              cursor-pointer transition
-                              ${isFilled ? "bg-[#265c42]" : "bg-[#265c42]-500"}
-                              w-[40px] h-[40px]
-                              sm:w-[50px] sm:h-[50px]
-                              md:w-[70px] md:h-[70px]
-                            `}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
+                    {/* Cells */}
+                    {PATTERN[r].map((_, c) => (
+                      <div
+                        key={`cell-${r}-${c}`}
+                        onClick={() => toggleCell(r, c)}
+                        className={`
+                          box-border border-2 sm:border-3 md:border-4 border-[#3e8948]
+                          cursor-pointer transition
+                          ${board[r]?.[c] ? "bg-[#265c42]" : "bg-white"}
+                        `}
+                      />
+                    ))}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
           </div>
-
-          {/* Optional solved UI */}
         </div>
       </div>
     </>
