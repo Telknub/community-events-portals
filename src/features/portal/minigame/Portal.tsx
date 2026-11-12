@@ -13,6 +13,7 @@ import { Loading } from "features/auth/components";
 import { CONFIG } from "lib/config";
 import { authorisePortal, claimPrize } from "../lib/portalUtil";
 import { RulesPanel } from "./components/panels/RulesPanel";
+import { FreePlay } from "./components/panels/FreePlay";
 import { NoAttemptsPanel } from "./components/panels/NoAttemptsPanel";
 import { PORTAL_NAME } from "./Constants";
 import { Hud } from "./components/hud/Hud";
@@ -27,6 +28,7 @@ const _isNoAttempts = (state: PortalMachineState) =>
   state.matches("noAttempts");
 const _isIntroduction = (state: PortalMachineState) =>
   state.matches("introduction");
+const _isFreePlay = (state: PortalMachineState) => state.matches("freePlay");
 const _isLoser = (state: PortalMachineState) => state.matches("loser");
 const _isWinner = (state: PortalMachineState) => state.matches("winner");
 const _isComplete = (state: PortalMachineState) => state.matches("complete");
@@ -47,6 +49,7 @@ export const Portal: React.FC = () => {
   const isWinner = useSelector(portalService, _isWinner);
   const isLoser = useSelector(portalService, _isLoser);
   const isComplete = useSelector(portalService, _isComplete);
+  const isFreePlay = useSelector(portalService, _isFreePlay);
 
   useEffect(() => {
     // If a player tries to quit while playing, mark it as an attempt
@@ -123,9 +126,14 @@ export const Portal: React.FC = () => {
             onConfirm={() => portalService.send("CONTINUE")}
             trainingButtonText={t(`${PORTAL_NAME}.start.training`)}
             onTraining={() => portalService.send("CONTINUE_TRAINING")}
+            freePlayButtonText={"Free play" /* TODO: i18n */}
+            onFreePlay={() => portalService.send("CONTINUE_FREE_PLAY")}
           />
         </Modal>
       )}
+
+      {/* Free play: separate mode (own machine state, no map / global timer / lives) */}
+      {isFreePlay && <FreePlay />}
 
       {isLoser && (
         <Modal show>

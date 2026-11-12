@@ -18,6 +18,8 @@ interface Props {
   onConfirm: () => void;
   trainingButtonText?: string;
   onTraining?: () => void;
+  freePlayButtonText?: string;
+  onFreePlay?: () => void;
 }
 export const RulesPanel: React.FC<Props> = ({
   mode,
@@ -27,6 +29,8 @@ export const RulesPanel: React.FC<Props> = ({
   onConfirm,
   trainingButtonText,
   onTraining,
+  freePlayButtonText,
+  onFreePlay,
 }) => {
   const { t } = useAppTranslation();
   const [tab, setTab] = useState(0);
@@ -62,6 +66,8 @@ export const RulesPanel: React.FC<Props> = ({
             onConfirm={onConfirm}
             trainingButtonText={trainingButtonText}
             onTraining={onTraining}
+            freePlayButtonText={freePlayButtonText}
+            onFreePlay={onFreePlay}
           />
         )}
         {tab === 1 && <Guide />}

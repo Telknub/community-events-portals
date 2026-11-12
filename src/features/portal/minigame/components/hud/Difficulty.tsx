@@ -3,6 +3,7 @@ import { Label } from "components/ui/Label";
 
 import arrowUp from "public/world/portal/images/arrow_up.png";
 import { PuzzleDifficulty } from "../../Constants";
+import { difficultyName } from "../../lib/PuzzleConfig";
 
 export const Difficulty: React.FC<{ difficulty: PuzzleDifficulty }> = ({ difficulty }) => {
   return (
@@ -10,7 +11,7 @@ export const Difficulty: React.FC<{ difficulty: PuzzleDifficulty }> = ({ difficu
       icon={arrowUp}
       type="vibrant"
     >
-      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+      {difficultyName(difficulty)}
     </Label>
   );
 };

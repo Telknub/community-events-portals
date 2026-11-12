@@ -24,6 +24,7 @@ import clickSound from "public/world/portal/music/click.mp3";
 import winSound from "public/world/portal/music/win.mp3";
 import resetSound from "public/world/portal/music/reset.wav";
 import { getRepeatedLevels } from "./lib/Utils";
+import { NEW_PUZZLE_TIMES, NEW_PUZZLE_TYPES, PUZZLE_TEXTS } from "./lib/PuzzleConfig";
 
 export const PORTAL_NAME = "holiday-puzzle-2025";
 export const PORTAL_TOKEN = "Holiday Token 2025";
@@ -98,7 +99,7 @@ export const PATH_PUZZLE_POINTS = [
   ],
   [{ x: PUZZLE_POINTS_CONFIG[4].x, y: PUZZLE_POINTS_CONFIG[4].y - 3 }],
 ]
-export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram"];
+export const PUZZLE_TYPES = ["sudoku", "sliding", "jigsaw", "pipe", "nonogram", ...NEW_PUZZLE_TYPES];
 export type PuzzleName = (typeof PUZZLE_TYPES)[number];
 export const MAX_PUZZLES = 5;
 export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
@@ -127,6 +128,8 @@ export const PUZZLE_TIMES: Record<PuzzleName, Record<string, number>> = {
     medium: 45,
     ...getRepeatedLevels("hard", 45, 4, 10)
   },
+  // New puzzles: per-puzzle times live in lib/PuzzleConfig.ts
+  ...NEW_PUZZLE_TIMES,
 };
 
 // Puzzle config
@@ -412,6 +415,12 @@ export const PUZZLE_TABLE: {
       image: slidingGif,
       description: t(`${PORTAL_NAME}.puzzle5`),
     },
+    // PLACEHOLDER rows for the new puzzles. TODO: real gif + i18n key (`${PORTAL_NAME}.puzzleN`)
+    ...NEW_PUZZLE_TYPES.map((name) => ({
+      image: point,
+      description: `${PUZZLE_TEXTS[name].title}: ${PUZZLE_TEXTS[name].hint}`,
+      width: 40,
+    })),
   ];
 
 // Panel

@@ -1,6 +1,7 @@
 import React from "react"
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { PORTAL_NAME, PuzzleDifficulty } from "../../Constants";
+import { difficultyName } from "../../lib/PuzzleConfig";
 
 interface Props {
   onClose: () => void;
@@ -10,7 +11,6 @@ interface Props {
 export const DifficultyMessage: React.FC<Props> = ({ onClose, data }) => {
   const { t } = useAppTranslation();
   const difficulty = data.difficulty as PuzzleDifficulty;
-  const difficultyNumber = difficulty.split(" ")[1];
 
   return (
     <div className="flex flex-col gap-3 text-white mb-[3rem] text-center px-2">
@@ -18,7 +18,7 @@ export const DifficultyMessage: React.FC<Props> = ({ onClose, data }) => {
       <span className="text-[70px]">
         {difficulty === "easy" || difficulty === "medium" ?
           t(`${PORTAL_NAME}.difficulty.${difficulty}`) :
-          t(`${PORTAL_NAME}.difficulty.hard`, { number: difficultyNumber })
+          difficultyName(difficulty) // TODO: i18n keys for Hard / Expert / Master / Insane
         }
       </span>
     </div>

@@ -28,6 +28,8 @@ interface Props {
   onConfirm: () => void;
   trainingButtonText?: string;
   onTraining?: () => void;
+  freePlayButtonText?: string;
+  onFreePlay?: () => void;
 }
 
 const _lastScore = (state: PortalMachineState) => state.context.lastScore;
@@ -43,6 +45,8 @@ export const Mission: React.FC<Props> = ({
   onConfirm,
   trainingButtonText,
   onTraining,
+  freePlayButtonText,
+  onFreePlay,
 }) => {
   const { t } = useAppTranslation();
 
@@ -132,6 +136,14 @@ export const Mission: React.FC<Props> = ({
                   </Button>
                 )}
               </div>
+              {freePlayButtonText && (
+                <Button
+                  className="whitespace-nowrap capitalize"
+                  onClick={onFreePlay}
+                >
+                  {freePlayButtonText}
+                </Button>
+              )}
               {showExitButton && (
                 <Button
                   className="whitespace-nowrap capitalize"

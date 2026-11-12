@@ -36,6 +36,7 @@ export interface Context {
   lives: number;
   validations: Record<string, boolean>;
   isTraining: boolean;
+  isFreePlay: boolean;
 
   resetAttempts: number;
   difficulty: PuzzleDifficulty;
@@ -94,6 +95,7 @@ export type PortalEvent =
   | { type: "RETRY" }
   | { type: "CONTINUE" }
   | { type: "CONTINUE_TRAINING" }
+  | { type: "CONTINUE_FREE_PLAY" }
   | { type: "END_GAME_EARLY" }
   | { type: "GAME_OVER" }
   | GainPointsEvent
@@ -142,6 +144,7 @@ const resetGameTransition = {
       validations: () => structuredClone(VALIDATIONS),
       resetAttempts: () => RESET_ATTEMPTS,
       difficulty: () => "easy",
+      isFreePlay: () => false,
     }) as any,
   },
 };
@@ -163,6 +166,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
     attemptsLeft: 0,
     endAt: 0,
     isTraining: false,
+    isFreePlay: false,
     validations: structuredClone(VALIDATIONS),
 
     // Portal minigame
@@ -296,6 +300,12 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           },
         },
         {
+          // Free play is its own mode: it never goes through "ready"/"playing"
+          // (no map, no global timer, no lives).
+          target: "freePlay",
+          cond: (context) => context.isFreePlay,
+        },
+        {
           target: "ready",
         },
       ],
@@ -307,6 +317,7 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           target: "starting",
           actions: assign({
             isTraining: false,
+            isFreePlay: false,
             state: (context: Context) => context.state,
           }),
         },
@@ -314,6 +325,17 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
           target: "starting",
           actions: assign({
             isTraining: true,
+            isFreePlay: false,
+            state: (context: Context) => context.state,
+          }),
+        },
+        // Free play: a separate mode (state "freePlay"). It still counts as an attempt and
+        // submits its score like the normal mode, but has no map, timer or lives.
+        CONTINUE_FREE_PLAY: {
+          target: "starting",
+          actions: assign({
+            isTraining: false,
+            isFreePlay: true,
             state: (context: Context) => context.state,
           }),
         },
@@ -437,6 +459,69 @@ export const portalMachine = createMachine<Context, PortalEvent, PortalState>({
             },
             state: (context: Context) => {
               if (context.isTraining) return context.state;
+              submitScore({ score: context.score });
+              return submitMinigameScore({
+                state: context.state as GameState,
+                action: {
+                  type: "minigame.scoreSubmitted",
+                  score: Math.round(context.score),
+                  id: PORTAL_NAME,
+                },
+              });
+            },
+          }),
+        },
+      },
+    },
+
+    freePlay: {
+      // Same attempt accounting as the normal START (never used with isTraining)
+      entry: assign({
+        score: () => 0,
+        state: (context: Context) => {
+          startAttempt();
+          return startMinigameAttempt({
+            state: context.state as GameState,
+            action: {
+              type: "minigame.attemptStarted",
+              id: PORTAL_NAME,
+            },
+          });
+        },
+        attemptsLeft: (context: Context) => context.attemptsLeft - 1,
+      }),
+      on: {
+        GAIN_POINTS: {
+          actions: assign({
+            score: (context: Context, event: GainPointsEvent) => {
+              const { points = 1 } = event;
+              return context.score + points;
+            },
+          }),
+        },
+        // END_GAME_EARLY = "End game" button, GAME_OVER = page closed (beforeunload)
+        END_GAME_EARLY: {
+          target: "gameOver",
+          actions: assign({
+            lastScore: (context: Context) => context.score,
+            state: (context: Context) => {
+              submitScore({ score: context.score });
+              return submitMinigameScore({
+                state: context.state as GameState,
+                action: {
+                  type: "minigame.scoreSubmitted",
+                  score: Math.round(context.score),
+                  id: PORTAL_NAME,
+                },
+              });
+            },
+          }),
+        },
+        GAME_OVER: {
+          target: "gameOver",
+          actions: assign({
+            lastScore: (context: Context) => context.score,
+            state: (context: Context) => {
               submitScore({ score: context.score });
               return submitMinigameScore({
                 state: context.state as GameState,

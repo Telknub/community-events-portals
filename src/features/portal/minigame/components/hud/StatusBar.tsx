@@ -10,6 +10,8 @@ import { PortalContext } from "../../lib/PortalProvider";
 import { Difficulty } from "./Difficulty";
 import { PuzzleDifficulty } from "../../Constants";
 import { Timer } from "./Timer";
+import { FreePlayContext } from "../../lib/FreePlayContext";
+import { ScoreLabel } from "./ScoreLabel";
 
 interface Props {
   onReset: () => void;
@@ -23,6 +25,32 @@ export const StatusBar: React.FC<Props> = ({ onReset, seconds, difficulty }) => 
   const { portalService } = useContext(PortalContext);
 
   const resetAttempts = useSelector(portalService, _resetAttempts);
+  const freePlay = useContext(FreePlayContext);
+
+  // Free play: separate mode - no global timer, no lives, no reset attempts, no puzzle time limit.
+  // Shows the real (submitted) score instead.
+  if (freePlay) {
+    const mm = Math.floor(freePlay.elapsed / 60).toString().padStart(2, "0");
+    const ss = (freePlay.elapsed % 60).toString().padStart(2, "0");
+    return (
+      <div className="flex flex-row w-full flex-wrap items-center justify-center">
+        <div className="flex flex-row w-full justify-between px-3 pt-6 md:px-6 bg-[#265c42] rounded-t-[2.5rem] pb-2">
+          <div className="flex flex-col gap-1">
+            <Difficulty difficulty={difficulty} />
+            <ScoreLabel />
+          </div>
+          <div className="flex flex-row gap-1 md:gap-3 items-center">
+            <Label icon={SUNNYSIDE.icons.timer} type="vibrant">
+              <span className="text-xs md:text-[2.5rem]">{`${mm}:${ss}`}</span>
+            </Label>
+            {/* TODO: i18n */}
+            <Button onClick={onReset}>New</Button>
+            <Button onClick={freePlay.onMenu}>Menu</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -2,11 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { EventBus } from "../../lib/EventBus";
 import { PortalContext } from "../../lib/PortalProvider";
 
-import { SudokuPuzzle } from "./SudokuPuzzle";
-import { SlidingPuzzle } from "./SlidingPuzzle";
-import { JigsawPuzzle } from "./JigsawPuzzle";
-import { PipePuzzle } from "./PipePuzzle";
-import { NonogramPuzzle } from "./NonogramPuzzle";
+import { PUZZLE_COMPONENTS } from "./PuzzleRegistry";
 import { MAX_PUZZLES, PORTAL_NAME, PORTAL_SOUNDS, POWER_DISPLAY_POINT_ID, PUZZLE_TIMES, PUZZLE_TYPES, PuzzleDifficulty, PuzzleName } from "../../Constants";
 import { useSound } from "lib/utils/hooks/useSound";
 import { PortalMachineState } from "../../lib/Machine";
@@ -179,22 +175,19 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
 
   // if (showGreeting) return <SeasonalGreeting />;
 
+  const CurrentPuzzle = PUZZLE_COMPONENTS[puzzleType];
+
   return (
     <>
-      {puzzleType === "sudoku" && (
-        <SudokuPuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
-      )}
-      {puzzleType === "sliding" && (
-        <SlidingPuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
-      )}
-      {puzzleType === "jigsaw" && (
-        <JigsawPuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
-      )}
-      {puzzleType === "pipe" && (
-        <PipePuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
-      )}
-      {puzzleType === "nonogram" && (
-        <NonogramPuzzle onClose={onClose} onComplete={getPoint} onReset={reset} difficulty={difficulty} seconds={seconds} />
+      {CurrentPuzzle && (
+        <CurrentPuzzle
+          key={`${puzzleType}-${difficulty}`}
+          onClose={onClose}
+          onComplete={getPoint}
+          onReset={reset}
+          difficulty={difficulty}
+          seconds={seconds}
+        />
       )}
 
       <Travel />
