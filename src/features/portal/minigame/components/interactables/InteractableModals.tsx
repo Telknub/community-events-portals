@@ -50,9 +50,9 @@ export const InteractableModals = () => {
         {interactable === "puzzle" && (
           <Puzzle onClose={closeModal} data={data} />
         )}
-        {interactable === "difficulty-message" && (
+        {/* {interactable === "difficulty-message" && (
           <DifficultyMessage onClose={closeModal} data={data} />
-        )}
+        )} */}
       </Modal>
     </>
   );

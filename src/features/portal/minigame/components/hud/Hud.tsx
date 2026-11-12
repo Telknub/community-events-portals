@@ -60,13 +60,25 @@ export const Hud: React.FC = () => {
             <>
               <Target />
               <Timer />
-              <Difficulty difficulty={difficulty} />
-              <Lives />
-              <Score />
+              {/* <Lives /> */}
             </>
           )}
         </div>
 
+        <div
+          className="absolute flex flex-col gap-2 items-end"
+          style={{
+            top: `${PIXEL_SCALE * 4}px`,
+            right: `${PIXEL_SCALE * 6}px`,
+          }}
+        >
+          {isPlaying && (
+            <>
+              <Score />
+              <Difficulty difficulty={difficulty} />
+            </>
+          )}
+        </div>
         <>
           <Travel />
           <Settings />

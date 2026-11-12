@@ -35,6 +35,8 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
   const { portalService } = useContext(PortalContext);
 
   const difficultyPuzzle = useSelector(portalService, _difficulty) as PuzzleDifficulty;
+  // TESTING: set to null to restore random puzzles
+  const FORCE_PUZZLE: PuzzleName | null = "nonogram"; 
 
   const [hasPower, setHasPower] = React.useState(false);
   const [difficulty, setDifficulty] = React.useState(difficultyPuzzle);
@@ -50,7 +52,6 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     setIsCompleted(true);
     setTimeout(() => {
       EventBus.emit("close-puzzle", data.id);
-      portalService.send("GAIN_POINTS");
       onClose();
 
       if (data.id === MAX_PUZZLES) {
@@ -176,7 +177,7 @@ export const Puzzle: React.FC<Props> = ({ onClose, data }) => {
     );
   }
 
-  if (showGreeting) return <SeasonalGreeting />;
+  // if (showGreeting) return <SeasonalGreeting />;
 
   return (
     <>

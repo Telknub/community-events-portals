@@ -1,5 +1,6 @@
 import { Coordinates } from "features/game/expansion/components/MapPlacement";
 import { SceneId } from "../mmoMachine";
+import { SQUARE_WIDTH } from "features/game/lib/constants";
 
 export type SpawnLocation = Record<
   SceneId,
@@ -12,8 +13,8 @@ const randomYOffset = Math.random() * 20;
 export const SPAWNS: () => SpawnLocation = () => ({
   "holiday-puzzle-2025": {
     default: {
-      x: 313,
-      y: 463,
+      x: 30 * SQUARE_WIDTH,
+      y: 30 * SQUARE_WIDTH,
     },
   },
   love_island: {
