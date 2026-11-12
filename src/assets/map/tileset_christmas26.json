@@ -1,0 +1,15 @@
+[
+  {
+    "columns": 32,
+    "firstgid": 1,
+    "image": "christmas-tilesheet.png",
+    "imageheight": 592,
+    "imagewidth": 512,
+    "margin": 0,
+    "name": "Sunnyside V3",
+    "spacing": 0,
+    "tilecount": 1184,
+    "tileheight": 16,
+    "tilewidth": 16
+  }
+]

@@ -55,7 +55,7 @@ export const GAME_SECONDS = 300;
 export const GAME_LIVES = 5;
 
 // Player
-export const WALKING_SPEED = 50;
+export const WALKING_SPEED = 60;
 
 // Attempts
 export const INITIAL_DATE = "2025-12-23"; // YYYY-MM-DD
@@ -416,6 +416,8 @@ export const PUZZLE_TABLE: {
 
 // Panel
 export const PANEL_NPC_WEARABLES: Equipped = NPC_WEARABLES["elf"];
+
+export type presentType = "present";
 
 // Snow effect
 export const SNOW = () => {

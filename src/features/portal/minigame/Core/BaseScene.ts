@@ -141,7 +141,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
   currentTick = 0;
 
-  zoom = window.innerWidth < 500 ? 3 : 4;
+  zoom = window.innerWidth < 500 ? 3 : 2.25;
 
   velocity = WALKING_SPEED;
   isMoving = false;
@@ -702,15 +702,15 @@ export abstract class BaseScene extends Phaser.Scene {
   public initialiseControls() {
     if (isTouchDevice()) {
       // Initialise joystick
-      // const { centerX, centerY, height } = this.cameras.main;
-      // this.joystick = new VirtualJoystick(this, {
-      //   x: centerX,
-      //   y: centerY - 35 + height / this.zoom / 2,
-      //   radius: 15,
-      //   base: this.add.circle(0, 0, 15, 0x000000, 0.2).setDepth(1000000000),
-      //   thumb: this.add.circle(0, 0, 7, 0xffffff, 0.2).setDepth(1000000000),
-      //   forceMin: 2,
-      // });
+      const { centerX, centerY, height } = this.cameras.main;
+      this.joystick = new VirtualJoystick(this, {
+        x: centerX,
+        y: centerY + 35 + height / this.zoom / 2,
+        radius: 15,
+        base: this.add.circle(0, 0, 15, 0x000000, 0.2).setDepth(1000000000),
+        thumb: this.add.circle(0, 0, 7, 0xffffff, 0.2).setDepth(1000000000),
+        forceMin: 2,
+      });
     }
 
     // Initialise Keyboard
@@ -1022,6 +1022,11 @@ export abstract class BaseScene extends Phaser.Scene {
       ? this.joystick?.angle
       : undefined;
 
+    if (this.movementAngle !== undefined) {
+      const x = Math.cos((this.movementAngle * Math.PI) / 180);
+      this.movementAngle = Math.abs(x) < 0.3 ? undefined : x < 0 ? 180 : 0;
+    }
+
     // use keyboard control if joystick is not active
     if (this.movementAngle === undefined) {
       if (document.activeElement?.tagName === "INPUT") return;
@@ -1035,7 +1040,7 @@ export abstract class BaseScene extends Phaser.Scene {
       const down =
         (this.cursorKeys?.down.isDown || this.cursorKeys?.s?.isDown) ?? false;
 
-      // this.movementAngle = this.keysToAngle(left, right, up, down);
+      this.movementAngle = this.keysToAngle(left, right, up, down);
     }
 
     // change player direction if angle is changed from left to right or vise versa
@@ -1053,10 +1058,8 @@ export abstract class BaseScene extends Phaser.Scene {
     const currentPlayerBody = this.currentPlayer
       .body as Phaser.Physics.Arcade.Body;
     if (this.movementAngle !== undefined) {
-      currentPlayerBody.setVelocity(
-        this.walkingSpeed * Math.cos((this.movementAngle * Math.PI) / 180),
-        this.walkingSpeed * Math.sin((this.movementAngle * Math.PI) / 180),
-      );
+      const dir = this.movementAngle === 180 ? -1 : 1;
+      currentPlayerBody.setVelocity(this.walkingSpeed * dir, 0);
     } else {
       currentPlayerBody.setVelocity(0, 0);
     }
