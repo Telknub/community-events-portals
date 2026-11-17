@@ -26,7 +26,7 @@ import resetSound from "public/world/portal/music/reset.wav";
 import { getRepeatedLevels } from "./lib/Utils";
 import { NEW_PUZZLE_TIMES, NEW_PUZZLE_TYPES, PUZZLE_TEXTS } from "./lib/PuzzleConfig";
 
-export const PORTAL_NAME = "holiday-puzzle-2025";
+export const PORTAL_NAME = "holiday-puzzle-2026";
 export const PORTAL_TOKEN = "Holiday Token 2025";
 
 // Portal sounds

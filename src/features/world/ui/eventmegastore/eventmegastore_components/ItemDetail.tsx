@@ -88,7 +88,7 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
 
   const shop =
     gameService.getSnapshot().context.state.minigames.games[
-      "holiday-puzzle-2025"
+      "holiday-puzzle-2026"
     ]?.shop;
 
   const eventCollectiblesCrafted = Object.keys(shop?.items ?? {}).length;
@@ -110,16 +110,16 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
     tier === "mega" && eventItemsCrafted >= eventStore.mega.requirement;
 
   const itemsCrafted = isWearable
-    ? (state.minigames.games["holiday-puzzle-2025"]?.shop?.wearables?.[
+    ? (state.minigames.games["holiday-puzzle-2026"]?.shop?.wearables?.[
         itemName as BumpkinItem
       ] ?? 0)
-    : (state.minigames.games["holiday-puzzle-2025"]?.shop?.items?.[
+    : (state.minigames.games["holiday-puzzle-2026"]?.shop?.items?.[
         itemName as InventoryItemName
       ] ?? 0);
 
   const canCraftMore =
     itemsCrafted <
-    (MINIGAME_SHOP_ITEMS["holiday-puzzle-2025"]?.[itemName as EventTierItemName]
+    (MINIGAME_SHOP_ITEMS["holiday-puzzle-2026"]?.[itemName as EventTierItemName]
       ?.max ?? 1);
 
   const description = getItemDescription(item);
@@ -206,7 +206,7 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
     if (!item) return;
 
     gameService.send("minigameItem.bought", {
-      id: "holiday-puzzle-2025",
+      id: "holiday-puzzle-2026",
       name: itemName,
     });
 
@@ -350,7 +350,7 @@ export const ItemDetail: React.FC<ItemOverlayProps> = ({
                       {t("season.megastore.crafting.limit.max", {
                         limit: itemsCrafted,
                         max:
-                          MINIGAME_SHOP_ITEMS["holiday-puzzle-2025"]?.[
+                          MINIGAME_SHOP_ITEMS["holiday-puzzle-2026"]?.[
                             itemName as EventTierItemName
                           ]?.max ?? 1,
                       })}

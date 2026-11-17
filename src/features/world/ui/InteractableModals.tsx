@@ -33,7 +33,7 @@ import { DesertNoticeboard } from "./beach/DesertNoticeboard";
 import { PirateChestModal } from "./chests/PirateChest";
 import { ExampleDonations } from "./donations/ExampleDonations";
 import { WorldMap } from "features/island/hud/components/deliveries/WorldMap";
-import { HolidayPuzzles2025 } from "./portals/HolidayPuzzles2025";
+import { HolidayPuzzles2026 } from "./portals/HolidayPuzzles2026";
 import { WeatherShop } from "features/game/expansion/components/temperateSeason/WeatherShop";
 import { PortalChooser } from "./portals/PortalChooser";
 import { EasterEggstravaganza } from "./portals/EasterEggstravaganza";
@@ -578,7 +578,7 @@ export const InteractableModals: React.FC<Props> = ({ id, scene }) => {
           onClose={closeModal}
           bumpkinParts={NPC_WEARABLES.santa}
         >
-          <HolidayPuzzles2025 onClose={closeModal} />
+          <HolidayPuzzles2026 onClose={closeModal} />
         </CloseButtonPanel>
       </Modal>
 

@@ -11,7 +11,7 @@ const randomXOffset = Math.random() * 60;
 const randomYOffset = Math.random() * 20;
 
 export const SPAWNS: () => SpawnLocation = () => ({
-  "holiday-puzzle-2025": {
+  "holiday-puzzle-2026": {
     default: {
       x: 30 * SQUARE_WIDTH,
       y: 30 * SQUARE_WIDTH,

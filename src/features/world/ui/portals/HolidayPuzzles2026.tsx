@@ -17,12 +17,12 @@ interface Props {
 
 const _minigames = (state: MachineState) => state.context.state.minigames;
 
-export const HolidayPuzzles2025: React.FC<Props> = ({ onClose }) => {
+export const HolidayPuzzles2026: React.FC<Props> = ({ onClose }) => {
   const { gameService } = useContext(Context);
 
   const minigames = useSelector(gameService, _minigames);
-  const minigame = minigames.games["holiday-puzzle-2025"];
-  const prize = minigames.prizes["holiday-puzzle-2025"];
+  const minigame = minigames.games["holiday-puzzle-2026"];
+  const prize = minigames.prizes["holiday-puzzle-2026"];
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
@@ -40,20 +40,20 @@ export const HolidayPuzzles2025: React.FC<Props> = ({ onClose }) => {
   if (isPlaying) {
     return (
       <div>
-        <Portal portalName="holiday-puzzle-2025" onClose={onClose} />
+        <Portal portalName="holiday-puzzle-2026" onClose={onClose} />
       </div>
     );
   }
 
   const onClaim = () => {
-    gameService.send("minigame.prizeClaimed", { id: "holiday-puzzle-2025" });
+    gameService.send("minigame.prizeClaimed", { id: "holiday-puzzle-2026" });
 
     onClose();
   };
 
   const isComplete = isMinigameComplete({
     minigames,
-    name: "holiday-puzzle-2025",
+    name: "holiday-puzzle-2026",
   });
 
   if (isComplete && !dailyAttempt.prizeClaimedAt && prize) {
@@ -63,7 +63,7 @@ export const HolidayPuzzles2025: React.FC<Props> = ({ onClose }) => {
         reward={{
           message: t("halloween.portal.rewardMessage"),
           factionPoints: 0,
-          id: "holiday-puzzle-2025-rewards",
+          id: "holiday-puzzle-2026-rewards",
           items: prize.items,
           wearables: prize.wearables,
           sfl: 0,
