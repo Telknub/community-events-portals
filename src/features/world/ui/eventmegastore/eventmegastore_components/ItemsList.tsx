@@ -65,13 +65,13 @@ export const ItemsList: React.FC<Props> = ({
     // Handling all types or specific ones if provided
     if (type === "wearables" || (!type && "wearable" in item)) {
       return (
-        state.minigames.games["holiday-puzzle-2025"]?.shop?.wearables?.[
+        state.minigames.games["holiday-puzzle-2026"]?.shop?.wearables?.[
           (item as EventStoreWearable).wearable as BumpkinItem
         ] ?? 0
       );
     } else {
       return (
-        state.minigames.games["holiday-puzzle-2025"]?.shop?.items?.[
+        state.minigames.games["holiday-puzzle-2026"]?.shop?.items?.[
           (item as EventStoreCollectible).collectible as InventoryItemName
         ] ?? 0
       );
@@ -144,10 +144,10 @@ export const ItemsList: React.FC<Props> = ({
   const requirements = hasRequirement(tierData) ? tierData.requirement : 0;
 
   const eventItemsCrafted =
-    Object.keys(state.minigames.games["holiday-puzzle-2025"]?.shop?.items ?? {})
+    Object.keys(state.minigames.games["holiday-puzzle-2026"]?.shop?.items ?? {})
       .length +
     Object.keys(
-      state.minigames.games["holiday-puzzle-2025"]?.shop?.wearables ?? {},
+      state.minigames.games["holiday-puzzle-2026"]?.shop?.wearables ?? {},
     ).length;
 
   const isRareUnlocked =

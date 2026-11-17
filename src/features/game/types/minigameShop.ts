@@ -764,5 +764,5 @@ export const MINIGAME_SHOP_ITEMS: Partial<
   "easter-eggstravaganza": EASTER_SHOP_ITEMS,
   "festival-of-colors-2025": FESTIVAL_OF_COLORS_STORE,
   halloween: HALLOWEEN_STORE,
-  "holiday-puzzle-2025": HOLIDAY_STORE,
+  "holiday-puzzle-2026": HOLIDAY_STORE,
 };

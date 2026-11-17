@@ -34,7 +34,7 @@ export type Scenes = {
   infernos: Room<PlazaRoomState> | undefined;
   stream: Room<PlazaRoomState> | undefined;
   love_island: Room<PlazaRoomState> | undefined;
-  "holiday-puzzle-2025": Room<PlazaRoomState> | undefined;
+  "holiday-puzzle-2026": Room<PlazaRoomState> | undefined;
   holidays_island: Room<PlazaRoomState> | undefined;
 };
 
