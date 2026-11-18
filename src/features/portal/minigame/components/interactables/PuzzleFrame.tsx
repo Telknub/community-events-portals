@@ -41,7 +41,11 @@ export const useForceUpdate = () => {
 export const useGridPointer = (
   cols: number,
   rows: number,
-  h: { down?: (i: number) => void; move?: (i: number) => void; up?: () => void },
+  h: {
+    down?: (i: number) => void;
+    move?: (i: number) => void;
+    up?: () => void;
+  },
 ) => {
   const ref = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -113,7 +117,11 @@ export const PuzzleFrame: React.FC<FrameProps> = ({
         <img className="absolute w-[6rem] md:w-[8rem]" src={redRibbon} />
       </div>
       <div className="flex flex-col items-center">
-        <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
+        <StatusBar
+          seconds={seconds}
+          difficulty={difficulty}
+          onReset={onReset}
+        />
         <div
           className="p-3 border-[1rem] border-[#265c42]"
           style={{
@@ -123,15 +131,21 @@ export const PuzzleFrame: React.FC<FrameProps> = ({
           }}
         >
           <div className="border-[1rem] md:border-[1.5rem] border-[#a22633] border-double p-2 bg-white flex flex-col items-center gap-2 text-[#262b44]">
-            <span className="text-sm md:text-base font-bold text-center">{text.title}</span>
+            <span className="text-sm md:text-base font-bold text-center">
+              {text.title}
+            </span>
             <span
-              className="text-[10px] md:text-xs text-center"
+              className="text-[16px] md:text-xs text-center"
               style={{ maxWidth: BOARD_SIZE, minHeight: "2.2em" }}
             >
               {text.hint}
             </span>
             {children}
-            {footer && <div className="flex flex-row gap-2 items-center justify-center flex-wrap">{footer}</div>}
+            {footer && (
+              <div className="flex flex-row gap-2 items-center justify-center flex-wrap">
+                {footer}
+              </div>
+            )}
           </div>
         </div>
       </div>

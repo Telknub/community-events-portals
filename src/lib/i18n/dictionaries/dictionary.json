@@ -995,6 +995,7 @@
   "holiday-puzzle-2026.controls.move": "Move",
   "holiday-puzzle-2026.controls.joystick": "Joystick",
   "holiday-puzzle-2026.controls.buttons": "Buttons",
+  "holiday-puzzle-2026.restart": "↺ Restart",
   "holiday-puzzle-2026.eventToken": "{{token}} x Christmas Token 2025",
   "holiday-puzzle-2026.start.training": "Start Training",
   "holiday-puzzle-2026.power.life": "You get a life back",
