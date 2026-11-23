@@ -135,7 +135,7 @@ export const PuzzleFrame: React.FC<FrameProps> = ({
               {text.title}
             </span>
             <span
-              className="text-[16px] md:text-xs text-center"
+              className="text-[18px] md:text-xs text-center"
               style={{ maxWidth: BOARD_SIZE, minHeight: "2.2em" }}
             >
               {text.hint}

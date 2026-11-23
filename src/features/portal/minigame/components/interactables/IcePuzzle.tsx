@@ -29,6 +29,7 @@ export const IcePuzzle: React.FC<PuzzleProps> = ({
   const [moves, setMoves] = useState(0);
   const finish = useFinish(onComplete);
   const solved = pos === puzzle.goal;
+  const initialPlayer = puzzle.start;
 
   const go = (dir: number) => {
     if (solved) return;
@@ -66,7 +67,7 @@ export const IcePuzzle: React.FC<PuzzleProps> = ({
       onReset={onReset}
       footer={
         <div className="flex flex-col items-center justify-center gap-3">
-          {isTouchDevice() && <PuzzleControls go={go} />}
+          <PuzzleControls go={go} />
           <Button onClick={restart} className={isTouchDevice() ? "w-full" : ""}>
             {t("holiday-puzzle-2026.restart")}
           </Button>
@@ -86,7 +87,13 @@ export const IcePuzzle: React.FC<PuzzleProps> = ({
           <div
             key={i}
             className="flex items-center justify-center text-[min(5vw,1.6rem)] leading-none"
-            style={{ background: puzzle.rocks[i] ? "#5a6988" : "#e8f6ff" }}
+            style={{
+              background: puzzle.rocks[i]
+                ? "#5a6988"
+                : i === initialPlayer
+                  ? "#b8e6b5"
+                  : "#e8f6ff",
+            }}
           >
             {i === pos ? (
               <img src={snowman} className="w-[28px] h-[28px] object-contain" />
@@ -100,9 +107,7 @@ export const IcePuzzle: React.FC<PuzzleProps> = ({
           </div>
         ))}
       </div>
-      <span className="text-[16px] md:text-xs mr-auto">
-        {t("holiday-puzzle-2026.controls.move")} {moves}
-      </span>
+      <span className="text-[18px] md:text-xs mr-auto">{moves}</span>
     </PuzzleFrame>
   );
 };

@@ -1,20 +1,38 @@
 import React, { useState } from "react";
 import { Button } from "components/ui/Button";
 import { PORTAL_SOUNDS } from "../../Constants";
-import { generateRings, range, ringsMove, ringsSolved, shuffle } from "../../lib/PuzzleLogic";
+import {
+  generateRings,
+  range,
+  ringsMove,
+  ringsSolved,
+  shuffle,
+} from "../../lib/PuzzleLogic";
 import { PUZZLE_COLORS, RINGS, levelOf } from "../../lib/PuzzleConfig";
 import { BOARD_SIZE, PuzzleFrame, PuzzleProps, useFinish } from "./PuzzleFrame";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
 // ring sector as an SVG path (angles in radians, 0 = 3 o'clock)
 const sector = (r0: number, r1: number, a0: number, a1: number) => {
-  const p = (r: number, a: number) => `${100 + r * Math.cos(a)} ${100 + r * Math.sin(a)}`;
+  const p = (r: number, a: number) =>
+    `${100 + r * Math.cos(a)} ${100 + r * Math.sin(a)}`;
   return `M${p(r1, a0)} A${r1} ${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0} ${r0} 0 0 0 ${p(r0, a0)} Z`;
 };
 
-export const RingsPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, seconds, onReset }) => {
+export const RingsPuzzle: React.FC<PuzzleProps> = ({
+  onComplete,
+  difficulty,
+  seconds,
+  onReset,
+}) => {
+  const { t } = useAppTranslation();
   const { rings, seg, coupled, scramble } = RINGS[levelOf(difficulty)];
-  const [base] = useState(() => shuffle(range(PUZZLE_COLORS.length)).slice(0, seg)); // colour of each sector
-  const [offsets, setOffsets] = useState(() => generateRings(rings, seg, coupled, scramble));
+  const [base] = useState(() =>
+    shuffle(range(PUZZLE_COLORS.length)).slice(0, seg),
+  ); // colour of each sector
+  const [offsets, setOffsets] = useState(() =>
+    generateRings(rings, seg, coupled, scramble),
+  );
   const finish = useFinish(onComplete);
   const solved = ringsSolved(offsets);
 
@@ -36,18 +54,31 @@ export const RingsPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, sec
       difficulty={difficulty}
       onReset={onReset}
       footer={
-        <div className="flex flex-col gap-1 items-center">
+        <div className="flex flex-col gap-2 items-center">
           {Array.from({ length: rings }, (_, r) => (
             <div key={r} className="flex flex-row items-center gap-2">
-              <Button onClick={() => rotate(r, -1)}>↺</Button>
-              <span className="text-[10px] w-10 text-center">Ring {r + 1}</span>
-              <Button onClick={() => rotate(r, 1)}>↻</Button>
+              <Button onClick={() => rotate(r, -1)}>
+                {t("holiday-puzzle-2026.restart")}
+              </Button>
+              <span className="text-[18px] md:text-xs text-center">
+                {t("holiday-puzzle-2026.ringPuzzle")}
+                {r + 1}
+              </span>
+              <Button onClick={() => rotate(r, 1)}>
+                {t("holiday-puzzle-2026.restart")}
+              </Button>
             </div>
           ))}
         </div>
       }
     >
-      <svg viewBox="0 0 200 200" style={{ width: `min(${BOARD_SIZE}, 30vh)`, height: `min(${BOARD_SIZE}, 30vh)` }}>
+      <svg
+        viewBox="0 0 200 200"
+        style={{
+          width: `min(${BOARD_SIZE}, 30vh)`,
+          height: `min(${BOARD_SIZE}, 30vh)`,
+        }}
+      >
         {Array.from({ length: rings }, (_, r) => {
           const r1 = 96 - r * thickness;
           const r0 = r1 - thickness + 1.5;
@@ -67,7 +98,12 @@ export const RingsPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, sec
             );
           });
         })}
-        <circle cx={100} cy={100} r={inner - 4} fill={solved ? "#63c74d" : "#262b44"} />
+        <circle
+          cx={100}
+          cy={100}
+          r={inner - 4}
+          fill={solved ? "#63c74d" : "#262b44"}
+        />
       </svg>
     </PuzzleFrame>
   );

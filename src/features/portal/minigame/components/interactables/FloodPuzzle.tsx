@@ -4,8 +4,15 @@ import { PORTAL_SOUNDS } from "../../Constants";
 import { floodDone, floodFill, generateFlood } from "../../lib/PuzzleLogic";
 import { FLOODIT, PUZZLE_COLORS, levelOf } from "../../lib/PuzzleConfig";
 import { BOARD_SIZE, PuzzleFrame, PuzzleProps, useFinish } from "./PuzzleFrame";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
 
-export const FloodPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, seconds, onReset }) => {
+export const FloodPuzzle: React.FC<PuzzleProps> = ({
+  onComplete,
+  difficulty,
+  seconds,
+  onReset,
+}) => {
+  const { t } = useAppTranslation();
   const { size, colors, slack } = FLOODIT[levelOf(difficulty)];
   const [puzzle] = useState(() => generateFlood(size, colors, slack));
   const [grid, setGrid] = useState<number[]>(puzzle.grid);
@@ -23,9 +30,13 @@ export const FloodPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, sec
   // out of moves -> restart the same board after a short pause
   useEffect(() => {
     if (solved || movesLeft > 0) return;
-    setMessage("No moves left - restarting!");
-    const t = setTimeout(restart, 900);
-    return () => clearTimeout(t);
+
+    const timeout = setTimeout(() => {
+      setMessage("No moves left - restarting!");
+      restart();
+    }, 900);
+
+    return () => clearTimeout(timeout);
   }, [movesLeft, solved]);
 
   const choose = (c: number) => {
@@ -50,22 +61,39 @@ export const FloodPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, sec
               key={c}
               onClick={() => choose(c)}
               className="rounded-full border-2 border-[#262b44] cursor-pointer"
-              style={{ width: "2.2rem", height: "2.2rem", background: PUZZLE_COLORS[c], opacity: c === grid[0] ? 0.35 : 1 }}
+              style={{
+                width: "2.2rem",
+                height: "2.2rem",
+                background: PUZZLE_COLORS[c],
+                opacity: c === grid[0] ? 0.35 : 1,
+              }}
             />
           ))}
-          <Button onClick={restart}>↺</Button>
+          <Button onClick={restart}>{t("holiday-puzzle-2026.restart")}</Button>
         </>
       }
     >
       <div
         className="grid"
-        style={{ width: BOARD_SIZE, height: BOARD_SIZE, gridTemplateColumns: `repeat(${size}, 1fr)` }}
+        style={{
+          width: BOARD_SIZE,
+          height: BOARD_SIZE,
+          gridTemplateColumns: `repeat(${size}, 1fr)`,
+        }}
       >
         {grid.map((c, i) => (
-          <div key={i} style={{ background: PUZZLE_COLORS[c], transition: "background 120ms" }} />
+          <div
+            key={i}
+            style={{
+              background: PUZZLE_COLORS[c],
+              transition: "background 120ms",
+            }}
+          />
         ))}
       </div>
-      <span className="text-[10px]">{message || `Moves left: ${movesLeft}`}</span>
+      <span className="text-[18px] md:text-xs mr-auto">
+        {message || t("holiday-puzzle-2026.movesLeft") + ` ${movesLeft}`}
+      </span>
     </PuzzleFrame>
   );
 };

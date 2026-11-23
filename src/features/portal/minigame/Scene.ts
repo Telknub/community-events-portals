@@ -3,11 +3,9 @@ import tilesetconfig from "assets/map/tileset_christmas26.json";
 import { SceneId } from "features/world/mmoMachine";
 import { BaseScene } from "./Core/BaseScene";
 import { MachineInterpreter } from "./lib/Machine";
-import { EventObject } from "xstate";
 import { isTouchDevice } from "features/world/lib/device";
 import {
   NEXT_DIFFICULTY_PUZZLE,
-  PATH_PUZZLE_POINTS,
   PORTAL_NAME,
   PUZZLE_POINTS_CONFIG,
   PUZZLE_TYPES,
@@ -40,7 +38,7 @@ export class Scene extends BaseScene {
   private puzzleOpen = false;
   private puzzleCount = 0;
   private nextPuzzleScore = 0;
-  private readonly POINTS_PER_PUZZLE = 10;
+  private readonly POINTS_PER_PUZZLE = 5;
 
   puzzleTypes!: PuzzleName[];
   sceneId: SceneId = PORTAL_NAME;
@@ -215,8 +213,8 @@ export class Scene extends BaseScene {
     const puzzleType =
       PUZZLE_TYPES[Math.floor(Math.random() * PUZZLE_TYPES.length)];
 
-    interactableModalManager.open("puzzle", {  
-      id: this.puzzleCount + 1,                
+    interactableModalManager.open("puzzle", {
+      id: this.puzzleCount + 1,
       puzzleType,
     });
   }
@@ -235,7 +233,7 @@ export class Scene extends BaseScene {
 
     // Puzzle closed solved scoring resumes
     const onPuzzleDone = () => {
-      if (!this.puzzleOpen) return; 
+      if (!this.puzzleOpen) return;
       this.puzzleOpen = false;
       this.puzzleCount++;
       this.nextPuzzleScore = this.getScore() + this.POINTS_PER_PUZZLE;
@@ -243,19 +241,18 @@ export class Scene extends BaseScene {
     };
     EventBus.on("close-puzzle", onPuzzleDone);
     EventBus.on("hurt-player", onPuzzleDone);
-    EventBus.on("puzzle-closed", onPuzzleDone); 
+    EventBus.on("puzzle-closed", onPuzzleDone);
 
     const onNextLevel = () => {
-      const lives = this.portalService?.state.context.lives || 0;
-      if (lives <= 0) return;
-
       const currentDifficulty = this.portalService?.state.context
         .difficulty as PuzzleDifficulty;
       const nextDifficulty = NEXT_DIFFICULTY_PUZZLE[currentDifficulty];
       if (!nextDifficulty) return; //
 
       // this.cameras.main.fadeOut(500);
-      this.portalService?.send("SET_DIFFICULTY", { difficulty: nextDifficulty });
+      this.portalService?.send("SET_DIFFICULTY", {
+        difficulty: nextDifficulty,
+      });
 
       this.cameras.main.once("camerafadeoutcomplete", () => {
         interactableModalManager.open("difficulty-message", {
