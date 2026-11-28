@@ -1,10 +1,22 @@
 import React, { useState } from "react";
 import { PORTAL_SOUNDS } from "../../Constants";
-import { Car, UNBLOCK_N as N, generateUnblock, unblockReach, unblockSet, unblockWon } from "../../lib/PuzzleLogic";
+import {
+  Car,
+  UNBLOCK_N as N,
+  generateUnblock,
+  unblockReach,
+  unblockSet,
+  unblockWon,
+} from "../../lib/PuzzleLogic";
 import { PUZZLE_COLORS, UNBLOCK, levelOf } from "../../lib/PuzzleConfig";
 import { BOARD_SIZE, PuzzleFrame, PuzzleProps, useFinish } from "./PuzzleFrame";
 
-export const UnblockPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, seconds, onReset }) => {
+export const UnblockPuzzle: React.FC<PuzzleProps> = ({
+  onComplete,
+  difficulty,
+  seconds,
+  onReset,
+}) => {
   const { cars: n, min, max } = UNBLOCK[levelOf(difficulty)];
   const [cars, setCars] = useState<Car[]>(() => generateUnblock(n, min, max));
   const [selected, setSelected] = useState<number | null>(null);
@@ -23,10 +35,16 @@ export const UnblockPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, s
     if (unblockWon(next)) finish();
   };
 
-  const targets = selected !== null && !solved ? unblockReach(cars, selected) : [];
+  const targets =
+    selected !== null && !solved ? unblockReach(cars, selected) : [];
 
   return (
-    <PuzzleFrame name="unblock" seconds={seconds} difficulty={difficulty} onReset={onReset}>
+    <PuzzleFrame
+      name="unblock"
+      seconds={seconds}
+      difficulty={difficulty}
+      onReset={onReset}
+    >
       <div className="flex flex-row items-center gap-1">
         <div
           className="relative bg-[#dfe6f2] border-4 border-[#262b44] rounded"
@@ -53,7 +71,10 @@ export const UnblockPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, s
               <div
                 className="w-full h-full rounded-md"
                 style={{
-                  background: i === 0 ? "#e43b44" : PUZZLE_COLORS[1 + (i % (PUZZLE_COLORS.length - 1))],
+                  background:
+                    i === 0
+                      ? "#e43b44"
+                      : PUZZLE_COLORS[1 + (i % (PUZZLE_COLORS.length - 1))],
                   outline: selected === i ? "3px solid #feae34" : undefined,
                   boxShadow: "inset 0 -4px 0 #0003",
                 }}
@@ -84,7 +105,10 @@ export const UnblockPuzzle: React.FC<PuzzleProps> = ({ onComplete, difficulty, s
             );
           })}
         </div>
-        <span className="text-lg" style={{ marginTop: `calc(${BOARD_SIZE} / ${N} * 4 - 0.8rem)` }}>
+        <span
+          className="text-lg"
+          style={{ marginTop: `calc(${BOARD_SIZE} / ${N} * 4 - 0.8rem)` }}
+        >
           ➜
         </span>
       </div>

@@ -33,7 +33,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
   onComplete,
   difficulty,
   seconds,
-  onReset
+  onReset,
 }) => {
   const { t } = useAppTranslation();
   const [tiles, setTiles] = useState<(number | null)[]>([]);
@@ -51,10 +51,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
       const isSolved = checkIfSolved(tiles);
       setIsSolved(isSolved);
       if (isSolved) {
-        (onComplete(),
-          SNOW(),
-          PORTAL_SOUNDS.win.play()
-        );
+        (onComplete(), SNOW(), PORTAL_SOUNDS.win.play());
       }
     }
   }, [tiles]);
@@ -71,7 +68,7 @@ export const SlidingPuzzle: React.FC<Props> = ({
 
     let lastEmptyIndex = emptyIndex;
 
-    for (let moves = 0; moves < moveCount;) {
+    for (let moves = 0; moves < moveCount; ) {
       const neighbors = getAdjacentIndices(emptyIndex).filter(
         (n) => n !== lastEmptyIndex,
       ); // avoid undoing
@@ -157,7 +154,11 @@ export const SlidingPuzzle: React.FC<Props> = ({
           <img className="absolute w-[6rem] md:w-[8rem] " src={redRibbon} />
         </div>
         <div className="flex flex-col items-center">
-          <StatusBar seconds={seconds} difficulty={difficulty} onReset={onReset} />
+          <StatusBar
+            seconds={seconds}
+            difficulty={difficulty}
+            onReset={onReset}
+          />
           <div
             className="p-3 border-[1rem] border-[#265c42]"
             style={{
@@ -202,20 +203,20 @@ export const SlidingPuzzle: React.FC<Props> = ({
                     style={
                       tile !== null
                         ? {
-                          backgroundImage: `url(${puzzleImg})`,
-                          backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
-                          backgroundPosition: getBackgroundPosition(tile),
-                        }
+                            backgroundImage: `url(${puzzleImg})`,
+                            backgroundSize: `${SIZE_X * 100}% ${SIZE_Y * 100}%`,
+                            backgroundPosition: getBackgroundPosition(tile),
+                          }
                         : {}
                     }
-                    className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${tile === null ? "bg-white" : "bg-cover bg-center"
-                      }`}
+                    className={`w-full h-full rounded cursor-pointer transition-all duration-200 ${
+                      tile === null ? "bg-white" : "bg-cover bg-center"
+                    }`}
                   />
                 ))}
               </div>
               <div className="p-2">
-                <Button
-                  onClick={() => setIsImageOpen(true)}>
+                <Button onClick={() => setIsImageOpen(true)}>
                   {t(`${PORTAL_NAME}.jigsaw.view.image`)}
                 </Button>
               </div>

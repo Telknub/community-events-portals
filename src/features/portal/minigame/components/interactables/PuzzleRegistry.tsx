@@ -9,24 +9,14 @@ import { PipePuzzle } from "./PipePuzzle";
 import { NonogramPuzzle } from "./NonogramPuzzle";
 
 // New puzzles
-import { LightsOutPuzzle } from "./LightsOutPuzzle";
-import { ColorSortPuzzle } from "./ColorSortPuzzle";
-import { CodebreakerPuzzle } from "./CodebreakerPuzzle";
-import { FlowPuzzle } from "./FlowPuzzle";
 import { UnblockPuzzle } from "./UnblockPuzzle";
 import { IcePuzzle } from "./IcePuzzle";
 import { SokobanPuzzle } from "./SokobanPuzzle";
-import { FloodPuzzle } from "./FloodPuzzle";
-import { RingsPuzzle } from "./RingsPuzzle";
-import { JugsPuzzle } from "./JugsPuzzle";
 import { LaserPuzzle } from "./LaserPuzzle";
-import { TangramPuzzle } from "./TangramPuzzle";
 import { CopyPatternPuzzle } from "./CopyPatternPuzzle";
 import { Sum10Puzzle } from "./Sum10Puzzle";
-import { EquationPuzzle } from "./EquationPuzzle";
 import { SequencePuzzle } from "./SequencePuzzle";
 import { OddOnePuzzle } from "./OddOnePuzzle";
-import { TraceMazePuzzle } from "./TraceMazePuzzle";
 import { MagicSquarePuzzle } from "./MagicSquarePuzzle";
 
 /**
@@ -41,23 +31,13 @@ export const PUZZLE_COMPONENTS: Record<string, React.FC<PuzzleProps>> = {
   pipe: PipePuzzle,
   nonogram: NonogramPuzzle,
 
-  lightsout: LightsOutPuzzle,
-  colorsort: ColorSortPuzzle,
-  codebreaker: CodebreakerPuzzle,
-  flow: FlowPuzzle,
   unblock: UnblockPuzzle,
   ice: IcePuzzle,
   sokoban: SokobanPuzzle,
-  floodit: FloodPuzzle,
-  rings: RingsPuzzle,
-  jugs: JugsPuzzle,
   laser: LaserPuzzle,
-  tangram: TangramPuzzle,
   copypattern: CopyPatternPuzzle,
   sum10: Sum10Puzzle,
-  equation: EquationPuzzle,
   sequence: SequencePuzzle,
   oddone: OddOnePuzzle,
-  tracemaze: TraceMazePuzzle,
   magicsquare: MagicSquarePuzzle,
 };
